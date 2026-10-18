@@ -1,9 +1,20 @@
 # 项目当前状态（唯一权威入口）
 
-- 当前任务（2026-10-18）：MD3 重构 **P1（颜色令牌、HCT 取色、主题统一）已完成且已验证；P2–P8 未开始。**
+- 当前任务（2026-10-18）：MD3 重构 **P2（组件库）已完成且已验证；P3–P8 未开始。**
+  - 改了什么：
+    - 新增 `editor/css/md-components.css`（122 个 md- 类）、`editor/js/md.js`（`window.MDUI`）、`tools/md-gallery.html`（组件陈列页）和 `tests/md-components-test.mjs`。
+    - 接入 `app.css`、`studio.html`、静态白名单、`tools/studio-install.mjs`，模板与入口逐字节一致。业务页面还没有用这些组件，界面没有可见变化。
+    - **修正 P1 遗留问题**：级联层名 `md.tokens` 等带点，实际是父层 `md` 的子层、整体排在 legacy 之前，导致组件被旧样式的 `* { padding:0 }` 覆盖。已改为 `md-tokens, legacy, md-compat, md-components, app`，并加测试防回归。旧样式里没有声明任何 compat 变量（已核对），应用外观不受影响。
+  - 本次验证：
+    - 完整 JS 回归 `node tests/run-all.mjs --report _test/md3-p2-final.json`：92 通过、9 部分执行、0 失败、2 排除。新增 md-components-test 共 96 项；部分执行与之前是同一批。
+    - ESLint 对新文件无问题；`tests/jsmod/` 镜像一致。
+    - 真实 Chrome 检查陈列页（本机只读静态服务）：标签页方向键与漫游 tabindex、菜单定位与键盘、Esc 归还焦点、原生对话框、滑块填充都正常；组件实际压过旧样式（内边距与背景已核对）；没有控制台错误（只有临时服务没提供 favicon 的 404）。
+    - 按用户要求压缩截图：只截了陈列页（`_test/md3-p2/`），没有重跑整套界面截图。
+  - GitHub：P2 按用户指示提交到 `ljxuwu/SubFabric` main，与上次 P1 提交的 STATUS 补记一起入库；提交标识见最终报告。
+- 上一阶段（2026-10-18）：MD3 重构 **P1（颜色令牌、HCT 取色、主题统一）已完成且已验证。**
   - 改了什么：
     - 新增 `editor/js/md-color.js`：移植 material-color-utilities 0.3.0 的 HCT / TonalPalette，按种子色生成 TonalSpot 配色。它在 `<head>` 里同步执行，只写 `--md-sys-color-*`，同时提供 `SSAccent` 兼容接口。替代原来的 `accent.js`。
-    - 新增 `css/app.css`（层序 `md.tokens, legacy, md.compat, md.components, app`）、`md-tokens.css`、`md-compat.css`（旧变量别名到 MD3 角色）。`studio.html` 只链接 `app.css`，`<body>` 的第一个子节点同步复制主题。
+    - 新增 `css/app.css`（层序 `md-tokens, legacy, md-compat, md-components, app`）、`md-tokens.css`、`md-compat.css`（旧变量别名到 MD3 角色）。`studio.html` 只链接 `app.css`，`<body>` 的第一个子节点同步复制主题。
     - 主题统一为 Material：`studio-themes.js` 改为 v2 主题包（种子色 + MD3 角色白名单），v1 包导入时只保留种子色。`studio-state.js` 一次性迁移旧偏好：下线的内置包转为 Material，UWP 用户保留 `#0078D7`，流光转为纯色，毛玻璃字段丢弃，新增 `scrim`（40–95%，默认 68%）。`studio.js` 删掉 UWP、毛玻璃和流光分支。
     - `studio.css` 删除 174 条只属于下线主题的规则、浅色和深色两组毛玻璃规则，以及流光样式；表面一律改为不透明的 surface-container 色调，4291 → 3943 行。
     - 删除 `accent.js`、三个下线的主题包 JSON、`tests/uwp-theme-test.mjs`（只测已下线的 UWP 包）以及镜像 `tests/jsmod/accent.js`。同步更新静态白名单、`tools/studio-install.mjs`、`tools/templates/studio.html`（与入口逐字节一致）、PROJECT_MAP 和 `docs/THEME_PACKS.md`。
@@ -16,6 +27,7 @@
     - 详细证据见 [MD3_INVENTORY.md](MD3_INVENTORY.md) §4。F1 和 F4 已解决；新发现 F9（浅色查找替换对话框里写死的深色块，P0 已存在）和 F10（首页徽标写死蓝色）。
   - 未做：没有逐帧录屏验证首屏无闪色（由单测断言覆盖）；没有真实用户浏览器的旧偏好迁移实测（由单测覆盖）；安装包和 Release 没有重建。
   - GitHub：用户在 WSL 配好 `gh`（账号 ljxuwu，repo 权限），并明确要求本次提交到 **`ljxuwu/SubFabric`**（用户自己的 fork，main 无保护规则）。这次偏离了 AGENTS.md 固定的 `EndiVee233/SubFabric`，只适用于本次，AGENTS.md 未修改。P0+P1 的 42 个文件（修改 27、新增 9、删除 6）以一次 GraphQL `createCommitOnBranch` 原子提交写入，`expectedHeadOid` 为 `f0f1bb9`（提交前已核对远程 HEAD 与本地基线一致）。提交标识与核对结果见最终报告；本地仓库未暂存、未提交。
+  - GitHub 核对（提交后确认，随下一次提交入库）：`ljxuwu/SubFabric` main 已指向 `1efc6f389eecd41d11ed0fcb6ea9ac82cabc8884`（父提交 `f0f1bb9`，GitHub 显示 Verified）。compare 为 ahead 1 / behind 0，共 42 个文件变化；远端树的 438 个文件与本地工作区按 blob SHA 逐个一致。**CI 未运行**：这个 fork 从来没有跑过 workflow，ci.yml 显示 active 但提交后约 2.5 分钟仍没有 run，推测是 fork 的 Actions 需要所有者在 Actions 页手动启用；未通过 API 修改仓库设置。本地仓库仍停在 `f0f1bb9`，改动还在工作区，内容与远端一致。
 - 前一阶段（2026-10-18）：用 Material Design 3 风格重构前端（外观与排版）。**P0 已完成且已验证。** 已确认的决策：原生实现 MD3（不引入 React/MUI，守住无构建、零依赖红线）；主题包统一为 Material；范围覆盖首页 / 稿件库 / 任务中心、设置 / 资源 / 帮助、编辑器工作台、时间轴 canvas；D1–D6 全部按建议执行。计划见 [MD3_REDESIGN_PLAN.md](MD3_REDESIGN_PLAN.md)，P0 的基线与盘点见 [MD3_INVENTORY.md](MD3_INVENTORY.md)。
   - P0 本次验证：完整 JS 回归 `node tests/run-all.mjs --report _test/md3-p0-baseline.json`（Node v20.19.2）为 91 通过、9 部分执行、0 失败、2 排除，`tests/jsmod/` 无差异。在临时副本上起源码服务（端口 8399，`--no-tray`，补齐 vendor），用 CDP 驱动 Windows Chrome 截了 135 张图（Studio 主题包浅色和深色 × 5 个视口 × 11 个页面，另有补充页面、对话框、空状态，以及 Material You 参考图），存于 `_test/md3-p0/baseline/`（不入库）。横向溢出 0，控制台错误 0。5000 行滚动性能基线：样式重算 360ms、布局 204ms、脚本 152ms，每 5 秒。
   - 发现的问题 F1–F8 记在盘点文档 §3。其中 F1（浅色毛玻璃表面发灰）和 F2（800×600 下编辑器视频区被压没、工具栏被截断）进入后续阶段；F6（测试驱动下同主机连接排队）在正常使用中未验证。`_test/md3-p0/shots/` 是第一次运行留下的无效截图（深色没有生效），可以删除，本次未删。

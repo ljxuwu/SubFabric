@@ -95,7 +95,7 @@ SubFabric 是一个**本地动态字幕编辑器**：给视频做「中文整句
 | `asr/` | Python 侧：`asr.py`（本地识别）`vibevoice.py`（VibeVoice NF4·CUDA 4bit，拒绝 CPU/NPU/offload）`diarize.py`（说话人分离）`multitalker.py`（NeMo 多说话人）`fetch/`（下载内核）`settings.json`（本机设置，含密文，不入库） |
 | `asr/fetch/` | bilibili / YouTube 下载内核（yt-dlp 自举、格式选择、Cookie、分P），细节见 `asr/fetch/README.md` |
 | `tests/` | Node / Python 测试（见 §8）；`tests/jsmod/` 是**前端模块自动同步镜像** |
-| `tools/` | 探针 / 诊断脚本；`build-install.mjs` 是事务构建入口，`repair15-regression.mjs` 兼容转发至统一 JS 回归入口 |
+| `tools/` | 探针 / 诊断脚本；`md-gallery.html` 是 MD3 组件陈列页（直接用浏览器打开，不经服务端、不进安装包）；`build-install.mjs` 是事务构建入口，`repair15-regression.mjs` 兼容转发至统一 JS 回归入口 |
 | `build/`、`build_exe.py` | 打包（`build/installer/` 内图标与 `.iss` 入库，其余产物不入库） |
 | `main.py` | **历史遗留**的 Python GUI 工具（字体/颜色等默认值处理），与编辑器主线关系弱 |
 | `docs/` | `docs/STATUS.md` 是唯一权威当前状态，`docs/CONTINUITY.md` 保存连续性要求与验收；另含归档/设计文档（**不在根目录堆着**）：`docs/KARAOKE_DESIGN.md`、`docs/KARAOKE_REFS.md`（逐词高亮与 `\k` 的格式设计与调研，**改字幕格式前必读**）；`docs/CODE_REVIEW.md`（第一轮审查记录）；`docs/MD3_REDESIGN_PLAN.md`（Material Design 3 前端重构计划，**改前端外观前必读**）与 `docs/MD3_INVENTORY.md`（P0 基线、控件盘点与发现的问题）；`docs/双引擎实测结论.md`（NPU+GPU 双引擎实测：本机无收益） |
@@ -217,6 +217,7 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 | `modal.js` | 可拖动二级窗口（对齐 / 视口边界） |
 | `shortcuts.js` | 固定键盘快捷键表（刻意不可配置） |
 | `md-color.js` | MD3 取色（经典脚本，`<head>` 内同步执行防首屏闪色）：移植 material-color-utilities 的 HCT / TonalPalette（Apache-2.0，`tests/md-color-test.mjs` 对照官方期望值），按种子色生成 TonalSpot 配色并只写 `--md-sys-color-*`；`window.SF_MD` 为取色 API，`window.SSAccent` 为旧强调色接口兼容层（main.js 色块仍用） |
+| `md.js` | MD3 组件行为辅助（经典脚本，`window.MDUI`）：标签页方向键 / Home / End 与漫游 tabindex、`openMenu(menu, anchor)` / `closeMenu()` 定位与焦点、`.md-slider` 填充比例；纯函数 `nextIndex` / `placeMenu` / `sliderFill` 供测试。对话框用原生 `<dialog>.showModal()` |
 | `icons.js` | 内联 SVG 图标集（不要塞进文本节点中间，会拆散 i18n 词典匹配） |
 | `align.js` | 逐词时间重对齐（TTS 合成 → 重识别 → 序列对齐；fork） |
 | `asr-service.js` / `mt-local.js` | 常驻识别服务；本地 NLLB 翻译（fork） |
@@ -314,7 +315,9 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 
 根入口逐请求读取程序根 `ui-config.json`，无论配置缺失、损坏或历史上写有 `{"ui":"legacy"}`，都进入唯一生产入口 `editor/studio.html`。配置不公开服务。旧界面 HTML/CSS 已删除；旧视觉迁移为 `subfabric-classic` 主题包。Studio 模板保留全部真实控件，继续使用 `main`、`project`、ASS、Timeline 与 API。
 
-**颜色与样式层（MD3 重构 P1，2026-10-18）**：入口只链接 `css/app.css`，它声明 `@layer md.tokens, legacy, md.compat, md.components, app` 并按层引入 `md-tokens.css`（MD3 令牌与默认种子的回退色）、`studio.css`（整体放入 legacy 层，逐阶段缩减）、`md-compat.css`（旧变量 `--accent` / `--bg-1` / `--text-0` 等别名到 `--md-sys-color-*`，必须排在 legacy 之后）。颜色只由 `md-color.js` 写 `--md-sys-color-*` 内联值，新样式直接用 MD3 角色名，不要再引用旧变量；新样式一律放进层里（不在层里的样式会压过所有层）。界面表面一律不透明色调（surface-container-*），不用 `backdrop-filter`；毛玻璃三参数已下线，只保留作用于自定义图片背景的 `scrim`（背景遮罩强度 40–95%，CSS 变量 `--sf-backdrop-scrim`）。`body[data-design]` 恒为 `material`。
+**颜色与样式层（MD3 重构 P1，2026-10-18）**：入口只链接 `css/app.css`，它声明 `@layer md-tokens, legacy, md-compat, md-components, app` 并按层引入 `md-tokens.css`（MD3 令牌与默认种子的回退色）、`studio.css`（整体放入 legacy 层，逐阶段缩减）、`md-compat.css`（旧变量 `--accent` / `--bg-1` / `--text-0` 等别名到 `--md-sys-color-*`，必须排在 legacy 之后）。颜色只由 `md-color.js` 写 `--md-sys-color-*` 内联值，新样式直接用 MD3 角色名，不要再引用旧变量；新样式一律放进层里（不在层里的样式会压过所有层）。界面表面一律不透明色调（surface-container-*），不用 `backdrop-filter`；毛玻璃三参数已下线，只保留作用于自定义图片背景的 `scrim`（背景遮罩强度 40–95%，CSS 变量 `--sf-backdrop-scrim`）。`body[data-design]` 恒为 `material`。
+
+**MD3 组件（P2，2026-10-18）**：`css/md-components.css` 在 `md-components` 层，类名一律 `md-` 前缀（按钮 `md-button--filled|tonal|elevated|outlined|text[--small|--error]`、`md-icon-button`、`md-fab`、`md-segmented`/`md-segment`、`md-chip[--filter|--input]`、`md-badge`、`md-field`（外框 + 浮动标签）/`md-input`/`md-select`/`md-search`、`md-switch`/`md-checkbox`/`md-radio`、`md-slider`、`md-tabs`/`md-tab`、`md-nav-item`、`md-top-app-bar`、`md-card`、`md-list`/`md-list-item`、`md-expansion`、`md-menu`/`md-menu-item`、`md-dialog`、`md-side-sheet`、`md-snackbar`、`md-tooltip`、`md-linear-progress`/`md-circular-progress`、`md-typescale-*`），全部变体见 `tools/md-gallery.html`。规则：只用 MD3 令牌、不写死颜色、不用 `!important` 和 ID 选择器、动效时长只走 `--md-motion-*`（减少动效时归零）；选中态用 `aria-pressed` / `aria-selected` / `aria-current`；`md-field` 的 `<input placeholder=" ">` 必须在 `.md-field__label` 之前；浮动标签底色取容器的 `--md-field-bg`。**层名不能带点**（`a.b` 是 `a` 的子层，会整体排到 legacy 前面，P2 实测踩过）。给业务元素换 md 类时先确认旧样式没有对同一属性用 `!important`（旧层的 `!important` 会压过组件层）。
 
 `editor/js/studio.js` 只适配页面导航、外观、真实项目快照和播放器事件；`studio-state.js` 校验浏览器外观/文件夹关系（不储存字幕/模型/凭据）。`studio-themes.js` 提供唯一内置主题包 Material You 及“我的主题包”存储；`editor/themes/material-you.theme.json` 是可分发的同源 JSON，导入包只能使用种子色、MD3 角色白名单和本地 PNG/JPEG/WebP 预览图，不能执行脚本、注入 CSS 或引用远程资源。设置页按内置/自定义分组，内置包不可删除，自定义包可导出、替换和删除；格式与制作说明见 `docs/THEME_PACKS.md`。`studio-progress.js` 提供固定 CSS 波浪。全局模型、翻译与识别设置共用唯一“设置”入口；旧 `#/resources` 仅重定向至 `#/settings`。ASS 控件为同一组 DOM，始终停留在稿件编辑器的 #tab-settings，保留原监听器/文档保存链路；无当前 ASS 项目时由编辑器业务自身禁用文档操作，后处理为本机偏好。创建提交期间 Studio 路由统一互斥，避免上传回调读取被重置的材料。
 
@@ -354,6 +357,7 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 | `tests/orbit-capsule-test.mjs` | 首页统计胶囊 40° / 内部文字水平 / 已下线主题的胶囊分支已清理 / 分档尺寸与 40° 包围盒 | 源码 CSS 断言 + 几何粗算 |
 | `tests/md-color-test.mjs` | MD3 取色：HCT 移植逐值对照 `tests/md-color-expected.json`（material-color-utilities 0.3.0 生成，10 个种子 × 浅深 × 34 角色）、14 个种子 WCAG 对比度、首屏引导与偏好迁移、SSAccent 兼容、md-compat 别名与层序 | 纯 Node（vm），任何机器可跑；改默认种子或角色表后重新生成期望值 |
 | `tests/theme-packs-test.mjs` | 主题包 v2（种子色 + MD3 角色白名单）、v1 只取种子导入、旧内置包迁移、安全白名单、删除规则 | 纯 Node |
+| `tests/md-components-test.mjs` | MD3 组件层：源码约定（无写死颜色 / `!important` / ID 选择器 / `transition: all`，动效走令牌）、陈列页覆盖全部 md- 类、层名无点、入口接线、`md.js` 纯函数 | 纯 Node（vm） |
 | 其余 `tests/*-test.mjs` | ass / srt / role / postprocess / reseg / zh-* 等 | 多数独立可跑 |
 | `tools/http_layer_probe.mjs` | HTTP 层探针（守卫 / 形状 / 设置往返 / 项目全生命周期） | 自带服务启停，但会写同树设置/项目；只有隔离副本才可执行，旧字幕保存探针尚需适配 revision 协议；本轮以 repair 测试验证 |
 | `tools/route_smoke.mjs` | 24 路由冒烟 | 需先起服务：`PORT=8399 node editor/server.js` |

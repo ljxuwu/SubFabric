@@ -110,7 +110,7 @@ for (const seed of seeds) {
     assert.match(m[1], /var\(--md-sys-color-/, `${name} points at an MD3 role`);
   }
   const app = fs.readFileSync(path.join(root, 'editor/css/app.css'), 'utf8');
-  assert.match(app, /^@layer md\.tokens, legacy, md\.compat, md\.components, app;/m, 'cascade layer order is declared first');
+  assert.match(app, /^@layer md-tokens, legacy, md-compat, md-components, app;/m, 'cascade layer order is declared first');
   assert.match(app, /@import url\("studio\.css"\) layer\(legacy\);/, 'the legacy stylesheet lives in its own layer');
   const tokens = fs.readFileSync(path.join(root, 'editor/css/md-tokens.css'), 'utf8');
   for (const role of MD.ROLE_NAMES) assert.match(tokens, new RegExp(`--md-sys-color-${role}:\\s*#[0-9A-F]{6};`), `fallback value for ${role}`);

@@ -1,12 +1,15 @@
 /* 样式入口：用级联层固定优先级，结束"同选择器靠后覆盖"的竞争（MD3 重构计划 §3.1）。
- *   md.tokens     MD3 令牌（颜色回退值、字体、形状、高度、动效）
+ *   md-tokens     MD3 令牌（颜色回退值、字体、形状、高度、动效）
  *   legacy        原 studio.css 整体，逐阶段缩减
- *   md.compat     旧变量名 → MD3 角色的别名（须在 legacy 之后，覆盖其 :root 默认值）
- *   md.components P2 起的 md-* 组件
+ *   md-compat     旧变量名 → MD3 角色的别名（须在 legacy 之后，覆盖其 :root 默认值）
+ *   md-components P2 起的 md-* 组件
  *   app           P3 起的布局与业务专属样式
  * 层内仍按原顺序生效；不在任何层里的样式会压过所有层，所以新样式一律放进层里。
+ * ⚠ 层名不能带点：md.tokens / md.components 是同一个父层 md 的子层，父层按首次出现排在 legacy 之前，
+ *   组件会整体输给旧样式（P2 实测：旧 `* { padding:0 }` 吃掉了所有组件的内边距）。
  */
-@layer md.tokens, legacy, md.compat, md.components, app;
-@import url("md-tokens.css") layer(md.tokens);
+@layer md-tokens, legacy, md-compat, md-components, app;
+@import url("md-tokens.css") layer(md-tokens);
 @import url("studio.css") layer(legacy);
-@import url("md-compat.css") layer(md.compat);
+@import url("md-compat.css") layer(md-compat);
+@import url("md-components.css") layer(md-components);

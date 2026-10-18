@@ -1,4 +1,4 @@
-/* 旧变量 → MD3 颜色角色的别名层（@layer md.compat，P8 删除）。
+/* 旧变量 → MD3 颜色角色的别名层（@layer md-compat，P8 删除）。
  *
  * 为什么排在 legacy 层之后：studio.css 顶部 :root 曾写死一套深色橙的默认值，后加载的层同选择器胜出，
  * 这样旧规则不必逐条改写就能全部跟随 MD3 配色；canvas（timeline.js）读 --bg-1 / --border 等也走这里。

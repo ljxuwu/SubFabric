@@ -1,6 +1,6 @@
 # Material Design 3 前端重构计划
 
-> 状态：P0、P1 已完成且已验证；P2–P8 未开始（2026-10-18）。执行进度只记在 [STATUS.md](STATUS.md)，本文件只在范围、顺序或验收变化时修改。
+> 状态：P0、P1、P2 已完成且已验证；P3–P8 未开始（2026-10-18）。执行进度只记在 [STATUS.md](STATUS.md)，本文件只在范围、顺序或验收变化时修改。
 > 改代码前仍须读 [PROJECT_MAP.md](../PROJECT_MAP.md) §6、§7。
 
 ## 0. 需求与已确认决策
@@ -129,9 +129,9 @@ tools/md-gallery.html 组件陈列页（file:// 直接打开，只引 CSS 与经
 
 - 新增文件逐个登记到 `server.js` `STATIC_RESOURCES`；`tools/studio-install.mjs` 的增量清单同步。
 - 用 CSS Cascade Layers 固定层序，结束"靠后覆盖"的竞争（P1 实际落地的层序）：
-  `@layer md.tokens, legacy, md.compat, md.components, app;`
+  `@layer md-tokens, legacy, md-compat, md-components, app;`（P1 最初写成 `md.tokens` 这类带点的名字，P2 发现它们实际是同一父层 `md` 的子层、整体排在 legacy 之前，已改为连字符；层名不能带点）
   旧 `studio.css` 整体放入 `legacy` 层，新组件层天然压过它，不用 `!important` 也不用加 ID。
-  `md.compat` 必须排在 `legacy` **之后**：旧文件 `:root` 写死过一套颜色默认值，后面的层同选择器才能覆盖（P1 已删掉那组默认值，层序仍保持，作为防回归）。
+  `md-compat` 必须排在 `legacy` **之后**：旧文件 `:root` 写死过一套颜色默认值，后面的层同选择器才能覆盖（P1 已删掉那组默认值，层序仍保持，作为防回归）。
   `<link>` 不能指定层，所以由 `app.css` 用 `@import … layer(…)` 引入各文件；不在任何层里的样式会压过所有层，新样式一律放进层里。
   （应用以 Edge `--app` 模式运行，Chromium 已支持 `@layer` 与 `color-mix()`。）
 
@@ -202,6 +202,12 @@ tools/md-gallery.html 组件陈列页（file:// 直接打开，只引 CSS 与经
 - 这一阶段不替换业务页面。
 - 测试：新增 `md-components-test.mjs`（源码断言：没有 `transition: all`；动画都受 reduced-motion 门控；组件层不出现 ID 选择器和 `!important`）。
 - 验收：陈列页逐项目检通过；对比度检查通过。
+- **P2 结果（2026-10-18，已完成且已验证）**：
+  - `editor/css/md-components.css`：122 个 md- 类，覆盖 §2.5 全部组件（stepper 留给 P4；navigation rail 留给 P3），外加 15 级字体工具类。`editor/js/md.js`（经典脚本 `window.MDUI`）负责标签页键盘、菜单定位与焦点、滑块填充。两者已接入 `app.css` / `studio.html` / 静态白名单，但业务页面还没有使用（P3 起替换）。
+  - `tools/md-gallery.html`：全部组件与变体，可切换明暗、种子色与减少动效，`data-state` 静态展示悬停、焦点、按下。
+  - `tests/md-components-test.mjs`：96 项断言，覆盖源码约定、陈列页覆盖、层名、接线和 md.js 纯函数。
+  - 真实浏览器检查陈列页：标签页方向键与 End（跳过禁用项）、菜单定位（贴在锚点下方）、方向键跳过禁用项、Esc 归还焦点、原生对话框、滑块填充都正常；只截了陈列页的明暗两张全页图和 6 张分区图（`_test/md3-p2/`），没有重跑整套界面截图。
+  - 截图里发现并修正了 P1 的层名问题（见 §3.1）：组件原本整体输给旧样式里的 `* { padding:0 }`。修正后 compat 层才真正排在 legacy 之后；已核对旧样式里没有声明任何 compat 变量，应用外观不受影响。
 
 ### P3 应用外壳、导航与全局弹层（M）
 

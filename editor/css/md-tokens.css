@@ -1,4 +1,4 @@
-/* Material Design 3 设计令牌（@layer md.tokens，由 css/app.css 引入）。
+/* Material Design 3 设计令牌（@layer md-tokens，由 css/app.css 引入）。
  *
  * 颜色：运行时由 js/md-color.js 按用户种子色写到 :root 内联样式（优先级高于这里）；
  * 下面两组只是默认种子 #5789DC 的回退值，保证脚本失败时界面仍可读。改默认种子后用
