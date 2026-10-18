@@ -361,7 +361,7 @@ railQuery.addEventListener?.('change', () => { if (!railQuery.matches) setNavOpe
 $('sf-nav').querySelector('[data-route="home"]').addEventListener('click', () => { folder = ''; filter = 'all'; renderFolders(); refreshLibrary(); });
 $('sf-filters').addEventListener('click', e => { const b = e.target.closest('[data-filter]'); if (b) { filter = b.dataset.filter; refreshLibrary(); } });
 $('sf-search').addEventListener('input', refreshLibrary);
-$('sf-list-mode').addEventListener('click', () => { if (commit({ view: prefs.view === 'grid' ? 'list' : 'grid' })) refreshLibrary(); });
+$('sf-view').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b && b.dataset.view !== prefs.view && commit({ view: b.dataset.view })) refreshLibrary(); });
 $('sf-clear-filter').addEventListener('click', () => { filter = 'all'; folder = ''; $('sf-search').value = ''; renderFolders(); refreshLibrary(); });
 function refreshLibrary() {
   let visible = 0;
@@ -369,9 +369,9 @@ function refreshLibrary() {
   $('sf-library-title').textContent = t(route === '#/tasks' ? '任务中心' : current?.name || '稿件库');
   // 任务中心与稿件库共用同一组卡片，必须尊重用户选择的列表/卡片视图。
   $('home-view').dataset.list = prefs.view;
-  $('sf-list-mode').setAttribute('aria-pressed', String(prefs.view === 'list'));
-  $('sf-list-mode').textContent = t(prefs.view === 'list' ? '卡片视图' : '列表视图');
-  document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+  $('home-view').dataset.folders = String(prefs.folders.length);
+  $('sf-view').querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === prefs.view)));
+  document.querySelectorAll('[data-filter]').forEach(b => { const on = b.dataset.filter === filter; b.classList.toggle('active', on); b.setAttribute('aria-pressed', String(on)); });
   for (const card of $('home-list').querySelectorAll('.proj-card')) {
     const p = projects.find(p => p.id === card.dataset.id); if (!p) continue;
     card.hidden = !matchesProject(p, { route, filter, folder, search: $('sf-search').value }, prefs.assignments);

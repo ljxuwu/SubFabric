@@ -1,6 +1,19 @@
 # 项目当前状态（唯一权威入口）
 
-- 当前任务（2026-10-18）：MD3 重构 **P3（应用外壳、导航与全局弹层）已完成且已验证；P4–P8 未开始。**
+- 当前任务（2026-10-18）：MD3 重构 **P4（首页 / 稿件库 / 任务中心 / 新建 / 详情）已完成且已验证；P5–P8 未开始。**
+  - 改了什么：
+    - 新增 `editor/css/app-home.css`（app 层），删除 `studio.css` 里被接管的约 340 条旧规则（3836 → 3350 行）；`md-tokens.css` 新增 `--md-type-*` 字体简写；`md-checkbox` / `md-switch` 显式 `box-shadow: none`，挡住旧样式给所有勾选框加的悬停光圈。
+    - 稿件库 / 任务中心：自适应卡片网格（outlined card，封面 16:9，状态纸片用容器色），列表视图为 MD3 list；筛选纸片、搜索栏、视图分段按钮（`#sf-view` 取代 `#sf-list-mode`，`studio.js` 同步 `aria-pressed`）；卡片按钮由 `project.js` 拼成 md-button；文件夹下拉只在已有文件夹时显示。
+    - 主视觉：保留花瓣 FAB 与 40° 胶囊，胶囊栏宽按旋转后的包围盒定宽，不再用 translateX 补偿（解决 F11）。
+    - 新建 / 详情：改为 supporting-pane（`.ws-main` 输入与生成设置 + `aside.ws-side` 预览与进度，<920px 单栏），只移动面板、id 与表单不变；竖向步骤条；输入框 / 下拉 / 勾选 / 开关换成 MD3 外观；去掉英文眉标（F7 的这三页）；Python 不可用提示改用 `.is-warn` 类而不是内联颜色。
+    - `lang/zh-CN.json` 新增 5 条文案（方位用语随版面调整、`视图`、`预览与进度`）。
+  - 本次验证：
+    - 完整 JS 回归 `node tests/run-all.mjs --report _test/md3-p4-final.json`：94 通过、9 部分执行、0 失败、2 排除。新增 `app-home-test`（121 项）；`orbit-capsule-test` 改为检查 app-home.css 与包围盒（19 项）；`app-shell-test` 放宽安装清单的匹配。
+    - ESLint 0 error；19 个 warning 都在本次未改动的行（`project.js` 的 `schemeConfigured`、`studio.js` 的 `route` 参数等早已存在）。
+    - 真实 Chrome（隔离副本）：5 个视口下首页无横向溢出，卡片列数 4 / 3 / 3 / 2 / 2；新建页 1600 宽为主栏 772 + 辅栏 380，900 宽为单栏；详情页步骤条 5 步；筛选纸片 aria-pressed、搜索、视图切换、初稿模式下的开关与勾选都正常；浅色与深色各截图，控制台无错误。截了 13 张图（`_test/md3-p4/`）。
+  - 未做：没有跑真实的新建 → 下载 / 识别流程（需要真实媒体与模型）；F10 由源码断言覆盖，没有再用高亮黄种子截图复核。
+  - GitHub：按用户指示提交到 `ljxuwu/SubFabric` main，与 P3 的提交核对补记一起入库；提交标识见最终报告。
+- 上一阶段（2026-10-18）：MD3 重构 **P3（应用外壳、导航与全局弹层）已完成且已验证。**
   - 改了什么：
     - 新增 `editor/css/app-shell.css`（app 层），删除 `studio.css` 里被接管的约 107 行旧规则。
     - 导航：≥1200px 为 248px 抽屉，<1200px 为 80px rail，菜单按钮展开模态抽屉（`studio.js` 的 `setNavOpen`）。
@@ -13,8 +26,9 @@
     - 完整 JS 回归 `node tests/run-all.mjs --report _test/md3-p3-final.json`：93 通过、9 部分执行、0 失败、2 排除。新增 `app-shell-test`（42 项）；`studio-navigation-test` 增加 rail 展开 / 收起 / Esc / 遮罩 / 路由收起 / 宽屏不可展开的断言。
     - ESLint 0 error，5 个 warning 都是原有的。
     - 真实 Chrome（隔离副本）：5 个视口下导航宽度、顶栏与内容偏移正确且无横向溢出；模态抽屉展开时焦点进入，Esc 收起并还焦点；确认框居中、不可拖动，Esc 取消后焦点回到删除按钮且稿件没有被删；首页不再弹 ASS 提示，编辑器里 snackbar 距底 24px；右键菜单为 MD3 外观；控制台无错误。截了 6 张图（`_test/md3-p3/`）。
-  - 遗留：F2（800×600 编辑器内部布局）留给 P6；新发现 F11（1024 宽首页内容区横向滚动条，P1 已存在）留给 P4。
+  - 遗留：F2（800×600 编辑器内部布局）留给 P6；新发现 F11（1024 宽首页内容区横向滚动条，P1 已存在）已在 P4 解决。
   - GitHub：按用户指示提交到 `ljxuwu/SubFabric` main，与 P2 的提交核对补记一起入库；提交标识见最终报告。
+  - GitHub 核对（提交后确认，随下一次提交入库）：main 已指向 `124420bee63d2420e22a813b9d90829bdf80bb07`（父提交 `5c00302`，Verified）；compare 为 ahead 1 / behind 0，25 个文件；远端 445 个文件与本地按 blob SHA 逐个一致。CI run 39109189643 中「JS · ESLint + 全量测试」和「Python · ruff + 单测」均 success。
 - 上一阶段（2026-10-18）：MD3 重构 **P2（组件库）已完成且已验证。**
   - 改了什么：
     - 新增 `editor/css/md-components.css`（122 个 md- 类）、`editor/js/md.js`（`window.MDUI`）、`tools/md-gallery.html`（组件陈列页）和 `tests/md-components-test.mjs`。

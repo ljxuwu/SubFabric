@@ -455,6 +455,7 @@ select.md-field__control,
   border: 2px solid var(--md-sys-color-outline);
   border-radius: var(--md-sys-shape-corner-full);
   background: var(--md-sys-color-surface-container-highest);
+  box-shadow: none; /* 旧样式给所有 checkbox 加过悬停光圈 */
   appearance: none;
   cursor: pointer;
   vertical-align: middle;
@@ -492,6 +493,7 @@ select.md-field__control,
   flex: none;
   border: 2px solid var(--md-sys-color-on-surface-variant);
   background: transparent;
+  box-shadow: none;
   appearance: none;
   cursor: pointer;
   vertical-align: middle;

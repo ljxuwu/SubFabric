@@ -276,8 +276,8 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 - **自动保存**：GET 字幕的 ETag 为 SHA-256 版本，PUT/beacon POST 同传 revision 与窗口 client/seq。请求各有 UUID 临时文件，比较版本和 rename 在同一同步段；过期或跨窗口冲突回 409，无版本回 428。同窗口后续保存可衔接上一提交。成功回完整提交内容的新版本；失败只清理本请求临时文件。
 - **项目切换**：先 flush 旧稿保存，再完成元数据/字幕/解析，最后同时提交 ID 和文档。所有保存回调、视频/波形/备注/prepare 等异步结果捕获项目与代次；首页/detach 同样使旧加载失效。保存冲突保持不可自动覆盖状态。**无撤销/重做栈**，Esc=取消是安全边界。
 - **元数据**：`updateMeta(id, mutate)` 同步读取最新内容、字段更新、唯一临时文件原子替换；`readMeta/writeMeta` 的兼容调用以 WeakMap 基线算递归字段差量，并入最新状态，禁止旧对象整体覆盖已有项目。跨 await 新增更新优先调用 updateMeta。
-- **首页列表**：`isCreating` 统一活动置顶与轮询判据，包含下载、提取、初稿及新建空窗，失败/暂停无字幕稿不冒充活动。`cardSig` 不含 progress/message/modifiedAt，三者就地更新；顺序同步独立于结构重建，只移动错位节点。首次直接显示进度，只有 running 的目标值变化才播放数字与 width 的 420ms 线性过渡；WeakMap 使旧动画失效，移除节点停止写入。studio.css 的流光和宽度过渡只属于 running，完成/暂停/失败无填充动画。
-- **项目封面与视图**：`server.js` 在项目列表/详情读取时为没有在线来源缩略图的本地视频异步抽取 `cover.jpg`，通过受保护的 `/api/projects/:id/cover` 提供；Studio 的稿件库与任务中心共用 `prefs.view`，卡片视图不再被任务路由强制改成列表。
+- **首页列表**：`isCreating` 统一活动置顶与轮询判据，包含下载、提取、初稿及新建空窗，失败/暂停无字幕稿不冒充活动。`cardSig` 不含 progress/message/modifiedAt，三者就地更新；顺序同步独立于结构重建，只移动错位节点。首次直接显示进度，只有 running 的目标值变化才播放数字与 width 的 420ms 线性过渡；WeakMap 使旧动画失效，移除节点停止写入。卡片进度条是 studio-progress.js 的波浪进度，只有 running 播放波浪；`css/app-home.css` 不给卡片加入场、呼吸或流光动画（MD3 重构 P4 起）。
+- **项目封面与视图**：`server.js` 在项目列表/详情读取时为没有在线来源缩略图的本地视频异步抽取 `cover.jpg`，通过受保护的 `/api/projects/:id/cover` 提供；Studio 的稿件库与任务中心共用 `prefs.view`，卡片视图不再被任务路由强制改成列表；视图切换是 `#sf-view` 分段按钮（`[data-view]` + `aria-pressed`），筛选纸片 `[data-filter]` 同样同步 `aria-pressed`。卡片上的文件夹下拉只在已有文件夹时显示（`#home-view[data-folders]`）。
 - **翻译**：`subtitleSource` 从当前 ASS/SRT 取原文、对应译文和版本；只在没有稿件时回落 ASR。`patchSubtitleTranslations` 仅更新译文事件/行，保留人工原文、时间、角色、样式和特效；每批及落盘前检查当前稿件版本。`planJobs` 用完整稿件索引和 todo，每批由 `translationRefs` 从同版本已有/新译文刷新前文；拆批右半批接续左半批，参考行不计输出数量，contextRows=0 不带参考。LLM 默认只输出逐行纯文本，`llm-text.parseLineArrayReply` 按输入行数解析；旧 JSON 数组仍兼容，解析失败继续拆批/重试，不把 JSON 原文落盘。
 - **语义分句**：`reseg.js` 默认要求模型复述原词并直接在词尾补标点，`parsePunctTextReply` 校验词序/词数后映射为标点对并保留逐词时间；旧 JSON 标点对仍兼容解析。模型不能保持原词时拒绝该批并按既有拆批/停顿兜底，避免改写造成时间轴错位。
 - **全片重校对**：从当前稿件提取目标，共用 karaoke 的 `realignTargetKey/applyRealignItems`；结果需匹配项目、规范化稿件版本、句子事件位置、可见文本及完整词序列。只改词级时间，颜色切片与 `\\k` 都保留当前文本，不按相近时间强行套旧结果。
@@ -321,6 +321,8 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 
 **应用外壳（P3，2026-10-18）**：`css/app-shell.css` 在 `app` 层（最高），接管导航、顶栏、页面淡入、确认框与通用对话框外观、提示条、菜单与批量浮条；`studio.css` 里对应的旧规则已删除。≥1200px 为 248px 常驻导航抽屉，<1200px 收成 80px 导航栏（rail，`--sf-nav-w` 驱动顶栏与页面偏移），菜单按钮 `#sf-nav-toggle` 把导航展开为模态抽屉（`body[data-nav-open=true]` + `#sf-nav-scrim`，studio.js 的 `setNavOpen` 管理：路由变化、遮罩、Esc、窗口变宽时收起，Esc 和遮罩会把焦点还给菜单按钮）。顶栏高 64px（`--sf-top-h`）。toast（main.js）与 `#sf-notice`（studio.js）统一为底部居中的 MD3 snackbar；「ASS 渲染就绪」只在编辑器里提示。确认框 `role=alertdialog`，关闭后焦点回到打开前的元素。页面切换只做透明度淡入，不用 transform（避免给页面里的 fixed 浮层建立包含块）。
 
+**首页与工作台（P4，2026-10-18）**：`css/app-home.css`（`app` 层，排在 app-shell 之后）接管首页 / 稿件库 / 任务中心 / 新建 / 详情，`studio.css` 里对应的约 340 条旧规则已删除（`.np-file-row` / `.np-lbl` / `.np-file` / `.np-time` / `.np-tilde` / `.np-region-note` 仍给分段导入对话框用，保留在 legacy）。稿件库是 `minmax(280px, 1fr)` 自适应卡片网格（MD3 outlined card，封面 16:9 铺满顶部，状态纸片用容器色），列表视图为单列 list；主视觉三栏（花瓣 FAB · 继续编辑卡 · 40° 胶囊），胶囊栏宽按视口分档、容得下旋转后的包围盒。新建 / 详情页是 supporting-pane：`.ws-grid` 下 `.ws-main`（输入与配置、生成设置）+ `aside.ws-side`（稿件预览、处理进度），视口 <920px 单栏；步骤条为竖向 stepper，表单控件是 MD3 outlined 外观，勾选 / 开关直接给原生 input 加 `md-checkbox` / `md-switch`。`md-tokens.css` 新增 `--md-type-<角色>` 字体简写（`font: var(--md-type-title-medium)`）。卡片按钮在 project.js 里直接拼 md-button 类，不再用 `.btn`。
+
 `editor/js/studio.js` 只适配页面导航、外观、真实项目快照和播放器事件；`studio-state.js` 校验浏览器外观/文件夹关系（不储存字幕/模型/凭据）。`studio-themes.js` 提供唯一内置主题包 Material You 及“我的主题包”存储；`editor/themes/material-you.theme.json` 是可分发的同源 JSON，导入包只能使用种子色、MD3 角色白名单和本地 PNG/JPEG/WebP 预览图，不能执行脚本、注入 CSS 或引用远程资源。设置页按内置/自定义分组，内置包不可删除，自定义包可导出、替换和删除；格式与制作说明见 `docs/THEME_PACKS.md`。`studio-progress.js` 提供固定 CSS 波浪。全局模型、翻译与识别设置共用唯一“设置”入口；旧 `#/resources` 仅重定向至 `#/settings`。ASS 控件为同一组 DOM，始终停留在稿件编辑器的 #tab-settings，保留原监听器/文档保存链路；无当前 ASS 项目时由编辑器业务自身禁用文档操作，后处理为本机偏好。创建提交期间 Studio 路由统一互斥，避免上传回调读取被重置的材料。
 
 相关验收与安装范围见 `docs/UI_INTEGRATION.md`；`tools/studio-install.mjs --prepare` 产生安装候选和哈希清单，候选验收通过后 `--apply <backup-directory>` 才进入备份/锁/替换/失败回滚。仅合并本次 UI 增量，不整体安装先前源码修复，不改 EXE/运行时/设置/项目。
@@ -356,10 +358,11 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 | `tests/ass-style-preset-test.mjs` | 双语样式预设的导出/导入纯逻辑（往返保真、跨稿件字段名搬运、坏文件拒绝、单样式稿件不乱改） | 纯函数直测，任何机器可跑；新测试文件会被 `run-all.mjs` 自动发现 |
 | `tests/timeline-text-test.mjs` | 时间轴块中文行可读性 / 角色色亮度阈值 | 纯函数抽取直测 |
 | `tests/ui-feedback-20261017-test.mjs` | 新增字幕自动切回字幕页 / 批量浮条不能落进 fixed 包含块 / 失败任务卡停转 / 时间轴块去角色名保留颜色 / 切 Tab 同步播放位置 / 查找替换不压暗与间距 | 源码与 DOM 断言；真实鼠标验收另见本轮 CDP 探针 |
-| `tests/orbit-capsule-test.mjs` | 首页统计胶囊 40° / 内部文字水平 / 已下线主题的胶囊分支已清理 / 分档尺寸与 40° 包围盒 | 源码 CSS 断言 + 几何粗算 |
+| `tests/orbit-capsule-test.mjs` | 首页统计胶囊 40° / 内部文字水平（app-home.css）/ studio.css 已无胶囊规则 / 三档尺寸旋转后的包围盒放得进主视觉第三栏 | 源码 CSS 断言 + 几何计算 |
 | `tests/md-color-test.mjs` | MD3 取色：HCT 移植逐值对照 `tests/md-color-expected.json`（material-color-utilities 0.3.0 生成，10 个种子 × 浅深 × 34 角色）、14 个种子 WCAG 对比度、首屏引导与偏好迁移、SSAccent 兼容、md-compat 别名与层序 | 纯 Node（vm），任何机器可跑；改默认种子或角色表后重新生成期望值 |
 | `tests/theme-packs-test.mjs` | 主题包 v2（种子色 + MD3 角色白名单）、v1 只取种子导入、旧内置包迁移、安全白名单、删除规则 | 纯 Node |
 | `tests/md-components-test.mjs` | MD3 组件层：源码约定（无写死颜色 / `!important` / ID 选择器 / `transition: all`，动效走令牌）、陈列页覆盖全部 md- 类、层名无点、入口接线、`md.js` 纯函数 | 纯 Node（vm） |
+| `tests/app-home-test.mjs` | 首页与工作台：只用令牌的样式约定、卡片网格 / 列表 / supporting-pane 断点、F10/F11、旧规则已删除、筛选纸片 / 搜索 / 分段按钮结构、英文眉标已去掉、MD3 按钮与勾选、入口接线 | 纯 Node |
 | `tests/app-shell-test.mjs` | 应用外壳：外壳样式约定、导航宽度断点、snackbar、确认框语义与 D6、旧规则已删除、入口接线；导航栏展开 / 收起的运行时行为在 studio-navigation-test 里验证 | 纯 Node |
 | 其余 `tests/*-test.mjs` | ass / srt / role / postprocess / reseg / zh-* 等 | 多数独立可跑 |
 | `tools/http_layer_probe.mjs` | HTTP 层探针（守卫 / 形状 / 设置往返 / 项目全生命周期） | 自带服务启停，但会写同树设置/项目；只有隔离副本才可执行，旧字幕保存探针尚需适配 revision 协议；本轮以 repair 测试验证 |

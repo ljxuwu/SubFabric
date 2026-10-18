@@ -28,7 +28,7 @@ ok(/#toast,\s*\.sf-studio #sf-notice \{[^}]*bottom: 24px;[^}]*background: var\(-
 const app = read('editor/css/app.css');
 ok(/@import url\("app-shell\.css"\) layer\(app\);/.test(app) && app.indexOf('@import url("md-components.css")') < app.indexOf('@import url("app-shell.css")'), 'shell is imported last, into the app layer');
 ok(read('editor/server.js').includes("'/editor/css/app-shell.css'"), 'static allowlist serves app-shell.css');
-ok(/'app-shell'\]\.map\(n => `editor\/css\/\$\{n\}\.css`\)/.test(read('tools/studio-install.mjs')), 'UI installer ships app-shell.css');
+ok(/'app-shell'[,\]][^\n]*\]\.map\(n => `editor\/css\/\$\{n\}\.css`\)/.test(read('tools/studio-install.mjs')), 'UI installer ships app-shell.css');
 
 // 3. 被接管的旧规则已删除，避免旧属性漏出来
 const legacy = read('editor/css/studio.css');

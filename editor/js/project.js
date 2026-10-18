@@ -917,7 +917,7 @@ export function initProjects(ctx) {
       const hasSub = !!p.format;
 
       // 有初稿任务时以初稿进度为准(它是 prepare 之后的后半段)
-      let stChip = '', draftBar = '', progBtn = '<button type="button" class="btn pc-details">详细信息</button>';
+      let stChip = '', draftBar = '', progBtn = '<button type="button" class="md-button md-button--small md-button--text pc-details">详细信息</button>';
       if (dr && dr.status) {
         const pct = Math.max(0, Math.min(100, dr.progress || 0));
         const running = dr.status === 'running';
@@ -946,9 +946,9 @@ export function initProjects(ctx) {
         const canRetry = (failed || paused
           || (dr.status === 'done' && !dr.translated && !!dr.needTranslate)) && !dr.skippedTranslate;
         const retryLabel = paused ? (dr.pendingTranslate ? '重试' : '开始翻译') : '重试';
-        progBtn = '<button type="button" class="btn pc-details">详细信息</button>';
-        if (canRetry) progBtn += `<button type="button" class="btn btn-accent pc-retry">${esc(retryLabel)}</button>`;
-        else if (dr.skippedTranslate) progBtn += '<button type="button" class="btn pc-trans">翻译</button>';
+        progBtn = '<button type="button" class="md-button md-button--small md-button--text pc-details">详细信息</button>';
+        if (canRetry) progBtn += `<button type="button" class="md-button md-button--small md-button--filled pc-retry">${esc(retryLabel)}</button>`;
+        else if (dr.skippedTranslate) progBtn += '<button type="button" class="md-button md-button--small md-button--outlined pc-trans">翻译</button>';
       } else if (st) {
         stChip = ` <span class="pc-st st-${p.prepare.status}">${st}</span>`;
       }
@@ -966,8 +966,8 @@ export function initProjects(ctx) {
         </div>
         <div class="pc-actions">
           ${progBtn}
-          <button type="button" class="btn btn-accent pc-open" ${locked ? 'disabled' : ''}>打开</button>
-          <button type="button" class="btn pc-del ico-only" title="删除项目（音频、波形、字幕副本一起删）">${ico('trash')}</button>
+          <button type="button" class="md-button md-button--small md-button--tonal pc-open" ${locked ? 'disabled' : ''}>打开</button>
+          <button type="button" class="md-icon-button md-icon-button--small pc-del" aria-label="删除项目" title="删除项目（音频、波形、字幕副本一起删）">${ico('trash')}</button>
         </div>`;
       card.querySelector('.pc-details').addEventListener('click', (e) => {
         e.stopPropagation();
@@ -3413,7 +3413,7 @@ async function renderAsrModels() {
     $('#np-hint').textContent = draft
       ? '创建后在后台识别，进度看项目列表'
       : '音频和波形会自动存进项目，下次打开就不用重新生成；字幕边改边存';
-    $('#np-hint').style.color = '';
+    $('#np-hint').classList.remove('is-warn');
     $('#np-create').textContent = draft ? '开始识别' : '创建项目';
     if (draft) refreshAsrStatus();
   if (draft) {
@@ -3443,7 +3443,7 @@ async function renderAsrModels() {
     })();
     if (hint && probeForUi && !probeForUi.ok) {
       hint.textContent = '⚠ Python 环境不可用：' + probeForUi.msg + '。Parakeet 模型需要 Python（修复方法见创建后的日志）；whisper.cpp、Vulkan 版 Parakeet（CrispASR）和「必剪 ASR」云端识别都不需要 Python';
-      hint.style.color = '#ff9a5c';
+      hint.classList.add('is-warn');
     }
     npMaybeEnable();
   }

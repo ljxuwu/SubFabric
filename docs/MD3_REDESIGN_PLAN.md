@@ -1,6 +1,6 @@
 # Material Design 3 前端重构计划
 
-> 状态：P0–P3 已完成且已验证；P4–P8 未开始（2026-10-18）。执行进度只记在 [STATUS.md](STATUS.md)，本文件只在范围、顺序或验收变化时修改。
+> 状态：P0–P4 已完成且已验证；P5–P8 未开始（2026-10-18）。执行进度只记在 [STATUS.md](STATUS.md)，本文件只在范围、顺序或验收变化时修改。
 > 改代码前仍须读 [PROJECT_MAP.md](../PROJECT_MAP.md) §6、§7。
 
 ## 0. 需求与已确认决策
@@ -231,6 +231,12 @@ tools/md-gallery.html 组件陈列页（file:// 直接打开，只引 CSS 与经
 - 新建 / 详情页：按 §2.4 改成 supporting-pane；步骤条用项目扩展的 stepper；表单用 outlined text field / select / switch。
 - 不变量：`isCreating` 置顶、`cardSig` 就地更新、仅 running 状态播放进度动画（PROJECT_MAP §6「首页列表」）。
 - 验收：`home-project-list-test`、`orbit-capsule-test` 更新后通过；5 个尺寸截图与 P0 对比，没有溢出和横向滚动；新建 → 下载 / 识别 → 详情流程能走通（模拟或真实媒体按条件执行）。
+- **P4 结果（2026-10-18，已完成且已验证）**：
+  - 新增 `editor/css/app-home.css`（app 层），删除 `studio.css` 中被接管的约 340 条旧规则（3836 → 3350 行）。`md-tokens.css` 新增 `--md-type-*` 字体简写。
+  - 稿件库：`minmax(280px, 1fr)` 卡片网格（outlined card，封面 16:9），列表视图为 MD3 list；筛选为 filter chips，搜索为 search bar，视图切换为 segmented button（`#sf-view`）。卡片按钮改为 md-button，删除为带名称的图标按钮；文件夹下拉只在已有文件夹时出现。
+  - 新建 / 详情：结构改为 `.ws-main` + `aside.ws-side`（只移动面板，id 与表单不变），<920px 单栏；竖向步骤条；表单控件、勾选、开关换成 MD3 外观。界面方位用语随版面调整（「填到右侧」→「填进『输入与配置』」）。
+  - 解决 F10、F11，F7 在首页 / 新建 / 详情解决（设置页留给 P5）。花瓣 FAB 与 40° 胶囊保留，胶囊不再靠 translateX 补偿位置。
+  - 没有执行真实的新建 → 下载 / 识别流程（需要真实媒体与模型）；只在已有项目上检查了详情页与新建页的模式切换。
 
 ### P5 设置 / 资源 / 帮助 / 日志（L）
 
