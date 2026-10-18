@@ -33,13 +33,10 @@ ok(/\.sf-studio\[data-design=material\] \.sf-orbit>span,[\s\S]{0,400}?rotate\(-4
 ok(CSS.includes('width:88px; height:132px;'), '短视口（max-height:800）缩到 88×132');
 ok(CSS.includes('width:70px; height:108px;'), '窄视口（max-width:1150）缩到 70×108');
 
-console.log('\n== 其它主题：不倾斜，文字水平 ==');
-ok(/\.sf-studio\[data-design\]:not\(\[data-design=material\]\)[^{]*\{[^}]*transform:none!important/.test(CSS),
-  '非 Material 的胶囊按钮不旋转');
-ok(/\.sf-studio\[data-design\]:not\(\[data-design=material\]\):not\(\[data-design=uwp\]\) \.sf-orbit>span \{\s*transform:translate\(-3px,-4px\);/.test(CSS),
-  '非 Material（且非 UWP）的文字只平移、不带旋转');
-ok(/\.sf-studio\[data-design=uwp\] \.sf-orbit>span \{ transform:none; \}/.test(CSS),
-  'UWP 保持 transform:none');
+console.log('\n== MD3 统一主题：已下线主题的胶囊覆盖已清理 ==');
+ok(!/:not\(\[data-design=material\]\)/.test(CSS), '不再有"非 Material 主题"的胶囊分支（界面只剩 Material）');
+ok(!/data-design=(uwp|classic|studio)/.test(CSS), '不再残留 UWP / Classic / Studio 的设计分支');
+ok(/<body[^>]*data-design="material"/.test(fs.readFileSync(path.join(HERE, '../editor/studio.html'), 'utf8')), '入口页默认就是 Material 设计语言');
 
 console.log('\n== 几何粗算：40° 包围盒 ==');
 // 旋转后横向包围盒：w·cosθ + h·sinθ（θ=40°）。

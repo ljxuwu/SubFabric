@@ -1,35 +1,8 @@
-/* Legacy editor visual language migrated into Studio Classic. */
+/* 旧编辑器样式（@layer legacy，由 css/app.css 引入）。MD3 重构期间逐阶段缩减，计划见 docs/MD3_REDESIGN_PLAN.md。 */
 /* ═══════════ 字幕编辑器 · 深色橙色主题 (对齐参考图) ═══════════ */
 :root {
-  --bg-0: #0b0b0e;
-  --bg-1: #131318;
-  --bg-2: #17171d;
-  --bg-3: #1f1f27;
-  --border: #2a2a34;
-  --text-0: #eceef2;
-  --text-1: #a8a8b4;
-  --text-2: #6f6f7c;
-  /* 主题色（可在「设置 → 外观」里自定义）—— 强调色的唯一来源。
-     theme.js 会按用户选的颜色重算下面这一族并写在内联样式上；没设过就完全不写（= 用这套默认橙）。
-     带 aNN 的是同一颜色的透明度档（原先是写死的 rgba(255,122,69,α)，现在必须走变量，否则换色不生效）。 */
-  --accent: #ff7a45;
-  --accent-2: #ff9d5c;              /* hover / 亮一档 */
-  --accent-ink: #1a1206;            /* 压在主题色块上的文字/图标色（默认=原设计的深棕; accent.js 会按亮度重算） */
-  --accent-a07: rgba(255, 122, 69, .07);
-  --accent-a09: rgba(255, 122, 69, .09);
-  --accent-a10: rgba(255, 122, 69, .10);
-  --accent-a12: rgba(255, 122, 69, .12);
-  --accent-a14: rgba(255, 122, 69, .14);
-  --accent-a16: rgba(255, 122, 69, .16);
-  --accent-a18: rgba(255, 122, 69, .18);
-  --accent-a28: rgba(255, 122, 69, .28);
-  --accent-a40: rgba(255, 122, 69, .40);
-  --accent-a45: rgba(255, 122, 69, .45);
-  --accent-a55: rgba(255, 122, 69, .55);
-  --accent-glow: 0 6px 20px var(--accent-a28);
-  --danger: #ff5f6b;
-  --zh: #ffffff;          /* 中文行：白 —— 深色背景下的默认观感, 与 ASS 样式默认色一致 */
-  --en: #e9e9f0;          /* 英文行：近白(比中文暗一档, 保留中英两轨的层次) */
+  /* 界面颜色（--bg-* / --text-* / --accent* / --danger / --zh / --en …）全部由 MD3 配色提供：
+     js/md-color.js 写 --md-sys-color-*，css/md-compat.css 把这些旧名字别名过去。这里不再写死颜色。 */
   --lane-word: #8b7cf6;   /* 逐词轨道块 */
   --main-sub: #ffffff;
   --sub-sub: #ffd54a;
@@ -2408,7 +2381,6 @@ select.note-dur {
 }
 .log-subtab-cnt[hidden] { display: none; }
 
-
 /* ── 本机硬件条（设计稿 ②）── */
 .st-hw {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
@@ -2514,7 +2486,6 @@ select.note-dur {
   padding: 12px 16px; border-top: 1px solid var(--border);
 }
 .st-drawer-note { margin-top: 4px; color: var(--text-2); }
-
 
 /* ══════════════════════════════════════════════════════════════════════════════
    SubFabric 质感层（v1.9.1）—— 在 studio.css 之后加载，只做"看得见的提升"：
@@ -3140,11 +3111,8 @@ body::before {
   .sscp { width: min(390px, calc(100vw - 16px)); }
 }
 
-
-
 /* 生产 Studio 外观：来自已验收的桌面原型；主题包共享这套生产样式。 */
 :root { --sf-nav-w:218px; --sf-top-h:72px; --sf-radius:18px; --sf-spring:cubic-bezier(.2,1.22,.3,1); }
-:root { --sf-glass-blur:18px; --sf-glass-opacity:100%; --sf-glass-surface:rgb(8 11 10 / .8); --sf-glass-raised:rgb(12 16 14 / .86); --sf-glass-light-surface:rgb(0 0 0 / .2); --sf-glass-light-raised:rgb(0 0 0 / .26); }
 body.sf-studio { background:var(--bg); color:var(--text); font-size:13px; }
 .sf-studio::before { display:none; }
 .sf-studio button,.sf-studio select { font:inherit; }
@@ -3157,7 +3125,7 @@ body.sf-studio { background:var(--bg); color:var(--text); font-size:13px; }
 .sf-studio input:focus-visible,.sf-studio select:focus-visible,.sf-studio button:focus-visible,.sf-studio a:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
 .sf-studio a.btn { text-decoration:none; display:inline-flex; }
 .sf-studio ::-webkit-scrollbar-thumb { background:color-mix(in srgb,var(--muted) 25%,transparent); background-clip:content-box; }
-.sf-nav { position:fixed; inset:0 auto 0 0; width:var(--sf-nav-w); z-index:70; padding:28px 18px 18px; background:color-mix(in srgb,var(--surface) 88%,transparent); backdrop-filter:blur(18px); border-right:1px solid var(--line); display:flex; flex-direction:column; gap:4px; }
+.sf-nav { position:fixed; inset:0 auto 0 0; width:var(--sf-nav-w); z-index:70; padding:28px 18px 18px; background:color-mix(in srgb,var(--surface) 88%,transparent); border-right:1px solid var(--line); display:flex; flex-direction:column; gap:4px; }
 .sf-nav a { display:flex; align-items:center; gap:12px; color:var(--muted); padding:12px 14px; border-radius:12px; text-decoration:none; font-size:12px; transition:background .18s,transform .25s var(--sf-spring); }
 .sf-nav a svg,.sf-folder svg { width:18px; height:18px; flex:none; }
 .sf-nav a.active { background:var(--accent-soft); color:var(--accent); }
@@ -3179,13 +3147,10 @@ body.sf-studio { background:var(--bg); color:var(--text); font-size:13px; }
 .sf-folder>button:last-child { border:0; color:var(--muted); background:none; padding:6px; opacity:.5; cursor:pointer; }
 .sf-nav-bottom { margin-top:auto; padding-top:20px; }
 .sf-nav-bottom p { margin:20px 12px 0; color:var(--muted); font-size:9px; }
-.sf-topbar { position:fixed; left:var(--sf-nav-w); right:0; top:0; height:var(--sf-top-h); z-index:69; padding:0 34px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--surface) 82%,transparent); backdrop-filter:blur(18px); font-size:11px; color:var(--muted); }
+.sf-topbar { position:fixed; left:var(--sf-nav-w); right:0; top:0; height:var(--sf-top-h); z-index:69; padding:0 34px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--surface) 82%,transparent); font-size:11px; color:var(--muted); }
 .sf-topbar i { padding:0 12px; font-style:normal; opacity:.5; }.sf-topbar b { color:var(--text); font-weight:500; }.sf-topbar>div { display:flex; gap:8px; }
-.sf-ambient,.sf-backdrop { position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
-.sf-ambient { display:none; opacity:0; }.sf-studio[data-bg=aurora] .sf-ambient { display:block; opacity:.65; }
-.sf-ambient i { position:absolute; width:50vw; height:65vh; left:8%; top:10%; border-radius:50%; filter:blur(100px); background:var(--sf-aurora-1,var(--accent-soft)); }
-.sf-ambient i:nth-child(2) { left:60%; top:-10%; background:var(--sf-aurora-2,var(--secondary-container)); animation-delay:-7s; }.sf-ambient i:nth-child(3) { top:60%; left:35%; background:var(--sf-aurora-3,var(--tertiary-container)); animation-delay:-13s; }
-.sf-backdrop { background-size:cover; background-position:center; opacity:.32; }
+.sf-backdrop { position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
+.sf-backdrop { background-size:cover; background-position:center; opacity:calc(1 - var(--sf-backdrop-scrim, 68%) / 100%); }
 .sf-studio #home-view,.sf-studio .workspace-page,.sf-page { left:var(--sf-nav-w); top:var(--sf-top-h); right:0; bottom:0; position:fixed; background:transparent; z-index:52; overflow:auto; }
 .sf-studio #home-view { background:transparent; }
 .sf-studio .home-inner,.sf-page-content { max-width:1360px; padding:34px; margin:auto; }
@@ -3266,8 +3231,6 @@ body.sf-studio { background:var(--bg); color:var(--text); font-size:13px; }
 .sf-studio .sf-background-thumb { display:block; position:relative; height:80px; border-radius:7px; overflow:hidden; background:var(--surface-2); }
 .sf-studio .sf-background-thumb.solid { display:grid; place-items:center; }
 .sf-studio .sf-background-thumb.solid i { width:15px; height:15px; border:1px solid var(--muted); border-radius:50%; opacity:.6; }
-.sf-studio .sf-background-thumb.aurora { background:linear-gradient(130deg,var(--accent-soft),var(--tertiary-container),var(--surface-2)); }
-.sf-studio .sf-background-thumb.aurora::after { content:''; position:absolute; inset:5px; border-radius:50%; background:var(--accent); filter:blur(23px); opacity:.28; transform:translate(-15%,10%); }
 .sf-studio .sf-background-thumb.image { background:linear-gradient(145deg,var(--accent-soft),var(--accent)); background-size:cover; background-position:center; }
 .sf-studio .sf-background-thumb.image:not([style*="url"]):after { content:''; position:absolute; background:var(--accent); width:140%; height:100%; border-radius:50%; top:35%; left:-20%; transform:rotate(-20deg); }
 .sf-studio .sf-settings-image-tools { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
@@ -3342,8 +3305,7 @@ body.sf-studio { background:var(--bg); color:var(--text); font-size:13px; }
 .sf-studio .modal-surface,.sf-studio .rn-box,.sf-studio .pick-box,.sf-studio .fix-box,.sf-studio .ctd-box,.sf-studio .menu { background:var(--surface); color:var(--text); border-color:var(--line); border-radius:18px; box-shadow:0 24px 80px #15221935; }.sf-studio .inline-editor,.sf-studio .ie-line { background:var(--surface); color:var(--text); }.sf-studio .range-summary,.sf-studio .log-line { color:var(--muted); }
 .sf-studio #panel-tabs .ptab { font-size:14px; }
 /* 流光与图片沿用全局背景层；只让工作区外壳透出材质，字幕卡和视频保持清晰。 */
-.sf-studio[data-workspace=editor]:is([data-bg=aurora],[data-bg=image]) :is(#toolbar,#stage-wrap,#editor-panel,#timeline-panel) { background:color-mix(in srgb,var(--surface) 78%,transparent); }
-.sf-studio[data-workspace=editor]:is([data-bg=aurora],[data-bg=image]) #panel-tabs { background:transparent; }
+.sf-studio[data-workspace=editor][data-bg=image] #panel-tabs { background:transparent; }
 /* 两列固定轨道；内容高度不被 grid 的剩余空间拉长，长名字仍可截断。 */
 .sf-studio .role-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-content:start; gap:8px; }
 .sf-studio .role-card { min-width:0; gap:8px; padding:9px 10px; }
@@ -3395,37 +3357,6 @@ body.sf-studio { background:var(--bg); color:var(--text); font-size:13px; }
 .sf-studio .sf-rate-menu button[aria-checked=true] svg { visibility:visible; }
 .sf-choice-shell { display:contents; }
 .sf-choice-toggle,.sf-choice-menu { display:none; }
-.sf-studio[data-design=studio] .sf-choice-shell { display:inline-flex; vertical-align:middle; min-width:0; max-width:100%; }
-.sf-studio[data-design=studio] .sf-choice-shell.sf-choice-wide { width:100%; }
-.sf-studio[data-design=studio] .sf-choice-shell.sf-choice-assignment { margin-top:7px; flex-basis:100%; }
-.sf-studio[data-design=studio] .sf-choice-native { display:none!important; }
-.sf-studio[data-design=studio] .sf-choice-toggle { display:flex; align-items:center; justify-content:space-between; gap:10px; min-width:0; width:100%; min-height:38px; padding:8px 11px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--text); font-size:13px; text-align:left; cursor:pointer; box-shadow:0 1px 2px #00000006; transition:border-color .14s,background .14s,box-shadow .14s,transform .12s; }
-.sf-studio[data-design=studio] .sf-choice-toggle:hover { border-color:var(--muted); background:var(--surface-2); }
-.sf-studio[data-design=studio] .sf-choice-toggle[aria-expanded=true] { border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 12%,transparent); }
-.sf-studio[data-design=studio] .sf-choice-toggle:active { transform:translateY(1px); }
-.sf-studio[data-design=studio] .sf-choice-toggle:disabled { opacity:.5; border-color:var(--line); background:var(--surface); cursor:default; transform:none; box-shadow:none; }
-.sf-studio[data-design=studio] .ph-search .sf-choice-shell { flex:0 1 auto; max-width:160px!important; }
-.sf-studio[data-design=studio] :is(#editor-panel,.pc-actions) .sf-choice-toggle { min-height:32px; padding:6px 10px; font-size:12px; }
-.sf-studio[data-design=studio] .sf-choice-menu:not([hidden]) { display:grid; position:fixed; z-index:10050; overflow-y:auto; overscroll-behavior:contain; padding:4px; border:1px solid var(--line); border-radius:10px; background:var(--surface); color:var(--text); box-shadow:0 8px 28px #00000024,0 2px 6px #0000000d; transform-origin:var(--pop-ox,50%) var(--pop-oy,0%); animation:pop-in .14s ease-out; }
-.sf-studio[data-design=studio] .sf-choice-option { min-height:34px; padding:7px 10px; border-radius:6px; font-size:13px; }
-.sf-studio[data-design=studio] .sf-choice-option:hover,.sf-studio[data-design=studio] .sf-choice-option.is-active { background:var(--surface-2); color:var(--text); }
-.sf-studio[data-design=studio] .sf-choice-option[aria-selected=true] { background:color-mix(in srgb,var(--accent-soft) 55%,var(--surface)); color:var(--accent); }
-.sf-studio[data-design=studio] .sf-choice-option:disabled { background:transparent; color:var(--muted); }
-.sf-studio[data-design=studio] .sf-choice-option:active { transform:none; background:var(--accent-soft); }
-.sf-studio[data-design=studio] #sf-player .sf-rate-shell { display:block; position:relative; flex-shrink:0; }
-.sf-studio[data-design=studio] #sf-rate { display:none; }
-.sf-studio[data-design=studio] #sf-rate-toggle { display:flex; align-items:center; justify-content:space-between; gap:6px; min-width:64px; height:32px; padding:0 9px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--text); font-size:12px; cursor:pointer; }
-.sf-studio[data-design=studio] #sf-rate-toggle:hover { background:var(--surface-2); border-color:var(--muted); }
-.sf-studio[data-design=studio] #sf-rate-toggle[aria-expanded=true] { border-color:var(--accent); }
-.sf-studio[data-design=studio] #sf-rate-toggle svg { display:block; margin:0; width:14px; height:14px; }
-.sf-studio[data-design=studio] .sf-rate-menu:not([hidden]) { display:grid; position:absolute; right:0; bottom:calc(100% + 8px); z-index:30; width:112px; max-height:min(320px,calc(100vh - 100px)); overflow-y:auto; padding:4px; border:1px solid var(--line); border-radius:10px; background:var(--surface); color:var(--text); box-shadow:0 8px 28px #00000024; transform-origin:var(--pop-ox,100%) var(--pop-oy,100%); animation:pop-in .14s ease-out; }
-.sf-studio[data-design=studio] .sf-rate-menu button { border-radius:6px; }
-.sf-studio[data-design=studio] .sf-rate-menu button:hover,.sf-studio[data-design=studio] .sf-rate-menu button:focus-visible { background:var(--surface-2); color:var(--text); }
-.sf-studio[data-design=studio] .sf-rate-menu button[aria-checked=true] { background:color-mix(in srgb,var(--accent-soft) 55%,var(--surface)); color:var(--accent); }
-.sf-studio[data-design=studio] .fp-btn { min-height:32px; border-radius:8px; background:var(--surface); color:var(--text); border-color:var(--line); }
-.sf-studio[data-design=studio] .fp-panel { border-radius:10px; background:var(--surface); color:var(--text); border-color:var(--line); box-shadow:0 8px 28px #00000024; }
-.sf-studio[data-design=studio] .fp-item { border-radius:6px; margin:2px 4px; }
-.sf-studio[data-design=studio] .fp-item:hover,.sf-studio[data-design=studio] .fp-item.active { background:var(--surface-2); color:var(--text); }
 .sf-studio[data-design=material] .sf-choice-shell { display:inline-flex; vertical-align:middle; min-width:0; max-width:100%; }
 .sf-studio[data-design=material] .sf-choice-shell.sf-choice-wide { width:100%; }
 .sf-studio[data-design=material] .sf-choice-shell.sf-choice-assignment { margin-top:7px; flex-basis:100%; }
@@ -3483,10 +3414,9 @@ body.sf-studio { background:var(--bg); color:var(--text); font-size:13px; }
 .sf-studio[data-design=material] #sf-seek .sf-wave-shift { top:calc(50% - 12px); height:24px; mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24' viewBox='0 0 48 24'%3E%3Cpath d='M-24 12Q-18 5 -12 12Q-6 19 0 12Q6 5 12 12Q18 19 24 12Q30 5 36 12Q42 19 48 12Q54 5 60 12Q66 19 72 12' fill='none' stroke='black' stroke-width='8'/%3E%3C/svg%3E"); mask-size:48px 24px; }
 .sf-studio[data-design=material] :is(#sf-play-time,#sf-play-duration) { font-size:13px; font-weight:500; }
 .sf-studio[data-design=material] .sf-progress[data-progress-state=running] .sf-progress-line { display:none; }.sf-studio[data-design=material] .sf-progress[data-progress-state=running] .sf-progress-wave { display:block; }.sf-studio[data-design=material] .sf-progress[data-wave-animated=true] .sf-wave-shift { animation:sf-wave-flow 1.4s linear infinite; }
-@keyframes sf-wave-flow { to { transform:translateX(-48px); } }@keyframes sf-drift { to { transform:translate(12vw,9vh) scale(1.08); } }
+@keyframes sf-wave-flow { to { transform:translateX(-48px); } }
 body.sf-studio[data-motion=off] *,body.sf-studio[data-motion=off] *::before,body.sf-studio[data-motion=off] *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
-body.sf-studio[data-motion=off] .sf-ambient i { animation:none; }
-@media(prefers-reduced-motion:reduce) { .sf-studio *, .sf-studio *::before,.sf-studio *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
+body.sf-studio[data-motion=off] @media(prefers-reduced-motion:reduce) { .sf-studio *, .sf-studio *::before,.sf-studio *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
 @media(min-width:1000px) and (max-height:800px) { .sf-studio .home-inner { padding-top:24px; }.sf-studio .home-head { margin-bottom:18px; }.sf-hero { margin-bottom:22px; }.sf-studio .settings-inner { padding-top:22px; }.sf-studio .page-intro { padding-bottom:18px; } }
 @media(min-width:1000px) and (max-height:800px) { .sf-hero { min-height:135px; margin-bottom:14px; }.sf-resume { min-height:135px; padding:20px 24px; }.sf-flower>span { width:82px; height:82px; }.sf-orbit { height:130px; width:98px; }.sf-studio .home-toolbar { margin:12px 0; }.sf-library-tools { margin-bottom:14px; }.sf-studio .home-list .sf-cover { max-height:132px; aspect-ratio:16/9; }.sf-studio .pc-main { padding-top:10px; }.sf-studio .pc-meta { margin-top:3px; } }
 @media(max-width:1150px) { :root { --sf-nav-w:190px; }.sf-studio .home-inner,.sf-studio .page-inner,.sf-page-content { padding-left:24px; padding-right:24px; }.sf-studio .home-list { grid-template-columns:repeat(2,minmax(0,1fr)); }.sf-hero { grid-template-columns:140px minmax(0,1fr) 95px; }.sf-orbit { width:90px; height:135px; }.sf-studio #toolbar .status-file { max-width:130px; }.sf-library-tools input { width:150px; } }
@@ -3552,10 +3482,6 @@ body.sf-studio .sf-unavailable { opacity: .5; }
 .sf-studio[data-design=material] .pc-draft-bar.sf-progress { height:24px; --sf-thumb:14px; }
 .sf-studio[data-design=material] .pc-draft-bar :is(.sf-progress-rest,.sf-progress-line) { height:8px; top:calc(50% - 4px); border-radius:8px; }
 .sf-studio[data-design=material] .pc-draft-bar .sf-wave-shift { top:calc(50% - 10px); height:20px; mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='20' viewBox='0 0 48 20'%3E%3Cpath d='M-24 10Q-18 5 -12 10Q-6 15 0 10Q6 5 12 10Q18 15 24 10Q30 5 36 10Q42 15 48 10Q54 5 60 10Q66 15 72 10' fill='none' stroke='black' stroke-width='8'/%3E%3C/svg%3E"); }
-.sf-studio[data-bg=aurora][data-aurora-motion=dynamic][data-page-visible=true] .sf-ambient i { animation-name:sf-drift; animation-duration:20s; animation-timing-function:ease-in-out; animation-iteration-count:infinite; animation-direction:alternate; }
-.sf-studio .sf-aurora-colors { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; padding:16px 0; }
-.sf-studio .sf-aurora-color { display:flex; align-items:center; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:12px; }
-.sf-studio .sf-aurora-color input { width:105px; }
 
 .sf-studio #st-view #st-models[data-family="前置"] { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:start; }
 .sf-studio #st-models[data-family="前置"] .sm-name { flex-basis:100%; }
@@ -3642,284 +3568,32 @@ body.sf-studio .sf-unavailable { opacity: .5; }
 .sf-studio #st-view .st-actions #st-cancel:hover { filter:brightness(1.06); }
 .sf-studio #st-view .st-actions .st-msg:not(:empty) { position:absolute; right:0; top:calc(100% + 8px); width:260px; max-height:44px; padding:6px 9px; border-radius:8px; background:var(--surface-2); color:var(--text); font-size:10px; }
 
-/* 深色大面板使用背景模糊；长列表内层只用半透明材质，避免每句字幕另建模糊层。 */
-.sf-studio .sf-glass-range { display:flex; align-items:center; gap:12px; flex:0 1 230px; min-width:150px; }
-.sf-studio .sf-glass-range input { min-width:0; width:100%; accent-color:var(--accent); }
-.sf-studio .sf-glass-range output { flex:0 0 44px; text-align:right; font-variant-numeric:tabular-nums; color:var(--text); }
-.sf-studio[data-theme=dark] :is(.sf-nav,.sf-topbar,.proj-card,.page-surface,.sf-help-grid article,#toolbar,#stage-wrap,#editor-panel,#timeline-panel,.st-drawer,.modal-surface,.rn-box,.pick-box,.fix-box,.ctd-box,.menu,.sscp,.font-picker,#role-menu,#card-menu,#tl-menu) {
-  background:var(--sf-glass-surface); backdrop-filter:blur(var(--sf-glass-blur))!important; -webkit-backdrop-filter:blur(var(--sf-glass-blur))!important;
-  box-shadow:0 8px 28px -18px #0009,inset 0 1px 0 #ffffff08;
-}
-.sf-studio[data-theme=dark] #st-view :is(.st-card,.set-group,.st-section,.sf-asr-family) { background:var(--sf-glass-surface); backdrop-filter:blur(var(--sf-glass-blur))!important; -webkit-backdrop-filter:blur(var(--sf-glass-blur))!important; }
-.sf-studio[data-theme=dark] :is(.panel-head,.tl-toolbar,.tab-head,.cue-card,.settings-list .set-group,.role-card,.sm-model,.st-entry,.st-scheme,.sf-pack,.sf-prerequisite,.st-drawer-head,.st-drawer-foot,.st-entry-bar) { background:var(--sf-glass-surface); }
-.sf-studio[data-theme=dark] :is(.cue-card.selected,.cue-card.playing) { background:color-mix(in srgb,var(--accent-soft) 30%,var(--sf-glass-raised)); }
-.sf-studio[data-theme=dark] :is(.sf-choice-menu,.sf-rate-menu,.fp-panel):not([hidden]) { background:var(--sf-glass-raised); backdrop-filter:blur(var(--sf-glass-blur))!important; -webkit-backdrop-filter:blur(var(--sf-glass-blur))!important; }
-.sf-studio[data-theme=dark] #st-view :is(.st-scheme-inline .st-card,.sf-prerequisite) { backdrop-filter:none; -webkit-backdrop-filter:none; }
-/* 设置页沿用旧版的无遮罩布局；毛玻璃参数仍对稿件库、编辑器和弹层生效。 */
-.sf-studio[data-workspace=settings] :is(.sf-nav,.sf-topbar,#st-view .st-box,#st-view .st-actions) {
-  background:transparent;
-  backdrop-filter:none;
-  -webkit-backdrop-filter:none;
-  box-shadow:none;
-}
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
-  .sf-studio[data-theme=dark] :is(.proj-card,.page-surface,.st-card,.set-group,.st-section,.sf-asr-family,.sf-help-grid article,#toolbar,#stage-wrap,#editor-panel,#timeline-panel,.sf-nav,.sf-topbar,.modal-surface,.rn-box,.pick-box,.fix-box,.ctd-box,.menu,.sscp,.font-picker,#role-menu,#card-menu,#tl-menu,.sf-choice-menu,.sf-rate-menu,.fp-panel) { background:rgb(12 16 14); }
-}
+/* 背景遮罩强度（D1）：只作用于自定义图片背景，数值越高图片越淡；界面表面始终不透明。 */
+.sf-studio .sf-scrim-range { display:flex; align-items:center; gap:12px; flex:0 1 230px; min-width:150px; }
+.sf-studio .sf-scrim-range input { min-width:0; width:100%; accent-color:var(--accent); }
+.sf-studio .sf-scrim-range output { flex:0 0 44px; text-align:right; font-variant-numeric:tabular-nums; color:var(--text); }
 
 /* 下载表单的每行是独立 grid，行内 gap 不会隔开相邻行或 Cookie 操作区。 */
 .sf-studio #st-panel-fetch .st-card>:is(.st-grid,.st-row)+:is(.st-grid,.st-row) { margin-top:12px; }
 
 /* 设置页外层无遮罩：覆盖旧 UI 继承的 page-surface 黑色材质。 */
-.sf-studio[data-workspace=settings] #st-view .st-box,
-.sf-studio[data-workspace=settings] .sf-nav,
-.sf-studio[data-workspace=settings] .sf-topbar { background:transparent !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; box-shadow:none !important; }
+.sf-studio[data-workspace=settings] #st-view .st-box { background:transparent !important; box-shadow:none !important; }
 
-/* Keep the UWP design layer last: shared editor and dark-glass rules precede it. */
-.sf-studio[data-design=uwp] { --sf-radius:4px; font-family:"Segoe UI","Microsoft YaHei UI",sans-serif; letter-spacing:0; }
-.sf-studio[data-design=uwp] :is(button,input,select,textarea,a) { font-family:"Segoe UI","Microsoft YaHei UI",sans-serif; letter-spacing:0; }
-.sf-studio[data-design=uwp] :is(.sf-nav,.sf-topbar,#toolbar,#stage-wrap,#editor-panel,#timeline-panel,.page-surface,.proj-card,.sf-resume,.sf-orbit,.st-card,.set-group,.st-section,.st-actions,.sf-help-grid article,.st-entry,.st-scheme,.sf-asr-family,.sf-prerequisite,.sm-model,.panel-head,.tl-toolbar,.tab-head,.cue-card,.role-card,.sf-pack,.st-drawer,.modal-surface,.sscp,.font-picker,.fp-panel,.sf-choice-menu,.sf-rate-menu,.menu,.rn-box,.pick-box,.fix-box,.ctd-box) { border-radius:4px; }
-.sf-studio[data-design=uwp] :is(.sf-nav,.sf-topbar,#toolbar,#stage-wrap,#editor-panel,#timeline-panel,.page-surface,.proj-card,.sf-resume,.st-card,.set-group,.st-section,.st-actions,.sf-help-grid article,.st-entry,.st-scheme,.sf-asr-family,.sf-prerequisite,.sm-model,.panel-head,.tl-toolbar,.tab-head,.cue-card,.role-card,.sf-pack,.st-drawer,.modal-surface,.sscp,.font-picker,.fp-panel,.sf-choice-menu,.sf-rate-menu,.menu,.rn-box,.pick-box,.fix-box,.ctd-box) { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; box-shadow:0 1px 3px #00000018; }
-.sf-studio[data-design=uwp] :is(.sf-nav,.sf-topbar,#toolbar,#editor-panel,#timeline-panel,.page-surface,.proj-card,.sf-resume,.st-card,.set-group,.st-section,.st-actions,.sf-help-grid article,.st-entry,.st-scheme,.sf-asr-family,.sf-prerequisite,.sm-model,.panel-head,.tl-toolbar,.tab-head,.cue-card,.role-card,.sf-pack,.st-drawer,.modal-surface,.sscp,.font-picker,.fp-panel,.sf-choice-menu,.sf-rate-menu,.menu,.rn-box,.pick-box,.fix-box,.ctd-box) { background:var(--surface); color:var(--text); border-color:var(--line); }
-.sf-studio[data-design=uwp][data-workspace=settings] :is(.sf-nav,.sf-topbar,#st-view .st-box,#st-view .st-actions) { background:transparent!important; box-shadow:none!important; }
-.sf-studio[data-design=uwp] .sf-topbar { height:var(--sf-top-h); padding:0 24px; }
-.sf-studio[data-design=uwp] .sf-nav { padding:20px 14px 14px; gap:2px; background:var(--surface); border-right:1px solid var(--line); }
-.sf-studio[data-design=uwp] .sf-nav .sf-brand { margin:0 -4px 14px; padding:8px 8px 16px 10px; border-radius:2px; }
-.sf-studio[data-design=uwp] .sf-nav a { min-height:40px; padding:10px 12px; gap:10px; border-radius:2px; transition:background .1s,color .1s; }
-.sf-studio[data-design=uwp] .sf-nav a:hover { background:var(--accent-hover); color:var(--accent); }
-.sf-studio[data-design=uwp] .sf-nav a.active { background:var(--accent-soft); color:var(--accent); }
-.sf-studio[data-design=uwp] .sf-nav a.active { position:relative; }
-.sf-studio[data-design=uwp] .sf-nav a.active::before { content:""; position:absolute; left:0; top:8px; bottom:8px; width:3px; background:var(--accent); }
-.sf-studio[data-design=uwp] .sf-brand>span { border-radius:2px; background:var(--accent); color:var(--on-accent); }
-.sf-studio[data-design=uwp] :is(.sf-folder>button:first-child,.sf-folder>button:last-child,.sf-folder-head button,.sf-nav .sf-brand,.sf-orbit,.sf-resume,.sf-flower>span,.sf-cover,.proj-card,.sf-pack,.st-tab,.st-settings-segments,.sf-settings-segments button,.sf-background-choice,.sf-choice-toggle,.sf-choice-option,.fp-btn,.fp-item,.log-subtab,.sf-settings-scope,.st-tag-cur,.log-subtab-cnt,.sf-settings-details,.sscp-control,.sscp-trigger) { border-radius:2px; }
-.sf-studio[data-design=uwp] :is(.btn,.sf-choice-toggle,.sf-choice-option,.fp-btn,.fp-item,.log-subtab,.st-tab,.sf-background-choice,#sf-filters button,.sf-folder>button,.sf-folder-head button) { transition-duration:.12s; }
-.sf-studio[data-design=uwp] :is(.btn,.sf-choice-toggle,.sf-choice-option,.fp-btn,.fp-item,.log-subtab,.st-tab,.sf-background-choice,#sf-filters button,.sf-folder>button,.sf-folder-head button):is(:hover,:active) { transform:none; }
-.sf-studio[data-design=uwp] .btn { min-height:32px; padding:7px 14px; border-radius:2px; background:var(--surface); color:var(--text); border:1px solid var(--line); box-shadow:0 1px 2px #00000014; font-size:12px; font-weight:600; }
-.sf-studio[data-design=uwp] .btn:hover { background:var(--surface-2); border-color:var(--accent); box-shadow:0 2px 5px #0000001c; }
-.sf-studio[data-design=uwp] .btn:active { box-shadow:inset 0 1px 2px #0000001c; }
-.sf-studio[data-design=uwp] .btn-accent,.sf-studio[data-design=uwp] .btn-accent:hover { background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
-.sf-studio[data-design=uwp] :is(input:not([type=range]):not([type=checkbox]):not([type=file]),select,textarea) { min-height:32px; padding:6px 9px; border-radius:2px; background:var(--surface); color:var(--text); border:1px solid var(--line); box-shadow:none; }
-.sf-studio[data-design=uwp] :is(input[type=range],input[type=checkbox],input[type=radio],progress) { accent-color:var(--accent); }
-.sf-studio[data-design=uwp] .sf-choice-toggle { min-height:34px; padding:6px 10px; background:var(--surface); }
-.sf-studio[data-design=uwp] #sf-rate-toggle,.sf-studio[data-design=uwp] .fp-btn { min-height:32px; border-radius:2px; }
-.sf-studio[data-design=uwp] :is(input,select,textarea,button,a):focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
-.sf-studio[data-design=uwp] :is(#sf-search,.ph-search input) { min-height:34px; border-radius:2px; background:var(--surface); box-shadow:none; }
-.sf-studio[data-design=uwp] :is(#sf-filters button,.sf-background-choice) { border-radius:2px; }
-.sf-studio[data-design=uwp] :is(#sf-filters button:hover,.sf-background-choice:hover,.st-tab:hover,.log-subtab:hover) { background:var(--accent-hover); color:var(--text); }
-.sf-studio[data-design=uwp] :is(#sf-filters button.active,.sf-background-choice[aria-pressed=true],.st-tab.active,.log-subtab.active) { background:var(--accent-soft); color:var(--accent); outline:none; }
-.sf-studio[data-design=uwp] :is(.sf-library-tools,.sf-settings-backgrounds,.home-list,.ws-grid,.sf-asr-families) { gap:12px; }
-.sf-studio[data-design=uwp] .sf-hero { display:none!important; }
-.sf-studio[data-design=uwp] .home-inner { max-width:none; padding:20px 24px 28px; }
-.sf-studio[data-design=uwp] .home-head { margin-bottom:12px; align-items:center; }
-.sf-studio[data-design=uwp] .home-title { font-size:22px; font-weight:600; letter-spacing:0; }
-.sf-studio[data-design=uwp] .home-sub { font-size:11px; }
-.sf-studio[data-design=uwp] .home-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 12px; padding:8px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
-.sf-studio[data-design=uwp] .home-list-title { font-size:14px; font-weight:600; }
-.sf-studio[data-design=uwp] .sf-library-tools { margin:0; }
-.sf-studio[data-design=uwp] .home-list { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
-.sf-studio[data-design=uwp] .sf-cover { border-radius:2px; }
-.sf-studio[data-design=uwp] .proj-card:hover { background:var(--accent-hover); }
-.sf-studio[data-design=uwp] .proj-card { padding:8px; border:1px solid var(--line); box-shadow:0 1px 3px #00000018; }
-.sf-studio[data-design=uwp] .proj-card:hover { transform:none; border-color:var(--accent); }
-.sf-studio[data-design=uwp] .sf-cover { background:var(--surface-2); }
-.sf-studio[data-design=uwp] :is(.sf-flower>span,.sf-orbit) { background:var(--accent-soft); color:var(--accent); box-shadow:none; transform:none; }
-.sf-studio[data-design=uwp] .sf-orbit>span { transform:none; }
-.sf-studio[data-design=uwp] .sf-flower:hover>span,.sf-studio[data-design=uwp] .sf-flower:active>span { transform:none; }
-.sf-studio[data-design=uwp] #st-view :is(.st-box,.st-tabs,.st-body) { border-radius:0; box-shadow:none; }
-.sf-studio[data-design=uwp] #st-view .st-tab { min-height:36px; padding:9px 11px; }
-.sf-studio[data-design=uwp] #st-view :is(.st-card,.set-group,.st-section) { padding:18px; border:1px solid var(--line); border-radius:4px; background:var(--surface); box-shadow:0 1px 3px #00000014; }
-.sf-studio[data-design=uwp] #st-view .st-actions { padding:10px 12px; border:1px solid var(--line); border-radius:4px; background:var(--surface); }
-.sf-studio[data-design=uwp] #st-view .st-actions #st-cancel { min-height:32px; padding:7px 14px; border-radius:2px; box-shadow:none; }
-.sf-studio[data-design=uwp] :is(.st-entry-bar,.st-drawer-head,.st-drawer-foot,.sf-background-choice,.sf-settings-segments,.sf-settings-line,.sf-settings-swatches,.sf-settings-details,.sf-choice-menu:not([hidden]),.sf-rate-menu:not([hidden]),.fp-panel) { background:var(--surface-2); color:var(--text); border-color:var(--line); }
-.sf-studio[data-design=uwp] :is(.sf-choice-menu:not([hidden]),.sf-rate-menu:not([hidden]),.fp-panel) { border:1px solid var(--line); border-radius:2px; box-shadow:0 4px 12px #0000002e; }
-.sf-studio[data-design=uwp] .sf-choice-option { min-height:34px; padding:7px 10px; border-radius:2px; }
-.sf-studio[data-design=uwp] .sf-progress,.sf-studio[data-design=uwp] #sf-seek { height:10px; border-radius:2px; }
-.sf-studio[data-design=uwp] :is(.sf-progress-line,.sf-progress-rest) { height:4px; top:3px; border-radius:1px; }
-.sf-studio[data-design=uwp] .sf-progress-thumb { width:12px; height:12px; border-radius:1px; }
-.sf-studio[data-design=uwp] :is(.cue-card.selected,.cue-card.playing) { background:var(--accent-soft); border-color:var(--accent); }
-.sf-studio[data-design=uwp] :is(.badge,.pc-st,.log-subtab-cnt,.sf-settings-scope,.st-tag-cur,.st-hw,.sf-scheme-empty) { border-radius:2px; }
-.sf-studio[data-design=uwp] .log-subtabs { padding:3px; gap:2px; border-radius:2px; background:var(--surface-2); }
-.sf-studio[data-design=uwp] .log-subtab { min-height:32px; border-radius:2px; }
-.sf-studio[data-design=uwp][data-bg=aurora] .sf-ambient,.sf-studio[data-design=uwp] .sf-backdrop { display:none; }
-.sf-studio[data-design=uwp] :is(.sf-settings-heading h2,.sf-settings-heading p,.page-intro h1,.sf-library-tools,.sf-nav a,.sf-folder-head,.sf-folder,.home-title) { letter-spacing:0; }
-.sf-studio[data-theme=dark][data-design=uwp] :is(.sf-nav,.sf-topbar,#toolbar,#stage-wrap,#editor-panel,#timeline-panel,.page-surface,.proj-card,.sf-resume,.st-card,.set-group,.st-section,.st-actions,.sf-help-grid article,.st-entry,.st-scheme,.sf-asr-family,.sf-prerequisite,.sm-model,.panel-head,.tl-toolbar,.tab-head,.cue-card,.role-card,.sf-pack,.st-drawer,.modal-surface,.sscp,.font-picker,.fp-panel,.sf-choice-menu,.sf-rate-menu,.menu,.rn-box,.pick-box,.fix-box,.ctd-box) { background:var(--surface); color:var(--text); backdrop-filter:none!important; -webkit-backdrop-filter:none!important; }
-.sf-studio[data-theme=dark][data-design=uwp] :is(.st-card,.set-group,.st-section,.sf-asr-family,.sf-prerequisite,.sf-pack) { border-color:var(--line); }
-
-/* UWP residual sweep: legacy editor controls otherwise keep the rounded/raised
- * geometry of the Studio skin. Keep this pass at the end so static and
- * dynamically mounted settings controls share one Fluent treatment. */
-.sf-studio[data-design=uwp] :is(#panel-tabs,.ptab,.tab-head,.st-scheme-inline,.st-scheme-inline .st-drawer-head,.st-scheme-inline .st-drawer-body,.st-scheme-inline .st-drawer-foot,.st-scheme-inline .st-card,.sf-scheme-open,.sf-scheme-empty,.sf-settings-segments,.sf-settings-segments button,.sf-background-thumb,.sf-settings-line,.sf-settings-swatches,.sf-settings-details,.sf-asr-family,.st-hw,#sf-notice,#sf-seek,#sf-player #sf-play) {
-  border-radius:2px;
+/* MD3 表面层级（D1：取消毛玻璃，全部改为不透明色调表面）。
+ * 层级只靠 surface-container-* 的明度差区分，阴影只给悬浮层（菜单、对话框）。不再使用 backdrop-filter：
+ * 它是 P0 发现的浅色模式发灰（F1）的来源，还会给 fixed 子元素建立包含块（见 PROJECT_MAP §6 #range-bar）。
+ * 选择器沿用原毛玻璃规则的分组与 .sf-studio[data-theme] 前缀，保持原来的优先级与覆盖范围。 */
+.sf-studio[data-theme] .sf-nav { background:var(--md-sys-color-surface-container-low); backdrop-filter:none!important; -webkit-backdrop-filter:none!important; box-shadow:none; }
+.sf-studio[data-theme] .sf-topbar { background:var(--md-sys-color-surface); backdrop-filter:none!important; -webkit-backdrop-filter:none!important; box-shadow:none; }
+.sf-studio[data-theme] :is(.proj-card,.page-surface,.sf-help-grid article,#toolbar,#stage-wrap,#editor-panel,#timeline-panel,.st-card,.set-group,.st-section,.sf-asr-family,.role-card,.sm-model,.st-entry,.st-scheme,.sf-pack,.sf-prerequisite) {
+  background:var(--md-sys-color-surface-container-low); backdrop-filter:none!important; -webkit-backdrop-filter:none!important; box-shadow:none;
 }
-.sf-studio[data-design=uwp] :is(#panel-tabs,.tab-head,.st-scheme-inline .st-drawer-head,.st-scheme-inline .st-drawer-body,.st-scheme-inline .st-drawer-foot,.sf-settings-segments,.sf-settings-line,.sf-settings-swatches,.sf-settings-details,.st-hw) {
-  background:var(--surface-2); color:var(--text); border-color:var(--line); box-shadow:none;
+.sf-studio[data-theme] :is(.panel-head,.tl-toolbar,.tab-head,.settings-list .set-group,.st-drawer-head,.st-drawer-foot,.st-entry-bar) { background:var(--md-sys-color-surface-container); }
+.sf-studio[data-theme] :is(.menu,.sscp,.font-picker,#role-menu,#card-menu,#tl-menu,.sf-choice-menu,.sf-rate-menu,.fp-panel) {
+  background:var(--md-sys-color-surface-container); backdrop-filter:none!important; -webkit-backdrop-filter:none!important; box-shadow:var(--md-sys-elevation-level2);
 }
-.sf-studio[data-design=uwp] :is(.ptab,.sf-scheme-open,.sf-settings-segments button) {
-  background:transparent; color:var(--muted); border:1px solid transparent; box-shadow:none; transform:none;
-}
-.sf-studio[data-design=uwp] :is(.ptab:hover,.ptab.active,.sf-scheme-open:hover,.sf-settings-segments button:hover) {
-  background:var(--accent-soft); color:var(--accent); border-color:var(--accent);
-}
-.sf-studio[data-design=uwp] .ptab.active { border-bottom:2px solid var(--accent); }
-.sf-studio[data-design=uwp] :is(.st-scheme-inline,.st-scheme-inline .st-card) {
-  background:var(--surface); border:1px solid var(--line); box-shadow:0 1px 3px #00000014;
-}
-.sf-studio[data-design=uwp] .st-scheme-inline .st-drawer-body { background:var(--surface-2); }
-.sf-studio[data-design=uwp] :is(.sf-asr-family,.sf-scheme-empty) {
-  background:var(--surface); border:1px solid var(--line); box-shadow:0 1px 3px #00000014; transform:none;
-}
-.sf-studio[data-design=uwp] .sf-asr-family:hover:enabled,
-.sf-studio[data-design=uwp] .sf-asr-family:active:enabled { background:var(--surface-2); border-color:var(--accent); transform:none; }
-.sf-studio[data-design=uwp][data-bg=aurora] .sf-ambient { display:block; opacity:.2; }
-.sf-studio[data-design=uwp][data-bg=image] .sf-backdrop { display:block; opacity:.16; }
-.sf-studio[data-design=uwp] #sf-notice { background:var(--surface); color:var(--text); border-color:var(--line); box-shadow:0 4px 12px #00000022; }
-.sf-studio[data-design=uwp] #sf-player #sf-play { background:var(--accent); color:var(--on-accent); border:1px solid var(--accent); transform:none; }
-.sf-studio[data-design=uwp] #sf-player #sf-play:hover,
-.sf-studio[data-design=uwp] #sf-player #sf-play:active { filter:none; transform:none; border-radius:2px; }
-.sf-studio[data-design=uwp] [style*="z-index: 9999"] {
-  background:var(--accent)!important; color:var(--on-accent)!important; border:1px solid var(--accent)!important;
-  border-radius:2px!important; box-shadow:0 4px 12px #00000022!important;
-  font-family:"Segoe UI","Microsoft YaHei UI",sans-serif!important; font-size:13px!important; line-height:1.4!important;
-}
-.sf-studio[data-design=uwp] [style*="z-index: 9998"] {
-  background:#fff4ce!important; color:#323130!important; border:1px solid #fce100!important;
-  border-radius:2px!important; box-shadow:0 4px 12px #00000022!important;
-  font-family:"Segoe UI","Microsoft YaHei UI",sans-serif!important; font-size:13px!important; line-height:1.5!important;
-}
-.sf-studio[data-design=uwp] [style*="z-index: 9998"]>button {
-  background:#ffedb5!important; color:#323130!important; border:1px solid #d7b600!important;
-  border-radius:2px!important; padding:3px 10px!important;
-  font-family:"Segoe UI","Microsoft YaHei UI",sans-serif!important; font-size:13px!important;
-}
-.sf-studio[data-theme=dark][data-design=uwp] [style*="z-index: 9998"] {
-  background:#332d1a!important; color:#fff!important; border-color:#6a561d!important;
-}
-.sf-studio[data-theme=dark][data-design=uwp] [style*="z-index: 9998"]>button {
-  background:#49401f!important; color:#fff!important; border-color:#806a20!important;
-}
-.sf-studio[data-design=uwp] :is(.modal-surface,.rn-box,.pick-box,.fix-box,.ctd-box,.menu,#role-menu,#card-menu,#tl-menu) {
-  background:var(--surface); color:var(--text); border:1px solid var(--line); box-shadow:0 8px 20px #00000026;
-  backdrop-filter:none!important; -webkit-backdrop-filter:none!important;
-}
-
-/* UWP audit pass: cover controls mounted by the legacy editor after the first
- * render as well as the newer Studio cards. The shared skin intentionally
- * uses generous radii, lift-on-hover motion and dark acrylic surfaces; those
- * rules must not leak through when Windows UWP is selected. */
-.sf-studio[data-design=uwp] {
-  background:var(--bg); color:var(--text);
-  --sf-radius:4px;
-}
-.sf-studio[data-design=uwp] :is(.st-panel,.st-box,.st-card,.set-group,.st-section,.sm-model,.sm-group,.st-entry,.st-scheme,.sf-pack,.sf-prerequisite,.sf-asr-family,.sf-help-grid article,.proj-card,.sf-resume,.sf-orbit,.sf-flower,.sf-background-choice,.sf-settings-segments,.sf-settings-line,.sf-settings-swatches,.sf-settings-details,.sscp-control,.sscp,.font-picker,.fp-panel,.modal-surface,.rn-box,.pick-box,.fix-box,.ctd-box,.menu,.sf-choice-menu,.sf-rate-menu,#role-menu,#card-menu,#tl-menu) {
-  border-radius:4px;
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
-}
-.sf-studio[data-design=uwp] :is(.st-panel,.st-box,.st-card,.set-group,.st-section,.sm-model,.sm-group,.st-entry,.st-scheme,.sf-pack,.sf-prerequisite,.sf-asr-family,.sf-help-grid article,.proj-card,.sf-resume,.sf-background-choice,.sf-settings-segments,.sf-settings-line,.sf-settings-swatches,.sf-settings-details,.sscp-control,.sscp,.font-picker,.fp-panel,.modal-surface,.rn-box,.pick-box,.fix-box,.ctd-box,.menu,.sf-choice-menu,.sf-rate-menu,#role-menu,#card-menu,#tl-menu) {
-  background:var(--surface); color:var(--text); border-color:var(--line);
-  box-shadow:0 1px 3px #00000018;
-}
-.sf-studio[data-design=uwp] :is(.sf-pack-art,.sf-pack-symbol,.sf-background-thumb,.sf-settings-segments,.sf-settings-segments button,.sf-choice-toggle,.sf-choice-option,.fp-btn,.fp-item,.log-subtab,.st-tab,.ptab,.sf-folder>button,.sf-folder-head button,.sf-nav a,.sf-brand) { border-radius:2px; }
-.sf-studio[data-design=uwp] :is(.sf-pack-art,.sf-pack-symbol) { box-shadow:none; }
-.sf-studio[data-design=uwp] :is(.btn,.ptab,.st-tab,.log-subtab,.sf-choice-toggle,.sf-choice-option,.fp-btn,.fp-item,.sf-background-choice,.sf-folder>button,.sf-folder-head button,#sf-filters button,.sf-orbit,.sf-flower,.sf-resume-open) {
-  transform:none!important;
-  transition:background .1s,color .1s,border-color .1s,box-shadow .1s!important;
-}
-.sf-studio[data-design=uwp] :is(.btn,.ptab,.st-tab,.log-subtab,.sf-choice-toggle,.sf-choice-option,.fp-btn,.fp-item,.sf-background-choice,.sf-folder>button,.sf-folder-head button,#sf-filters button,.sf-orbit,.sf-flower,.sf-resume-open):is(:hover,:active) { transform:none!important; }
-.sf-studio[data-design=uwp] :is(.st-panel.active,#st-view .st-panel.active) { animation:none!important; }
-.sf-studio[data-design=uwp] .st-scheme-inline { transition:none!important; transform:none!important; }
-.sf-studio[data-design=uwp] :is(#app,#toolbar,#stage-wrap,#editor-panel,#timeline-panel) { border-radius:4px; }
-.sf-studio[data-design=uwp] #toolbar { border-bottom:1px solid var(--line); }
-.sf-studio[data-design=uwp] #panel-tabs { border-radius:0; background:var(--surface-2); }
-.sf-studio[data-design=uwp] #video-stage { border-radius:2px; }
-.sf-studio[data-design=uwp] #timeline-panel { border-top:1px solid var(--line); }
-.sf-studio[data-design=uwp] :is(.sf-nav,.sf-topbar,#toolbar,#stage-wrap,#editor-panel,#timeline-panel) { box-shadow:0 1px 3px #00000018; }
-.sf-studio[data-design=uwp][data-workspace=settings] :is(.sf-nav,.sf-topbar,#st-view .st-box,#st-view .st-actions) { box-shadow:none!important; }
-
-/* Final Windows 10 control pass: settings categories use a quiet selected
- * surface with the short Fluent blue rail, while control outlines stay bright
- * enough against both neutral surfaces. */
-.sf-studio[data-design=uwp] #st-view .st-tab {
-  border:1px solid transparent;
-  border-left:3px solid transparent;
-  border-radius:2px;
-  background:transparent;
-  color:var(--text);
-  padding-left:10px;
-}
-.sf-studio[data-design=uwp] #st-view .st-tab.active {
-  background:var(--surface-2);
-  color:var(--text);
-  border-color:transparent;
-  border-left-color:var(--accent);
-}
-.sf-studio[data-design=uwp] #st-view .st-tab.active .ico { color:var(--accent); }
-.sf-studio[data-design=uwp] .sf-nav a.active {
-  background:var(--surface-2);
-  color:var(--text);
-}
-.sf-studio[data-design=uwp] .sf-nav a.active .ico { color:var(--accent); }
-.sf-studio[data-design=uwp] .theme-sw { pointer-events:none; cursor:not-allowed; opacity:.55; }
-.sf-studio[data-design=uwp] .btn-accent {
-  background:#0078D7;
-  color:#fff;
-  border-color:#0078D7;
-  filter:none;
-}
-.sf-studio[data-design=uwp] .btn-accent:hover {
-  background:#106EBE;
-  border-color:#106EBE;
-}
-.sf-studio[data-design=uwp] .btn-accent:active {
-  background:#005A9E;
-  border-color:#005A9E;
-}
-.sf-studio[data-design=uwp] :is(.st-tab,.st-card,.set-group,.st-section,.st-actions,.st-entry,.st-scheme,.sf-pack,.sf-settings-line,.sf-settings-swatches,.sf-settings-details,.sf-settings-segments,.st-scheme-inline,.sf-asr-family,.sm-model,.sf-prerequisite,.sf-choice-toggle,.sf-choice-menu:not([hidden]),.sf-rate-menu:not([hidden]),.fp-panel,.modal-surface,.rn-box,.pick-box,.fix-box,.ctd-box,.menu,.btn,input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea) {
-  border-color:var(--line);
-}
-.sf-studio[data-design=uwp] :is(.st-card,.set-group,.st-section,.st-actions,.st-entry,.st-scheme,.sf-pack,.sf-asr-family,.sm-model,.sf-prerequisite,.st-scheme-inline,.modal-surface,.rn-box,.pick-box,.fix-box,.ctd-box,.menu) {
-  border:1px solid var(--line);
-}
-
-
-/* SubFabric Classic theme pack: migrated from the former desktop visual language. */
-.sf-studio[data-design=classic] { font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif; background:var(--bg); color:var(--text); --sf-radius:8px; --sf-spring:cubic-bezier(.2,.8,.2,1); }
-.sf-studio[data-design=classic] :is(.sf-nav,.sf-topbar,#toolbar,#stage-wrap,#editor-panel,#timeline-panel,.page-surface,.proj-card,.sf-resume,.st-card,.set-group,.st-section,.st-actions,.sf-help-grid article,.st-entry,.st-scheme,.sf-asr-family,.sf-prerequisite,.sm-model,.panel-head,.tl-toolbar,.tab-head,.cue-card,.role-card,.sf-pack,.st-drawer,.modal-surface,.sscp,.font-picker,.fp-panel,.sf-choice-menu,.sf-rate-menu,.menu,.rn-box,.pick-box,.fix-box,.ctd-box) { background:var(--surface); color:var(--text); border-color:var(--line); backdrop-filter:none!important; -webkit-backdrop-filter:none!important; }
-.sf-studio[data-design=classic] :is(.sf-nav,.sf-topbar,#toolbar,#stage-wrap,#editor-panel,#timeline-panel) { box-shadow:0 2px 10px #00000030; }
-.sf-studio[data-design=classic] :is(.btn,.sf-nav a,.sf-folder>button,.st-tab,.ptab,.log-subtab,.sf-choice-toggle,.sf-choice-option,.fp-btn,.fp-item,.sf-background-choice,#sf-filters button) { border-radius:6px; transform:none!important; transition:background .12s,color .12s,border-color .12s,box-shadow .12s!important; }
-.sf-studio[data-design=classic] :is(.btn,input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea,.sf-choice-toggle,.st-card,.set-group,.st-section,.st-entry,.st-scheme,.sf-pack,.sf-asr-family,.sm-model,.sf-prerequisite,.modal-surface,.rn-box,.pick-box,.fix-box,.ctd-box,.menu) { border-color:var(--line); }
-.sf-studio[data-design=classic] .btn { background:var(--surface-2); color:var(--text); border:1px solid var(--line); box-shadow:0 1px 2px #00000025; }
-.sf-studio[data-design=classic] .btn:hover { background:var(--accent-soft); color:var(--accent); border-color:var(--accent); }
-.sf-studio[data-design=classic] .btn-accent { background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
-.sf-studio[data-design=classic] .btn-accent:hover { filter:brightness(1.08); color:var(--on-accent); }
-.sf-studio[data-design=classic] .sf-nav { background:var(--surface); border-right:1px solid var(--line); }
-.sf-studio[data-design=classic] .sf-nav a.active,.sf-studio[data-design=classic] .sf-folder>button.active { background:var(--accent-soft); color:var(--accent); }
-.sf-studio[data-design=classic] .sf-brand>span { border-radius:8px; background:var(--accent-soft); color:var(--accent); }
-.sf-studio[data-design=classic] .sf-studio .home-list,.sf-studio[data-design=classic] .home-list { gap:14px; }
-.sf-studio[data-design=classic] .proj-card { border-radius:8px; box-shadow:0 4px 16px #00000024; }
-.sf-studio[data-design=classic] .sf-cover { border-radius:6px; }
-.sf-studio[data-design=classic] #st-view .st-tab.active { background:var(--accent-soft); color:var(--accent); border-left-color:var(--accent); }
-.sf-studio[data-design=classic] :is(.st-card,.set-group,.st-section,.st-entry,.st-scheme,.sf-pack,.sf-asr-family,.sm-model,.sf-prerequisite) { box-shadow:0 2px 8px #0000001c; }
-.sf-studio[data-design=classic] #panel-tabs,.sf-studio[data-design=classic] .tab-head { background:var(--surface-2); border-color:var(--line); }
-.sf-studio[data-design=classic] #sf-player #sf-play { background:var(--accent); color:var(--on-accent); border-radius:6px; transform:none; }
-.sf-studio[data-design=classic] #sf-player #sf-play:hover { filter:brightness(1.08); }
-.sf-studio[data-design=classic] .sf-progress-line,.sf-studio[data-design=classic] #sf-seek::-webkit-slider-runnable-track { background:var(--accent); }
-.sf-studio[data-design=classic] .sf-ambient,.sf-studio[data-design=classic] .sf-backdrop { display:none; }
-
-/* 毛玻璃参数的统一末端覆盖：浅色模式也使用同一组压暗/模糊/透明度设置。
- * 主题包只决定几何与强调色；材质参数属于 Studio 偏好，必须跨 Studio、Material、UWP、Classic 生效。 */
-.sf-studio[data-theme=light] :is(.sf-nav,.sf-topbar,.proj-card,.page-surface,.sf-help-grid article,#toolbar,#stage-wrap,#editor-panel,#timeline-panel,.st-drawer,.modal-surface,.rn-box,.pick-box,.fix-box,.ctd-box,.menu,.sscp,.font-picker,#role-menu,#card-menu,#tl-menu,.st-card,.set-group,.st-section,.sf-asr-family,.panel-head,.tl-toolbar,.tab-head,.cue-card,.role-card,.sm-model,.st-entry,.st-scheme,.sf-pack,.sf-prerequisite,.sf-choice-menu,.sf-rate-menu,.fp-panel) {
-  background:var(--sf-glass-light-surface);
-  backdrop-filter:blur(var(--sf-glass-blur))!important; -webkit-backdrop-filter:blur(var(--sf-glass-blur))!important;
-  box-shadow:0 8px 28px -18px #0005,inset 0 1px 0 #ffffff60;
-}
-.sf-studio[data-theme=light] :is(.sf-choice-menu,.sf-rate-menu,.fp-panel):not([hidden]) { background:var(--sf-glass-light-raised); }
-.sf-studio[data-theme=light] :is(.cue-card.selected,.cue-card.playing) { background:color-mix(in srgb,var(--accent-soft) 42%,var(--sf-glass-light-raised)); }
-.sf-studio[data-theme=dark] :is(.sf-nav,.sf-topbar,.proj-card,.page-surface,.sf-help-grid article,#toolbar,#stage-wrap,#editor-panel,#timeline-panel,.st-drawer,.modal-surface,.rn-box,.pick-box,.fix-box,.ctd-box,.menu,.sscp,.font-picker,#role-menu,#card-menu,#tl-menu,.st-card,.set-group,.st-section,.sf-asr-family,.panel-head,.tl-toolbar,.tab-head,.cue-card,.role-card,.sm-model,.st-entry,.st-scheme,.sf-pack,.sf-prerequisite,.sf-choice-menu,.sf-rate-menu,.fp-panel) {
-  background:var(--sf-glass-surface);
-  backdrop-filter:blur(var(--sf-glass-blur))!important; -webkit-backdrop-filter:blur(var(--sf-glass-blur))!important;
-}
-.sf-studio[data-workspace=settings] :is(.sf-nav,.sf-topbar,#st-view .st-box,#st-view .st-actions) {
-  background:transparent!important; backdrop-filter:none!important; -webkit-backdrop-filter:none!important; box-shadow:none!important;
+.sf-studio[data-theme] :is(.st-drawer,.modal-surface,.rn-box,.pick-box,.fix-box,.ctd-box) {
+  background:var(--md-sys-color-surface-container-high); backdrop-filter:none!important; -webkit-backdrop-filter:none!important; box-shadow:var(--md-sys-elevation-level3);
 }
 
 /* 品牌图标使用与安装包/任务栏相同的高分辨率源图，避免 16px 描边图标在 Dock 中发糊。 */
@@ -3928,31 +3602,16 @@ body.sf-studio .sf-unavailable { opacity: .5; }
 .sf-studio .app-logo { display:inline-flex; align-items:center; gap:7px; color:var(--text); background:none; }
 .sf-studio .app-logo img { width:22px; height:22px; object-fit:cover; border-radius:5px; flex:none; }
 
-/* Windows UWP 卡片视图：标题/筛选区与卡片、卡片与卡片之间留出明确的 Fluent 空间。 */
-.sf-studio[data-design=uwp] .home-toolbar { margin-bottom:24px; }
-.sf-studio[data-design=uwp] .sf-library-tools { margin-bottom:22px; }
-.sf-studio[data-design=uwp] .home-list { row-gap:18px; column-gap:14px; }
-
 /* 设置页的工作区保持透明，材质只落在实际设置卡片上；避免整页出现灰色遮罩。 */
 .sf-studio[data-workspace=settings] #st-view,
 .sf-studio[data-workspace=settings] #st-view .settings-inner,
 .sf-studio[data-workspace=settings] #st-view .st-box,
 .sf-studio[data-workspace=settings] #st-view .st-body { background:transparent!important; }
-.sf-studio[data-workspace=settings] :is(.sf-backdrop,.sf-ambient) { display:none!important; }
-.sf-studio[data-workspace=settings] #st-view .st-card,
-.sf-studio[data-workspace=settings] #st-view .set-group,
-.sf-studio[data-workspace=settings] #st-view .st-section,
-.sf-studio[data-workspace=settings] #st-view .sf-asr-family { background:var(--sf-glass-light-surface); }
+.sf-studio[data-workspace=settings] .sf-backdrop { display:none!important; }
 
 /* 胶囊形只属于 Material You；其它主题使用小圆角矩形。Material You 的倾斜胶囊
  * 保留原有品牌动势；用户要求把角度收到 40°，文字反向旋转 -40° 保持水平。 */
-.sf-studio[data-design]:not([data-design=material]) :is(.sf-orbit,.sf-settings-scope,.st-tag-cur,.log-subtab-cnt,.pc-badge) {
-  border-radius:4px!important; transform:none!important;
-}
-/* 其它主题没有胶囊倾斜，文字也不该被底座的 -40° 带歪（UWP 已有自己的 transform:none）。 */
-.sf-studio[data-design]:not([data-design=material]):not([data-design=uwp]) .sf-orbit>span {
-  transform:translate(-3px,-4px);
-}
+
 .sf-studio[data-design=material] .sf-orbit {
   --orbit-x: 8px;
   border-radius:999px;
@@ -4269,13 +3928,6 @@ body[data-theme="light"] :is(#editor-panel #cue-list, .cue-measure) {
 :is(#editor-panel #cue-list, .cue-measure) .ie-line:focus { background: color-mix(in srgb, var(--role, var(--accent)) 7%, transparent); box-shadow: 0 -1px 0 var(--cc-line-strong) inset; }
 :is(#editor-panel #cue-list, .cue-measure) .ie-hint { color: var(--cc-text-3); }
 :is(#editor-panel #cue-list, .cue-measure) .ie-line:empty::before { color: var(--cc-text-3); }
-
-/* UWP 仍保持小圆角/无大阴影（这里用两个 ID 保证压过基础卡片的 10px 圆角） */
-.sf-studio[data-design=uwp] #editor-panel #cue-list .cue-card {
-  border-radius: 4px;
-  box-shadow: none;
-}
-
 
 /* 低频字幕操作进入编辑器设置，顶部只保留浏览和跟随播放所需控件。 */
 .editor-advanced-group { margin-top: 4px; }

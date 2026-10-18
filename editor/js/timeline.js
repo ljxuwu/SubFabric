@@ -339,7 +339,7 @@ export class Timeline {
   constructor(canvas, video) {
     this.canvas = canvas;
     /* 主题色：游标 / 选中环 / 波形都跟着界面主题走。
-       换色时 accent.js 派发 ss-accent 事件（canvas 里读不到 CSS 变量，只能缓存一份）。 */
+       换色时 studio.js 派发 ss-accent / sf-studio-theme 事件（canvas 里读不到 CSS 变量，只能缓存一份）。 */
     this.accent = cssVar('--accent', C.accent);
     this.colors = { ...C, rulerBg0: '#16161c', rulerBg1: '#101015' };
     const syncStudioColors = () => {
@@ -355,7 +355,7 @@ export class Timeline {
     };
     syncStudioColors();
     window.addEventListener('sf-studio-theme', syncStudioColors);
-    /* 主题色上该用的前景色（accent.js 按主题色亮度算的 --accent-ink）。canvas 读不到 CSS
+    /* 主题色上该用的前景色（--accent-ink，经 md-compat.css 别名到 MD3 的 on-primary）。canvas 读不到 CSS
      * 变量，和 accent 一起缓存、一起在 ss-accent 里刷新。 */
     this.accentInk = cssVar('--accent-ink', '#22150e');
     try {

@@ -1,5 +1,27 @@
 # 项目当前状态（唯一权威入口）
 
+- 当前任务（2026-10-18）：MD3 重构 **P1（颜色令牌、HCT 取色、主题统一）已完成且已验证；P2–P8 未开始。**
+  - 改了什么：
+    - 新增 `editor/js/md-color.js`：移植 material-color-utilities 0.3.0 的 HCT / TonalPalette，按种子色生成 TonalSpot 配色。它在 `<head>` 里同步执行，只写 `--md-sys-color-*`，同时提供 `SSAccent` 兼容接口。替代原来的 `accent.js`。
+    - 新增 `css/app.css`（层序 `md.tokens, legacy, md.compat, md.components, app`）、`md-tokens.css`、`md-compat.css`（旧变量别名到 MD3 角色）。`studio.html` 只链接 `app.css`，`<body>` 的第一个子节点同步复制主题。
+    - 主题统一为 Material：`studio-themes.js` 改为 v2 主题包（种子色 + MD3 角色白名单），v1 包导入时只保留种子色。`studio-state.js` 一次性迁移旧偏好：下线的内置包转为 Material，UWP 用户保留 `#0078D7`，流光转为纯色，毛玻璃字段丢弃，新增 `scrim`（40–95%，默认 68%）。`studio.js` 删掉 UWP、毛玻璃和流光分支。
+    - `studio.css` 删除 174 条只属于下线主题的规则、浅色和深色两组毛玻璃规则，以及流光样式；表面一律改为不透明的 surface-container 色调，4291 → 3943 行。
+    - 删除 `accent.js`、三个下线的主题包 JSON、`tests/uwp-theme-test.mjs`（只测已下线的 UWP 包）以及镜像 `tests/jsmod/accent.js`。同步更新静态白名单、`tools/studio-install.mjs`、`tools/templates/studio.html`（与入口逐字节一致）、PROJECT_MAP 和 `docs/THEME_PACKS.md`。
+  - 本次验证：
+    - 完整 JS 回归 `node tests/run-all.mjs --report _test/md3-p1-final.json`（Node v20.19.2）：91 通过、9 部分执行、0 失败、2 排除，部分执行与 P0 是同一批。
+    - 新增 `md-color-test`：680 个角色值与官方实现逐一相等；14 个种子 × 浅深两种模式下正文对比度均 ≥ 4.5。
+    - ESLint 0 error，P1 没有新增 warning。
+    - 在临时副本上起源码服务，CDP 截图 139 张：横向溢出 0，控制台错误 0，主题全部为 material。
+    - 5000 行滚动的平均帧时间从 54.8ms 降到 16.7ms，按帧折算的主线程耗时没有变差。
+    - 详细证据见 [MD3_INVENTORY.md](MD3_INVENTORY.md) §4。F1 和 F4 已解决；新发现 F9（浅色查找替换对话框里写死的深色块，P0 已存在）和 F10（首页徽标写死蓝色）。
+  - 未做：没有逐帧录屏验证首屏无闪色（由单测断言覆盖）；没有真实用户浏览器的旧偏好迁移实测（由单测覆盖）；安装包和 Release 没有重建。
+  - GitHub：用户在 WSL 配好 `gh`（账号 ljxuwu，repo 权限），并明确要求本次提交到 **`ljxuwu/SubFabric`**（用户自己的 fork，main 无保护规则）。这次偏离了 AGENTS.md 固定的 `EndiVee233/SubFabric`，只适用于本次，AGENTS.md 未修改。P0+P1 的 42 个文件（修改 27、新增 9、删除 6）以一次 GraphQL `createCommitOnBranch` 原子提交写入，`expectedHeadOid` 为 `f0f1bb9`（提交前已核对远程 HEAD 与本地基线一致）。提交标识与核对结果见最终报告；本地仓库未暂存、未提交。
+- 前一阶段（2026-10-18）：用 Material Design 3 风格重构前端（外观与排版）。**P0 已完成且已验证。** 已确认的决策：原生实现 MD3（不引入 React/MUI，守住无构建、零依赖红线）；主题包统一为 Material；范围覆盖首页 / 稿件库 / 任务中心、设置 / 资源 / 帮助、编辑器工作台、时间轴 canvas；D1–D6 全部按建议执行。计划见 [MD3_REDESIGN_PLAN.md](MD3_REDESIGN_PLAN.md)，P0 的基线与盘点见 [MD3_INVENTORY.md](MD3_INVENTORY.md)。
+  - P0 本次验证：完整 JS 回归 `node tests/run-all.mjs --report _test/md3-p0-baseline.json`（Node v20.19.2）为 91 通过、9 部分执行、0 失败、2 排除，`tests/jsmod/` 无差异。在临时副本上起源码服务（端口 8399，`--no-tray`，补齐 vendor），用 CDP 驱动 Windows Chrome 截了 135 张图（Studio 主题包浅色和深色 × 5 个视口 × 11 个页面，另有补充页面、对话框、空状态，以及 Material You 参考图），存于 `_test/md3-p0/baseline/`（不入库）。横向溢出 0，控制台错误 0。5000 行滚动性能基线：样式重算 360ms、布局 204ms、脚本 152ms，每 5 秒。
+  - 发现的问题 F1–F8 记在盘点文档 §3。其中 F1（浅色毛玻璃表面发灰）和 F2（800×600 下编辑器视频区被压没、工具栏被截断）进入后续阶段；F6（测试驱动下同主机连接排队）在正常使用中未验证。`_test/md3-p0/shots/` 是第一次运行留下的无效截图（深色没有生效），可以删除，本次未删。
+  - 本次没有改任何源码。下一步：P1（颜色令牌、HCT 取色、主题统一与偏好迁移）。
+  - GitHub：提交失败或受到阻塞。本会话（WSL）里没有 `gh` CLI，也没有可用的 GitHub 连接器；按约定不做本地提交推送、不读取凭据。尚未提交的内容：新增 `docs/MD3_REDESIGN_PLAN.md`、`docs/MD3_INVENTORY.md`，修改 `docs/STATUS.md`、`PROJECT_MAP.md`（只改了 docs 那一行）。恢复入口：在有已认证写入通道的环境里，按 AGENTS.md 流程把这 4 个文件作为一次原子提交写入 `EndiVee233/SubFabric` main；也可以与 P1 合并提交。
+
 - 当前任务（2026-10-18）：Material You 首页「可编辑稿件」统计胶囊倾斜角由 45° 收到 **40°**，内部文字用 `rotate(-40deg)` 抵消、保持水平，**已完成且已验证**。`editor/css/studio.css` 的基础胶囊、Material 专用、hover/active 全部改为 40°，文字同步为 -40°；其它主题仍不倾斜，UWP 仍 `transform:none`。`tests/orbit-capsule-test.mjs` 更新为 15 项 40° 断言；浏览器在 1600×900、1280×720、1024×768、1151×900、900×800、800×600 下实测按钮旋转 40.000°、文字 -40.000°（净角度 0），无横向/纵向溢出，胶囊与稿件卡间距 7–14px；1600/1280 截图确认文字水平。完整 JS 回归 `node tests/run-all.mjs --report _test/orbit-40-full-20261018.json`：91 通过、9 部分执行、0 失败、2 排除；定向 5 项通过。状态：**已完成且已验证**；安装包/Release 未重建。
 
 - GitHub 保存（40° 胶囊，2026-10-18）：提交 `4c96e452f34acbeaafcef5840e92c14051b0a21a`（父 `08a99fc802d2c9182547c9ab21a79c1192de20f5`），4 个文件：`editor/css/studio.css`、`tests/orbit-capsule-test.mjs`、`docs/STATUS.md`、`PROJECT_MAP.md`。提交后 compare 为 ahead=1 / behind=0、仅这 4 个文件变化，远端内容与本地逐字节一致；GitHub Actions「JS · ESLint + 全量测试」「Python · ruff + 单测」均 success。未重建安装包/Release。

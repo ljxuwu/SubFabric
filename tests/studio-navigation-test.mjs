@@ -269,7 +269,7 @@ function assertMaterials(message) {
 
 // main.js deliberately skips applyHash for the historical direct #/editor boot.
 // Import the real Studio adapter first, so a later test applyHash cannot hide that regression.
-for (const name of ['studio-themes.js', 'studio-progress.js'])
+for (const name of ['md-color.js', 'studio-themes.js', 'studio-progress.js'])
   vm.runInThisContext(fs.readFileSync(new URL('../editor/js/' + name, import.meta.url), 'utf8'), { filename: name });
 await loadProduction('studio.js', probe === 'initial-editor'
   ? source => source.replace(/window\.__sfStudio\.route\(route, null, ''\);/, '') : null);
@@ -532,10 +532,12 @@ stableInput.value = '260';
 await navigate('#/settings');
 assert.equal($('sf-settings-tab-theme').getAttribute('aria-selected'), 'true', 'settings starts with common appearance preferences');
 assert.equal($('st-save').hidden, true, 'instant preference category does not imply a global manual save');
-// Theme pack cards are delegated controls: exercise every built-in pack through
+// Theme pack cards are delegated controls: exercise the built-in pack through
 // the same click path users take in the released Studio UI, including the
-// rerender that happens after applyTheme().
-for (const id of ['studio', 'material-you', 'subfabric-classic', 'windows-uwp']) {
+// rerender that happens after applyTheme(). MD3 统一后只剩 Material 内置包。
+for (const retired of ['studio', 'subfabric-classic', 'windows-uwp'])
+  assert.equal(document.querySelector(`[data-pack-select="${retired}"]`), null, 'retired built-in pack is not offered: ' + retired);
+for (const id of ['material-you']) {
   const packButton = document.querySelector(`[data-pack-select="${id}"]`);
   assert.ok(packButton, 'built-in theme pack is rendered: ' + id);
   // The in-memory DOM does not synthesize event bubbling; dispatch at the
@@ -543,8 +545,10 @@ for (const id of ['studio', 'material-you', 'subfabric-classic', 'windows-uwp'])
   const packClick = new Event('click'); Object.defineProperty(packClick, 'target', { value: packButton });
   $('sf-theme-packs').dispatchEvent(packClick); await settle();
   assert.equal(document.body.dataset.themePack, id, 'theme pack click applies ' + id);
-  assert.equal(document.body.dataset.design, id === 'material-you' ? 'material' : id === 'subfabric-classic' ? 'classic' : id === 'windows-uwp' ? 'uwp' : 'studio', 'theme design follows ' + id);
+  assert.equal(document.body.dataset.design, 'material', 'every pack uses the MD3 design language');
   assert.equal(document.querySelector(`[data-pack-select="${id}"]`).getAttribute('aria-pressed'), 'true', 'theme pack selection is retained for ' + id);
+  const seed = window.SF_THEMES.get(id).seed;
+  assert.equal(document.documentElement.style.getPropertyValue('--md-sys-color-primary'), window.SF_MD.scheme(seed, false).primary, 'pack seed drives the MD3 primary role');
 }
 for (const [name, input] of [['models', 'st-model-dir'], ['translate', 'st-scheme-list'], ['enhance', 'st-conf-mode'], ['fetch', 'st-fetch-quality'], ['perf', 'perf-start'], ['theme', 'sf-color']]) {
   await click('sf-settings-tab-' + name);
@@ -651,45 +655,27 @@ schemeConfirm=true; $('st-scheme-list').querySelector('.sf-scheme-delete').click
 assert.ok(![...storage.values()].some(value=>value.includes('fake-secret')),'keys never enter localStorage');
 assert.equal(requests.some(request=>request.url==='/api/translate/config'&&request.method==='POST'),false);
 
-// Aurora preferences use validated colors, survive storage reload and add no clocks.
-const auroraTimers=timers.size, auroraFrames=frames.size;
+// MD3（D1）：流光背景已下线，旧值落回纯色；可见性仍驱动动画门控。
+const backgroundTimers=timers.size, backgroundFrames=frames.size;
 $('sf-background').value='aurora'; $('sf-background').dispatchEvent(new Event('change'));
-assert.equal($('sf-aurora-options').hidden,false);
-$('sf-aurora-palette').value='ocean'; $('sf-aurora-palette').dispatchEvent(new Event('change'));
-assert.equal(document.documentElement.style.getPropertyValue('--sf-aurora-1'),'#74adc8');
-$('sf-aurora-motion').value='static'; $('sf-aurora-motion').dispatchEvent(new Event('change'));
-assert.equal(document.body.dataset.auroraMotion,'static');
-$('sf-aurora-color-2').value='#123456'; $('sf-aurora-color-2').dispatchEvent(new Event('change'));
-assert.equal($('sf-aurora-palette').value,'custom');
-const savedAurora=storage.get('subfabric-studio-v1');
-assert.deepEqual(JSON.parse(savedAurora).auroraColors,['#74adc8','#123456','#95c5be']);
-$('sf-aurora-color-1').value='url(invalid)'; $('sf-aurora-color-1').dispatchEvent(new Event('change'));
-assert.equal(storage.get('subfabric-studio-v1'),savedAurora,'invalid color never persists');
-window.dispatchEvent(Object.assign(new Event('storage'),{key:'subfabric-studio-v1',newValue:savedAurora}));
-assert.equal(document.body.dataset.auroraMotion,'static');
-assert.equal($('sf-aurora-color-2').value,'#123456');
+assert.equal(JSON.parse(storage.get('subfabric-studio-v1')).background,'solid','retired aurora background is never stored');
+assert.equal(document.body.dataset.bg,'solid');
 document.hidden=true; document.dispatchEvent(new Event('visibilitychange')); assert.equal(document.body.dataset.pageVisible,'false');
 document.hidden=false; document.dispatchEvent(new Event('visibilitychange')); assert.equal(document.body.dataset.pageVisible,'true');
-$('sf-aurora-palette').value='theme'; $('sf-aurora-palette').dispatchEvent(new Event('change'));
-assert.deepEqual(JSON.parse(storage.get('subfabric-studio-v1')).auroraColors,[]);
-$('sf-background').value='solid'; $('sf-background').dispatchEvent(new Event('change'));
-assert.equal($('sf-aurora-options').hidden,true);
-assert.equal(frames.size,auroraFrames,'no aurora animation frame loop');
-assert.ok(timers.size<=auroraTimers+1,'only invalid-color notice may add a timeout');
+assert.equal(frames.size,backgroundFrames,'background switching adds no animation frame loop');
+assert.ok(timers.size<=backgroundTimers+1,'only a status notice may add a timeout');
 
 // Series navigation keeps prerequisites and model actions behind the selected family.
-// Glass controls validate, persist, update output and synchronize across windows.
-for (const [id,key,value,expected] of [['sf-glass-dim','glassDim','72',72],['sf-glass-blur','glassBlur','32',32],['sf-glass-opacity','glassOpacity','60',60],['sf-glass-dim','glassDim','2',72],['sf-glass-blur','glassBlur','999',32],['sf-glass-opacity','glassOpacity','5',20]]) {
-  $(id).value=value; $(id).dispatchEvent(new Event('input'));
-  assert.equal(JSON.parse(storage.get('subfabric-studio-v1'))[key],expected);
+// 背景遮罩强度（替代毛玻璃三参数）：校验范围、持久化、更新输出并跨窗口同步。
+for (const [value,expected] of [['80',80],['40',40],['2',40],['999',95],['68',68],['91',91]]) {
+  $('sf-scrim').value=value; $('sf-scrim').dispatchEvent(new Event('input'));
+  assert.equal(JSON.parse(storage.get('subfabric-studio-v1')).scrim,expected);
 }
-const savedGlass=storage.get('subfabric-studio-v1');
-window.dispatchEvent(Object.assign(new Event('storage'),{key:'subfabric-studio-v1',newValue:savedGlass}));
-assert.equal(document.documentElement.style.getPropertyValue('--sf-glass-blur'),'32px');
-assert.equal($('sf-glass-dim-value').textContent,'72%');
-assert.equal($('sf-glass-blur-value').textContent,'32px');
-assert.equal($('sf-glass-opacity-value').textContent,'20%');
-assert.equal(frames.size,auroraFrames,'glass controls add no animation loop');
+const savedScrim=storage.get('subfabric-studio-v1');
+window.dispatchEvent(Object.assign(new Event('storage'),{key:'subfabric-studio-v1',newValue:savedScrim}));
+assert.equal(document.documentElement.style.getPropertyValue('--sf-backdrop-scrim'),'91%');
+assert.equal($('sf-scrim-value').textContent,'91%');
+assert.equal(frames.size,backgroundFrames,'scrim control adds no animation loop');
 await click('sf-settings-tab-models');
 assert.equal($('sf-asr-families').hidden,false);
 assert.equal($('st-rerecog-sel').closest('.st-card'),$('sf-asr-rerecog-mount'));

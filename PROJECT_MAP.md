@@ -6,7 +6,7 @@
 > 若发现本文件与代码不一致：**以代码为准**，顺手把本文件改对。
 > 新任务或恢复上下文先读唯一权威状态 [docs/STATUS.md](docs/STATUS.md) 与 [AGENTS.md](AGENTS.md)，
 > 再按需读本地图；阶段进度只维护在 STATUS，连续性要求与验收见 [docs/CONTINUITY.md](docs/CONTINUITY.md)。
-> 最后更新：2026-10-15（统一隔离 JS 测试入口及本轮维护整理；新增 §1.1「版本号命名规则」并发布 `beta 1.0` 安装包；此前独立 UI 原型与单独字幕工作台入口，
+> 最后更新：2026-10-18（MD3 重构 P1：颜色改由 `md-color.js` + `css/app.css` 级联层提供，主题统一为 Material，见 §7「颜色与样式层」与 `docs/MD3_REDESIGN_PLAN.md`）；此前 2026-10-15（统一隔离 JS 测试入口及本轮维护整理；新增 §1.1「版本号命名规则」并发布 `beta 1.0` 安装包；此前独立 UI 原型与单独字幕工作台入口，
 > 15 项修复验收见 `docs/REPAIR_15_RESULTS.md`，当前状态见 STATUS）。历史演进见 §11。
 
 ---
@@ -98,7 +98,7 @@ SubFabric 是一个**本地动态字幕编辑器**：给视频做「中文整句
 | `tools/` | 探针 / 诊断脚本；`build-install.mjs` 是事务构建入口，`repair15-regression.mjs` 兼容转发至统一 JS 回归入口 |
 | `build/`、`build_exe.py` | 打包（`build/installer/` 内图标与 `.iss` 入库，其余产物不入库） |
 | `main.py` | **历史遗留**的 Python GUI 工具（字体/颜色等默认值处理），与编辑器主线关系弱 |
-| `docs/` | `docs/STATUS.md` 是唯一权威当前状态，`docs/CONTINUITY.md` 保存连续性要求与验收；另含归档/设计文档（**不在根目录堆着**）：`docs/KARAOKE_DESIGN.md`、`docs/KARAOKE_REFS.md`（逐词高亮与 `\k` 的格式设计与调研，**改字幕格式前必读**）；`docs/CODE_REVIEW.md`（第一轮审查记录）；`docs/双引擎实测结论.md`（NPU+GPU 双引擎实测：本机无收益） |
+| `docs/` | `docs/STATUS.md` 是唯一权威当前状态，`docs/CONTINUITY.md` 保存连续性要求与验收；另含归档/设计文档（**不在根目录堆着**）：`docs/KARAOKE_DESIGN.md`、`docs/KARAOKE_REFS.md`（逐词高亮与 `\k` 的格式设计与调研，**改字幕格式前必读**）；`docs/CODE_REVIEW.md`（第一轮审查记录）；`docs/MD3_REDESIGN_PLAN.md`（Material Design 3 前端重构计划，**改前端外观前必读**）与 `docs/MD3_INVENTORY.md`（P0 基线、控件盘点与发现的问题）；`docs/双引擎实测结论.md`（NPU+GPU 双引擎实测：本机无收益） |
 | `eslint.config.js` | ESLint 9 开发期静态检查配置；它不是运行时依赖，CI 用临时 npx 执行 |
 
 ---
@@ -181,7 +181,7 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 | `editor.js` / `editor.css` / `workspace.css` | 模拟双语编辑、逐词播放高亮/边界、波形覆盖字幕/重叠分轨、时间轴四项设置、历史、角色单击分配与右键菜单、样式、审核建议、备注与字幕导出；独立页保持左预览/下时间轴/右四 Tab，字幕卡左时间/右角色·常驻样式·双语（Quiet Card：角色色左条、时间/置信度低对比、动作渐进披露）。播放中的卡片使用统一高亮与自动跟随提示；低频刷新、异常分类、反思纠错、全片逐词重校对、分段导入放入编辑器设置，高频筛选/搜索/显示模式/跟随播放留在顶部。 |
 | `data.js` / `icons.js` | SF_DEMO 通用合成数据、SF_WORD_DEMO 的非等分词时间/重叠角色示例和内联 SVG，无远程资产 |
 | `styles.css` | 纸白/石墨/苔绿 token、三种背景、主题、材质、交互反馈、减少动效 |
-| `studio-themes.js` / `studio.css` / `editor/themes/*.theme.json` | 声明式内置主题包与自定义主题包导入校验、本地色调角色、受限颜色令牌和本地预览图；主题包不执行脚本、不注入 CSS、不访问远程资源 |
+| `studio-themes.js` / `editor/themes/material-you.theme.json` | 声明式主题包：唯一内置包 Material You；自定义包 v2（种子色 + MD3 角色白名单覆盖 + 本地预览图），v1 旧包可导入但只保留种子色；旧内置包 id（studio / subfabric-classic / windows-uwp）迁移到 Material。不执行脚本、不注入 CSS、不访问远程资源 |
 | `progress.js` | 两页共享的任务/播放进度 markup、数值/状态同步、单个可见性观察器与后台/减少动效门控；波形 CSS 固定图案位移，无额外帧循环 |
 | `serve.cjs` | 127.0.0.1:8347 静态白名单；CSP connect-src none；不提供 API |
 | `review/` | 合成夹具、隔离行为检查与可视验收记录，不由静态服务提供 |
@@ -190,7 +190,7 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 顶栏命令经 `SF_EDITOR.command` 传递。详细流程和数据边界见原型 README；当前验收状态见 STATUS。
 编辑器 `prototypeEditor[id].timeline` 保存 double/height/pan/zoom，缺省为单行/188px/80px/1.05×；旧备份可缺此字段，新字段导入校验类型与范围。生产时间轴载入项目时默认显示 30 秒（短视频按实际时长钳制），用户仍可主动适应全片。重叠字幕按时间贪心分轨，波形背后的局部轻微模糊在拖动期间关闭；滚轮方向沿用旧版，Ctrl+滚轮保持指针下时间锚点。词边界调整共用邻词起止、可撤销；移动/缩放句时同步词时间，英文改写使旧词时间失效。逐词模式选择新句时自动聚焦时间轴，按词高亮只随原有播放时钟更新。
 主设置以 `draftSettings` 即时预览，保存条显示变更状态；离场统一保存/放弃/取消。
-主题包列表以 `draftThemePacks` 一同预览/保存/回滚；旧备份缺少主题字段时使用 Studio。包导入不执行任意代码，主题色角色在本地计算。
+主题包列表以 `draftThemePacks` 一同预览/保存/回滚；旧备份缺少主题字段时使用默认 Material 包。包导入不执行任意代码，主题色角色在本地计算。
 任务进度经 `SF_PROGRESS` 同步，运行完成段为波浪、剩余为直线，暂停/结束为直线。页面重建/编辑器卸载释放被观察节点；CSS 仅对可见且运行的 Material 条动画。编辑器的原有 80ms 模拟播放时钟只在前台播放时存在。
 新建向导只记录所选文件名并创建合成字幕，完整 JSON 工作区恢复由设置中的备份导入负责。
 
@@ -216,7 +216,7 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 | `i18n.js` | 文案词典（`lang/zh-CN.json`：键=原文，值可改；缺失回退原文） |
 | `modal.js` | 可拖动二级窗口（对齐 / 视口边界） |
 | `shortcuts.js` | 固定键盘快捷键表（刻意不可配置） |
-| `accent.js` | 主题强调色（经典脚本，`<head>` 内同步执行防首屏闪色） |
+| `md-color.js` | MD3 取色（经典脚本，`<head>` 内同步执行防首屏闪色）：移植 material-color-utilities 的 HCT / TonalPalette（Apache-2.0，`tests/md-color-test.mjs` 对照官方期望值），按种子色生成 TonalSpot 配色并只写 `--md-sys-color-*`；`window.SF_MD` 为取色 API，`window.SSAccent` 为旧强调色接口兼容层（main.js 色块仍用） |
 | `icons.js` | 内联 SVG 图标集（不要塞进文本节点中间，会拆散 i18n 词典匹配） |
 | `align.js` | 逐词时间重对齐（TTS 合成 → 重识别 → 序列对齐；fork） |
 | `asr-service.js` / `mt-local.js` | 常驻识别服务；本地 NLLB 翻译（fork） |
@@ -268,7 +268,7 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
   （包围盒变化带动整行位移）；③ 其余约束先读文件头注释再动手。
 - **弹层动效规范**：弹出层统一 `pop-in`（`--pop-ox/oy` 用 `util.popOrigin` 指向触发点；Modal 例外居中）；
   可点元素要有 `:active` 反馈；时长 120~150ms、ease-out、不从 `scale(0)` 出发；`prefers-reduced-motion` 全局关闭；不用 `transition: all`。
-- **批量选区浮条必须挂在 `#app` 外**：`#timeline-panel` 在主题末端带 `backdrop-filter`，会建立 fixed 定位包含块。
+- **批量选区浮条必须挂在 `#app` 外**：`#timeline-panel` 曾在主题末端带 `backdrop-filter`，会建立 fixed 定位包含块（MD3 P1 起面板已不透明、不再带模糊，但浮条仍留在外面，防止以后再给祖先加 `backdrop-filter` / `transform` 时回归）。
   `#range-bar` 若留在 `#tl-canvas-wrap` 里，`refreshRangeBar()` 按视口算出的 left/top 会被面板自身偏移再叠加一次，
   浮条实际落到视口外（实测 y=1421 / 视口 900，用户反馈“Ctrl+左键拖动没选项”）。当前 HTML 把它放在 `#app` 之后；
   改时间轴布局时不要把它塞回 `#tl-canvas-wrap` / `#timeline-panel`。
@@ -291,7 +291,7 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
   拿不到它们 → **右栏被压成 0 宽**（rect.w = 0），整页看着空白。改版式前先读这条。
 - **Studio 设置页的层级（2026-10-14）**：六个一级分类（外观与体验 / 语音识别 / 翻译与术语 / 识别与校对 / 下载与登录 / 性能与调度）。时间轴/显示/角色/文件/导出、自愈与 ASS 完整控件固定在编辑器 #tab-settings；全局不再显示“编辑与工作台”。语音识别先展示 Whisper / Parakeet / 云端 / 前置大卡片；VibeVoice 作为可进入的 CUDA 4bit 系列卡，缺少运行时只显示显式安装按钮，不绑定 CPU/NPU 回退。Parakeet 内展示三种硬件模型，额外多说话人/双引擎在 details 中保留，展开状态使用 GROUP_OPEN。模型与环境下载/删除操作仍在 #st-panel-models 祖先中；Studio 进入页面只探测，缺失运行时通过显式按钮安装，避免导航触发下载。旧 UI 保留原分组与自动运行时链路。
 - **VibeVoice CUDA 4bit（2026-10-14）**：`ASR_MODELS` 的 `vibevoice-asr-4bit` 固定使用 `Dubedo/VibeVoice-ASR-HF-NF4` revision `289d51eeddb2f089f6478da4c0ace7d078a69596`。模型文件清单包含 `quantization_metadata.json`；`asr/vibevoice.py` 只走 Transformers 原生 VibeVoice 模型类、NF4 元数据校验与 `cuda:0` 映射，拒绝 CPU/NPU/disk offload/通用 Seq2Seq 回退。服务端的 `vibevoice` 运行时安装在检测到 NVIDIA GPU 后按 cu126 索引安装 CUDA PyTorch（必要时替换 CPU 版），再安装 Transformers/bitsandbytes；初稿和选区重识别均不回退其它设备；未验证的 OpenVINO/NPU 后端不得接入。
-- **识别前置与流光（2026-10-14）**：Studio 前置仅 Python/NeMo/说话人三列小卡，Python自定义路径details的开合由 GROUP_OPEN保存；#st-runtime-env只保留隐藏兼容节点，不重复探测/显示。重新识别select移到#sf-asr-rerecog-mount，主页底部显示，仍在#st-panel-models内使用原change API。所有下载按钮显式触发原后端。studio-state的auroraColors为空时跟随主题，否则必须三项#RRGGBB；auroraMotion为dynamic/static；studio.js同步三个CSS变量和body属性，只有流光+dynamic+页面可见才添加CSS动画，减少动效优先，无新时钟。设置子视图必须自己承接flex gap，父panel gap不能穿过普通wrapper。
+- **识别前置与流光（2026-10-14）**：Studio 前置仅 Python/NeMo/说话人三列小卡，Python自定义路径details的开合由 GROUP_OPEN保存；#st-runtime-env只保留隐藏兼容节点，不重复探测/显示。重新识别select移到#sf-asr-rerecog-mount，主页底部显示，仍在#st-panel-models内使用原change API。所有下载按钮显式触发原后端。流光背景已在 MD3 重构 P1（2026-10-18）下线，旧偏好的 aurora 落回纯色。设置子视图必须自己承接flex gap，父panel gap不能穿过普通wrapper。
 - **设置重排使用同一份真实表单**：571旧控件保持稳定，编辑器组不再移动到全局；翻译表单仍是常驻 DOM，分类切换不会重建术语输入。命名方案主页面只显示已保存列表与添加入口，保存/测试位于展开表单内，识别与校对的全局保存只写热词配置，不能误覆盖翻译草稿。背景预览卡/明暗分段按钮同步原select的change。
 - **入口生成器**：tools/templates/studio-settings.html 为设置常驻表单模板（包含页面尾部闭合）；tools/generate-studio.mjs 用此模板及编辑器组ID再生新入口，ui-integration 在内存运行生成器检查真实控件完整/唯一及图标注册，禁止生成回旧设置布局。
 - **品牌版本与焦点（2026-10-14）**：Studio 启动将唯一 `#app-version` 节点移到 `.sf-brand-title`，版本仍由 main 的原服务响应更新；列表标题不另造版本。设置/导航/日志焦点 outline 向内绘制，避免滚动容器裁切；品牌底部留白使用 margin，不能包进链接焦点框。
@@ -314,9 +314,9 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 
 根入口逐请求读取程序根 `ui-config.json`，无论配置缺失、损坏或历史上写有 `{"ui":"legacy"}`，都进入唯一生产入口 `editor/studio.html`。配置不公开服务。旧界面 HTML/CSS 已删除；旧视觉迁移为 `subfabric-classic` 主题包。Studio 模板保留全部真实控件，继续使用 `main`、`project`、ASS、Timeline 与 API。
 
-Studio 的毛玻璃压暗、模糊度、透明度保存在 `studio-state.js` 的界面偏好中；`studio.js` 同时计算深色与浅色材质令牌，`studio.css` 末端对所有主题包的导航、项目卡、编辑器表面、设置卡、弹层和菜单统一应用。主题包只改变视觉令牌与几何，不能绕开这组材质参数。
+**颜色与样式层（MD3 重构 P1，2026-10-18）**：入口只链接 `css/app.css`，它声明 `@layer md.tokens, legacy, md.compat, md.components, app` 并按层引入 `md-tokens.css`（MD3 令牌与默认种子的回退色）、`studio.css`（整体放入 legacy 层，逐阶段缩减）、`md-compat.css`（旧变量 `--accent` / `--bg-1` / `--text-0` 等别名到 `--md-sys-color-*`，必须排在 legacy 之后）。颜色只由 `md-color.js` 写 `--md-sys-color-*` 内联值，新样式直接用 MD3 角色名，不要再引用旧变量；新样式一律放进层里（不在层里的样式会压过所有层）。界面表面一律不透明色调（surface-container-*），不用 `backdrop-filter`；毛玻璃三参数已下线，只保留作用于自定义图片背景的 `scrim`（背景遮罩强度 40–95%，CSS 变量 `--sf-backdrop-scrim`）。`body[data-design]` 恒为 `material`。
 
-`editor/js/studio.js` 只适配页面导航、外观、真实项目快照和播放器事件；`studio-state.js` 校验浏览器外观/文件夹关系（不储存字幕/模型/凭据）。`studio-themes.js` 提供四个内置主题包（Studio、Material You、SubFabric Classic、Windows UWP）及“我的主题包”存储；`editor/themes/*.theme.json` 是可分发的同源 JSON，导入包只能使用白名单设计、颜色令牌和本地 PNG/JPEG/WebP 预览图，不能执行脚本、注入 CSS 或引用远程资源。设置页按内置/自定义分组，内置包不可删除，自定义包可导出、替换和删除；格式与制作说明见 `docs/THEME_PACKS.md`。`studio-progress.js` 提供固定 CSS 波浪。全局模型、翻译与识别设置共用唯一“设置”入口；旧 `#/resources` 仅重定向至 `#/settings`。ASS 控件为同一组 DOM，始终停留在稿件编辑器的 #tab-settings，保留原监听器/文档保存链路；无当前 ASS 项目时由编辑器业务自身禁用文档操作，后处理为本机偏好。创建提交期间 Studio 路由统一互斥，避免上传回调读取被重置的材料。
+`editor/js/studio.js` 只适配页面导航、外观、真实项目快照和播放器事件；`studio-state.js` 校验浏览器外观/文件夹关系（不储存字幕/模型/凭据）。`studio-themes.js` 提供唯一内置主题包 Material You 及“我的主题包”存储；`editor/themes/material-you.theme.json` 是可分发的同源 JSON，导入包只能使用种子色、MD3 角色白名单和本地 PNG/JPEG/WebP 预览图，不能执行脚本、注入 CSS 或引用远程资源。设置页按内置/自定义分组，内置包不可删除，自定义包可导出、替换和删除；格式与制作说明见 `docs/THEME_PACKS.md`。`studio-progress.js` 提供固定 CSS 波浪。全局模型、翻译与识别设置共用唯一“设置”入口；旧 `#/resources` 仅重定向至 `#/settings`。ASS 控件为同一组 DOM，始终停留在稿件编辑器的 #tab-settings，保留原监听器/文档保存链路；无当前 ASS 项目时由编辑器业务自身禁用文档操作，后处理为本机偏好。创建提交期间 Studio 路由统一互斥，避免上传回调读取被重置的材料。
 
 相关验收与安装范围见 `docs/UI_INTEGRATION.md`；`tools/studio-install.mjs --prepare` 产生安装候选和哈希清单，候选验收通过后 `--apply <backup-directory>` 才进入备份/锁/替换/失败回滚。仅合并本次 UI 增量，不整体安装先前源码修复，不改 EXE/运行时/设置/项目。
 
@@ -351,7 +351,9 @@ Studio 的毛玻璃压暗、模糊度、透明度保存在 `studio-state.js` 的
 | `tests/ass-style-preset-test.mjs` | 双语样式预设的导出/导入纯逻辑（往返保真、跨稿件字段名搬运、坏文件拒绝、单样式稿件不乱改） | 纯函数直测，任何机器可跑；新测试文件会被 `run-all.mjs` 自动发现 |
 | `tests/timeline-text-test.mjs` | 时间轴块中文行可读性 / 角色色亮度阈值 | 纯函数抽取直测 |
 | `tests/ui-feedback-20261017-test.mjs` | 新增字幕自动切回字幕页 / 批量浮条不能落进 fixed 包含块 / 失败任务卡停转 / 时间轴块去角色名保留颜色 / 切 Tab 同步播放位置 / 查找替换不压暗与间距 | 源码与 DOM 断言；真实鼠标验收另见本轮 CDP 探针 |
-| `tests/orbit-capsule-test.mjs` | 首页统计胶囊 40° / 内部文字水平 / 非 Material 主题不旋转 / 分档尺寸与 40° 包围盒 | 源码 CSS 断言 + 几何粗算 |
+| `tests/orbit-capsule-test.mjs` | 首页统计胶囊 40° / 内部文字水平 / 已下线主题的胶囊分支已清理 / 分档尺寸与 40° 包围盒 | 源码 CSS 断言 + 几何粗算 |
+| `tests/md-color-test.mjs` | MD3 取色：HCT 移植逐值对照 `tests/md-color-expected.json`（material-color-utilities 0.3.0 生成，10 个种子 × 浅深 × 34 角色）、14 个种子 WCAG 对比度、首屏引导与偏好迁移、SSAccent 兼容、md-compat 别名与层序 | 纯 Node（vm），任何机器可跑；改默认种子或角色表后重新生成期望值 |
+| `tests/theme-packs-test.mjs` | 主题包 v2（种子色 + MD3 角色白名单）、v1 只取种子导入、旧内置包迁移、安全白名单、删除规则 | 纯 Node |
 | 其余 `tests/*-test.mjs` | ass / srt / role / postprocess / reseg / zh-* 等 | 多数独立可跑 |
 | `tools/http_layer_probe.mjs` | HTTP 层探针（守卫 / 形状 / 设置往返 / 项目全生命周期） | 自带服务启停，但会写同树设置/项目；只有隔离副本才可执行，旧字幕保存探针尚需适配 revision 协议；本轮以 repair 测试验证 |
 | `tools/route_smoke.mjs` | 24 路由冒烟 | 需先起服务：`PORT=8399 node editor/server.js` |

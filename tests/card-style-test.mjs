@@ -72,7 +72,7 @@ console.log('\n== 主题与兼容 ==');
 ok(/body\[data-theme="light"\] :is\(#editor-panel #cue-list, \.cue-measure\)/.test(CSS), '浅色主题有独立卡片变量');
 ok(/--cc-bg:\s*#fbfcfc/.test(CSS) && /--cc-text:\s*#202930/.test(CSS), '浅色卡片底色/正文色已定义');
 ok(/@media/.test(CSS), '媒体查询结构仍在（未误删）');
-ok(/\.sf-studio\[data-design=uwp\] #editor-panel #cue-list \.cue-card/.test(CSS), 'UWP 仍保留 4px 小圆角覆盖');
+ok(!/data-design=uwp/.test(CSS), 'MD3 统一主题后不再残留 UWP 专用的卡片覆盖');
 ok(/\.cc-left-stack \.cc-rerecog/.test(CSS), '重识别按钮仍在左列样式内');
 ok(/chip-conf-low/.test(CSS) && /--cc-warn/.test(CSS), '低置信度仍使用警示色');
 const nb = (CSS.match(/\{/g) || []).length, ncb = (CSS.match(/\}/g) || []).length;

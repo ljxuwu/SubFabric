@@ -4,35 +4,31 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { isolatedServer } from './helpers/isolated-server.mjs';
 const root = path.resolve(import.meta.dirname, '..');
-const themesContext = { window: {} }; vm.createContext(themesContext);
-vm.runInContext(fs.readFileSync(path.join(root, 'editor/js/studio-themes.js'), 'utf8'), themesContext);
+const themesContext = { window: { matchMedia: () => ({ matches: false }) }, document: { documentElement: { dataset: {}, style: { setProperty() {} } } }, localStorage: { getItem: () => null } };
+vm.createContext(themesContext);
+for (const file of ['md-color.js', 'studio-themes.js']) vm.runInContext(fs.readFileSync(path.join(root, 'editor/js', file), 'utf8'), themesContext);
 const themes = themesContext.window.SF_THEMES;
 const stateSource = fs.readFileSync(path.join(root, 'editor/js/studio-state.js'), 'utf8');
 const { normalizeStudio, projectPhase, matchesProject, imageData } = await import('data:text/javascript;base64,' + Buffer.from(stateSource).toString('base64'));
-assert.equal(normalizeStudio(null, themes).themePack, 'studio');
-assert.ok(themes.get('windows-uwp').design === 'uwp', 'Windows UWP theme is built in');
-assert.equal(themes.valid({ schema: 'subfabric-theme-v1', id: 'windows-uwp-copy', name: 'Windows UWP Copy', version: '1.0.0', description: 'test', design: 'uwp', seed: '#0078d4' }), true);
-assert.equal(normalizeStudio({ themePack: 'bad', accent: 'url(evil)', mode: 'bad', image: '<svg>', motion: 'bad', custom: [{}] }, themes).accent, '#5c7560');
+// MD3 统一主题：默认 Material + 默认种子色；无效值回落默认
+assert.equal(normalizeStudio(null, themes).themePack, 'material-you');
+assert.equal(normalizeStudio(null, themes).accent, '#5789DC');
+assert.equal(normalizeStudio({ themePack: 'bad', accent: 'url(evil)', mode: 'bad', image: '<svg>', motion: 'bad', custom: [{}] }, themes).accent, '#5789DC');
 assert.equal(imageData('data:image/svg+xml;base64,AAAA'), false);
-assert.deepEqual(normalizeStudio({},themes).auroraColors,[],'old preferences inherit theme colors');
-assert.equal(normalizeStudio({},themes).auroraMotion,'dynamic');
-assert.equal(normalizeStudio({},themes).glassDim,80);
-assert.equal(normalizeStudio({},themes).glassBlur,18);
-assert.equal(normalizeStudio({},themes).glassOpacity,100);
-for (const invalid of [NaN,Infinity,null,'18',{}]) {
-  assert.equal(normalizeStudio({glassDim:invalid,glassBlur:invalid},themes).glassDim,80);
-  assert.equal(normalizeStudio({glassDim:invalid,glassBlur:invalid},themes).glassBlur,18);
-  assert.equal(normalizeStudio({glassOpacity:invalid},themes).glassOpacity,100);
-}
-assert.equal(normalizeStudio({glassDim:0,glassBlur:99},themes).glassDim,72);
-assert.equal(normalizeStudio({glassDim:0,glassBlur:99},themes).glassBlur,32);
-assert.equal(normalizeStudio({glassOpacity:0},themes).glassOpacity,20);
-assert.equal(normalizeStudio({glassOpacity:101},themes).glassOpacity,100);
-const colors=['#123456','#abcdef','#789abc'];
-const normalized=normalizeStudio({auroraColors:colors,auroraMotion:'static'},themes);
-assert.deepEqual(normalized.auroraColors,colors); colors[0]='#000000'; assert.equal(normalized.auroraColors[0],'#123456','colors copied');
-for(const invalid of [['url(evil)','#123456','#123456'],['#123456'],[1,2,3],null,'#123456'])assert.deepEqual(normalizeStudio({auroraColors:invalid},themes).auroraColors,[]);
-assert.equal(normalizeStudio({auroraMotion:'bad'},themes).auroraMotion,'dynamic');
+// 旧偏好一次性迁移：下线的内置包 → Material；UWP 固定蓝；用户自选色保留；流光 → 纯色；毛玻璃字段丢弃
+assert.deepEqual([normalizeStudio({ themePack: 'windows-uwp', accent: '#ff00aa' }, themes)].map(p => [p.themePack, p.accent])[0], ['material-you', '#0078D7']);
+assert.deepEqual([normalizeStudio({ themePack: 'studio', accent: '#5c7560' }, themes)].map(p => [p.themePack, p.accent])[0], ['material-you', '#5C7560']);
+assert.deepEqual([normalizeStudio({ themePack: 'subfabric-classic', accent: '#ff7a45' }, themes)].map(p => [p.themePack, p.accent])[0], ['material-you', '#FF7A45']);
+const migrated = normalizeStudio({ background: 'aurora', auroraColors: ['#123456', '#abcdef', '#789abc'], auroraMotion: 'static', glassDim: 90, glassBlur: 4, glassOpacity: 50 }, themes);
+assert.equal(migrated.background, 'solid', 'retired aurora background falls back to solid');
+for (const key of ['auroraColors', 'auroraMotion', 'glassDim', 'glassBlur', 'glassOpacity']) assert.equal(key in migrated, false, 'retired preference dropped: ' + key);
+assert.equal(normalizeStudio({ background: 'image' }, themes).background, 'image');
+// 背景遮罩强度
+assert.equal(normalizeStudio({}, themes).scrim, 68);
+for (const invalid of [NaN, Infinity, null, '80', {}]) assert.equal(normalizeStudio({ scrim: invalid }, themes).scrim, 68);
+assert.equal(normalizeStudio({ scrim: 0 }, themes).scrim, 40);
+assert.equal(normalizeStudio({ scrim: 120 }, themes).scrim, 95);
+assert.equal(normalizeStudio({ scrim: 80.4 }, themes).scrim, 80);
 const prefs = normalizeStudio({ folders: [{ id: 'f-one', name: 'Folder' }, { id: 'f-one', name: 'duplicate' }, { id: '../x', name: 'bad' }], assignments: { 'p-one': 'f-one', 'p-bad': 'f-no' } }, themes);
 assert.equal(prefs.folders.length, 1); assert.deepEqual(prefs.assignments, { 'p-one': 'f-one' });
 const active = { id: 'p-one', name: 'Movie', draft: { status: 'running', progress: 30 } };
@@ -55,12 +51,12 @@ assert.equal(fs.existsSync(path.join(root, 'editor/index.html')), false);
 assert.equal(fs.existsSync(path.join(root, 'editor/css/style.css')), false);
 assert.equal(fs.existsSync(path.join(root, 'editor/css/ui.css')), false);
 assert.ok(fresh.includes('id="sf-settings-tab-theme"'));
-assert.match(fresh, /毛玻璃压暗/);
-assert.match(fresh, /毛玻璃模糊度/);
-assert.match(studioCss, /data-theme=light[\s\S]*sf-glass-light-surface[\s\S]*backdrop-filter:blur\(var\(--sf-glass-blur\)\)/, 'light mode uses the shared glass settings');
-assert.match(studioCss, /data-theme=dark[\s\S]*sf-glass-surface[\s\S]*backdrop-filter:blur\(var\(--sf-glass-blur\)\)/, 'dark mode keeps the shared glass settings');
-assert.match(studioJs, /--sf-glass-light-surface/);
-assert.match(studioJs, /--sf-glass-light-raised/);
+assert.match(fresh, /背景遮罩强度/);
+assert.doesNotMatch(fresh, /毛玻璃|模糊流光|sf-aurora-/, 'glass and aurora controls are retired (MD3 D1)');
+assert.doesNotMatch(studioCss, /--sf-glass-|backdrop-filter:blur\(var/, 'surfaces no longer depend on glass variables');
+assert.match(studioCss, /\/\* MD3 表面层级[\s\S]*surface-container-low[\s\S]*backdrop-filter:none!important/, 'opaque MD3 tonal surfaces replace the glass layer');
+assert.match(studioJs, /window\.SF_MD\.apply\(accent, dark, themes\.roleOverrides\(pack, dark\)\)/, 'Studio applies colors through the MD3 scheme');
+assert.doesNotMatch(studioJs, /--sf-glass|auroraColors|design === 'uwp'/, 'Studio adapter no longer carries glass, aurora or UWP branches');
 const ids = text => [...text.replace(/<!--[\s\S]*?-->/g, '').matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
 // Regeneration must preserve the redesigned settings, without writing any output or assets.
 const generated = new Map();
@@ -107,10 +103,12 @@ try {
     const url = queue.shift(); if (seen.has(url)) continue; seen.add(url);
     const r = await server.call(url); assert.equal(r.status, 200, url);
     const text = await r.text();
-    const refs = url.endsWith('.html') ? [...text.matchAll(/(?:src|href)="([^"]+)"/g)].map(m => m[1]) : [...text.matchAll(/(?:from\s*|import\s*\()?['"]((?:\.{1,2}\/|\/)[^'"\n]+\.js(?:\?[^'"\n]*)?)['"]/g)].map(m => m[1]);
+    const refs = url.endsWith('.html') ? [...text.matchAll(/(?:src|href)="([^"]+)"/g)].map(m => m[1])
+      : url.endsWith('.css') ? [...text.matchAll(/@import\s+url\("([^"]+)"\)/g)].map(m => (url.slice(0, url.lastIndexOf('/') + 1) + m[1]))
+      : [...text.matchAll(/(?:from\s*|import\s*\()?['"]((?:\.{1,2}\/|\/)[^'"\n]+\.js(?:\?[^'"\n]*)?)['"]/g)].map(m => m[1]);
     for (const ref of refs) if (!ref.startsWith('#') && !/^[a-z]+:/i.test(ref)) queue.push(new URL(ref, server.origin + url).pathname);
   }
-  for (const ref of ['/editor/js/studio.js', '/editor/js/studio-state.js', '/editor/js/studio-themes.js', '/editor/js/studio-progress.js', '/editor/css/studio.css']) assert.ok(seen.has(ref), ref);
+  for (const ref of ['/editor/js/md-color.js', '/editor/js/studio.js', '/editor/js/studio-state.js', '/editor/js/studio-themes.js', '/editor/js/studio-progress.js', '/editor/css/app.css', '/editor/css/md-tokens.css', '/editor/css/studio.css', '/editor/css/md-compat.css']) assert.ok(seen.has(ref), ref);
   assert.equal((await server.call('/ui-config.json')).status, 403);
   console.log(`Studio parity: ${new Set(ids(fresh)).size} controls, ${seen.size} resources, single-entry/config privacy and real-state filters passed`);
 } finally { await server.close(); }

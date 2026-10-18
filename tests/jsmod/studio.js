@@ -15,7 +15,6 @@ let prefs = normalizeStudio(saved, themes);
 let projects = [], filter = 'all', folder = '', route = location.hash || '#/home';
 let applying = false, pendingSetting = '';
 const systemDark = matchMedia('(prefers-color-scheme: dark)');
-const auroraPalettes = { sage: ['#90b99c', '#bacb91', '#9ac2b8'], ocean: ['#74adc8', '#9eaccf', '#95c5be'], sunset: ['#d69caa', '#cfb693', '#aca3cf'] };
 let noticeTimer;
 function notice(message) {
   $('sf-notice').textContent = t(message); $('sf-notice').hidden = false;
@@ -31,76 +30,28 @@ function applyTheme() {
   applying = true;
   const dark = prefs.mode === 'dark' || prefs.mode === 'system' && systemDark.matches;
   const pack = themes.get(prefs.themePack, prefs.custom);
-  // Windows UWP owns its accent: custom theme colors belong to Studio/Material
-  // and must not bleed into the fixed Windows 10 control language.
-  const accent = pack.design === 'uwp' ? pack.seed : prefs.accent;
+  const accent = prefs.accent;
   document.body.dataset.theme = dark ? 'dark' : 'light';
-  document.body.dataset.design = pack.design;
+  document.body.dataset.design = 'material';
   document.body.dataset.themePack = pack.id;
   document.body.dataset.bg = prefs.background;
   document.body.dataset.motion = prefs.motion;
-  document.body.dataset.auroraMotion = prefs.auroraMotion;
   document.body.dataset.pageVisible = String(!document.hidden);
-  let tokens = pack.design === 'material' ? themes.palette(accent, dark) : pack.design === 'uwp' ? {
-    ...themes.palette(accent, dark), '--accent': accent.toUpperCase(), '--on-accent': themes.contrast(accent, '#ffffff') >= 4.5 ? '#ffffff' : '#101318', '--bg': dark ? '#1F1F1F' : '#F3F3F3', '--surface': dark ? '#2B2B2B' : '#FFFFFF',
-    '--surface-2': dark ? '#333333' : '#EDEDED', '--text': dark ? '#F3F3F3' : '#202020', '--muted': dark ? '#C5C5C5' : '#606060',
-    '--line': dark ? '#666666' : '#B8B8B8', '--accent-soft': dark ? '#153A5A' : '#CCE4F7', '--accent-hover': dark ? '#383838' : '#E5F1FB', '--outline': dark ? '#C8C8C8' : '#666666'
-  } : {
-    ...themes.palette(prefs.accent, dark), '--bg': dark ? '#1c221e' : '#f6f7f2', '--surface': dark ? '#252d27' : '#fffefa',
-    '--surface-2': dark ? '#2c352e' : '#eef1e8', '--text': dark ? '#e0e6da' : '#28372b', '--muted': dark ? '#b2bdae' : '#647161', '--line': dark ? '#465244' : '#dce2d5'
-  };
-  // 自定义包只能覆盖白名单令牌；UWP 继续使用固定 Windows 10 中性色和蓝色。
-  if (pack.design !== 'uwp') {
-    tokens = { ...tokens, ...themes.tokenOverrides(pack, dark) };
-    // 包的调色板可以自绘，但设置中的强调色仍是最终用户偏好。
-    tokens['--accent'] = prefs.accent;
-    tokens['--on-accent'] = themes.contrast(prefs.accent, '#ffffff') >= 4.5 ? '#ffffff' : '#101318';
-  }
-  // 原控件和 canvas 都从 root 读变量，统一映射为原程序的令牌名。
-  window.SSAccent.apply(tokens['--accent']);
+  // 颜色只写 MD3 角色（--md-sys-color-*）；旧变量名由 css/md-compat.css 别名，不再逐个写内联样式。
+  // 主题包的角色覆盖在种子色方案之上生效；种子色本身始终是用户偏好。
+  window.SF_MD.apply(accent, dark, themes.roleOverrides(pack, dark));
   const st = document.documentElement.style;
-  Object.entries(tokens).forEach(([k, v]) => st.setProperty(k, v));
-  for (const [k, v] of Object.entries({ '--bg-0': tokens['--bg'], '--bg-1': tokens['--surface'], '--bg-2': tokens['--surface-2'], '--bg-3': tokens['--accent-soft'], '--border': tokens['--line'], '--text-0': tokens['--text'], '--text-1': tokens['--muted'], '--text-2': tokens['--muted'], '--zh': tokens['--text'], '--en': tokens['--muted'], '--accent-ink': tokens['--on-accent'] })) st.setProperty(k, v);
-  st.colorScheme = dark ? 'dark' : 'light';
-  st.setProperty('--sf-glass-dim', prefs.glassDim + '%');
-  st.setProperty('--sf-glass-blur', prefs.glassBlur + 'px');
-  st.setProperty('--sf-glass-opacity', prefs.glassOpacity + '%');
-  // 纯黑基底配浅色正文，即使背后是纯白图片也保留足够对比度。
-  // 压暗控制黑色基底强度，透明度单独控制实际 alpha；默认 80/100 保持此前视觉。
-  const glassAlpha = prefs.glassDim * prefs.glassOpacity / 10000;
-  st.setProperty('--sf-glass-surface', `rgb(8 11 10 / ${glassAlpha})`);
-  st.setProperty('--sf-glass-raised', `rgb(12 16 14 / ${Math.min(.96, glassAlpha + .06)})`);
-  // 浅色模式使用独立的黑色半透明层：压暗值控制底色深度，透明度控制材质透出量。
-  // 这样同一组设置在 Studio、Material、UWP、Classic 主题中都能工作，且默认值不会把浅色面板压成深色。
-  const lightGlassAlpha = Math.max(.06, Math.min(.42, (prefs.glassDim - 60) / 100 * prefs.glassOpacity / 100));
-  st.setProperty('--sf-glass-light-surface', `rgb(0 0 0 / ${lightGlassAlpha})`);
-  st.setProperty('--sf-glass-light-raised', `rgb(0 0 0 / ${Math.min(.5, lightGlassAlpha + .06)})`);
-  $('sf-glass-dim').value = String(prefs.glassDim);
-  $('sf-glass-blur').value = String(prefs.glassBlur);
-  $('sf-glass-opacity').value = String(prefs.glassOpacity);
-  $('sf-glass-dim-value').textContent = prefs.glassDim + '%';
-  $('sf-glass-blur-value').textContent = prefs.glassBlur + 'px';
-  $('sf-glass-opacity-value').textContent = prefs.glassOpacity + '%';
-  const auroraColors = prefs.auroraColors.length ? prefs.auroraColors : [tokens['--accent-soft'], tokens['--secondary-container'], tokens['--tertiary-container']];
-  auroraColors.forEach((color, i) => {
-    st.setProperty('--sf-aurora-' + (i + 1), color);
-    const input = $('sf-aurora-color-' + (i + 1));
-    input.value = color; input.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-  $('sf-aurora-options').hidden = prefs.background !== 'aurora';
-  $('sf-aurora-motion').value = prefs.auroraMotion;
-  $('sf-aurora-palette').value = !prefs.auroraColors.length ? 'theme' : Object.keys(auroraPalettes).find(key => auroraPalettes[key].every((color, i) => color === prefs.auroraColors[i])) || 'custom';
+  st.setProperty('--sf-backdrop-scrim', prefs.scrim + '%');
+  $('sf-scrim').value = String(prefs.scrim);
+  $('sf-scrim-value').textContent = prefs.scrim + '%';
   $('sf-background').value = prefs.background; $('sf-mode').value = prefs.mode; $('sf-motion').value = prefs.motion; $('sf-color').value = accent;
-  $('sf-color').disabled = pack.design === 'uwp';
-  $('sf-color').title = pack.design === 'uwp' ? 'Windows UWP 使用固定的 Windows 10 蓝色' : '';
   $('sf-image-pick').disabled = prefs.background !== 'image';
   $('sf-image-clear').disabled = !prefs.image;
   for (const input of document.querySelectorAll('#sf-color, #theme-color, [data-theme-color]')) {
     input.value = accent;
-    input.disabled = pack.design === 'uwp';
     input.dispatchEvent(new Event('input', { bubbles: true }));
   }
-  document.querySelectorAll('.theme-sw[data-hex]').forEach(b => { b.classList.toggle('active', b.dataset.hex === accent); b.disabled = pack.design === 'uwp'; });
+  document.querySelectorAll('.theme-sw[data-hex]').forEach(b => b.classList.toggle('active', b.dataset.hex.toUpperCase() === accent.toUpperCase()));
   document.querySelector('.sf-backdrop').style.backgroundImage = prefs.background === 'image' && imageData(prefs.image) ? `url("${prefs.image}")` : 'none';
   window.SF_PROGRESS.sync();
   window.dispatchEvent(new CustomEvent('ss-accent', { detail: { hex: accent } }));
@@ -126,33 +77,24 @@ for (const kind of ['background', 'mode']) {
   }));
 }
 // 侧栏取色控件写入 Studio 独立偏好，不改变项目业务配置。
-window.SSAccent.current = () => {
-  const pack = themes.get(prefs.themePack, prefs.custom);
-  return pack.design === 'uwp' ? pack.seed : prefs.accent;
-};
+window.SSAccent.current = () => prefs.accent;
 window.SSAccent.set = hex => {
   if (applying) return false;
-  if (themes.get(prefs.themePack, prefs.custom).design === 'uwp') return false;
   if (!themes.hex(hex) || !commit({ accent: hex })) return false;
   applyTheme(); return true;
 };
 window.SSAccent.reset = () => { const seed = themes.get(prefs.themePack, prefs.custom).seed; if (commit({ accent: seed })) applyTheme(); return seed; };
 function renderPacks() {
   const render = pack => {
-    // 示意卡片的工作区预览跟随当前明暗模式，避免深色设置页内仍显示浅色工作区。
+    // 示意卡片按当前明暗模式预览该包的种子色方案（含包内角色覆盖），避免深色设置页内仍显示浅色预览。
     const dark = document.body.dataset.theme === 'dark';
-    const palette = pack.design === 'uwp'
-      ? { '--bg': dark ? '#1F1F1F' : '#F3F3F3', '--accent': pack.seed, '--on-accent': '#FFFFFF' }
-      : { ...themes.palette(pack.seed, dark), ...themes.tokenOverrides(pack, dark) };
-    const glyph = pack.design === 'material'
-      ? '<path d="m12 3 2.4 6.6L21 12l-6.6 2.4L12 21l-2.4-6.6L3 12l6.6-2.4L12 3ZM20 2v4m-2-2h4M4 18v4m-2-2h4"/>'
-      : pack.design === 'uwp'
-        ? '<path d="M4 4h16v16H4z"/><path d="M8 8h8v8H8z"/>'
-      : '<path d="M4 6.5 12 3l8 3.5v11L12 21l-8-3.5z"/><path d="m4 6.5 8 3.5 8-3.5M12 10v11M8 4.8l8 3.5"/>';
+    const roles = { ...themes.scheme(pack.seed, dark), ...themes.roleOverrides(pack, dark) };
+    const palette = { '--bg': roles['surface-container-low'], '--accent': roles.primary, '--on-accent': roles['on-primary'] };
+    const glyph = '<path d="m12 3 2.4 6.6L21 12l-6.6 2.4L12 21l-2.4-6.6L3 12l6.6-2.4L12 3ZM20 2v4m-2-2h4M4 18v4m-2-2h4"/>';
     const selected = prefs.themePack === pack.id;
     const builtin = themes.isBuiltin(pack);
     const preview = pack.assets?.preview ? `--preview-image:url("${pack.assets.preview}");` : '';
-    return `<article class="sf-pack" data-pack="${esc(pack.id)}" data-builtin="${builtin}" aria-current="${selected ? 'true' : 'false'}"><button type="button" class="sf-pack-select" data-pack-select="${esc(pack.id)}" aria-pressed="${selected}"><span class="sf-pack-art ${pack.design}" aria-hidden="true" style="--preview-bg:${palette['--bg']};--preview-accent:${palette['--accent']};--preview-ink:${palette['--on-accent']};${preview}"><span class="sf-pack-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${glyph}</svg></span><span class="sf-pack-lines"><i></i><i></i><i></i></span></span><span class="sf-pack-name"><b>${esc(pack.name)}</b>${selected ? ico('checkCircle') : ''}</span><small>${esc(pack.description)}</small><em>${builtin ? '内置主题包' : '我的主题包'}</em></button>${builtin ? '' : `<button type="button" class="sf-pack-delete" data-delete-pack="${esc(pack.id)}" title="删除主题包" aria-label="删除 ${esc(pack.name)}">${ico('trash')}</button>`}</article>`;
+    return `<article class="sf-pack" data-pack="${esc(pack.id)}" data-builtin="${builtin}" aria-current="${selected ? 'true' : 'false'}"><button type="button" class="sf-pack-select" data-pack-select="${esc(pack.id)}" aria-pressed="${selected}"><span class="sf-pack-art material" aria-hidden="true" style="--preview-bg:${palette['--bg']};--preview-accent:${palette['--accent']};--preview-ink:${palette['--on-accent']};${preview}"><span class="sf-pack-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${glyph}</svg></span><span class="sf-pack-lines"><i></i><i></i><i></i></span></span><span class="sf-pack-name"><b>${esc(pack.name)}</b>${selected ? ico('checkCircle') : ''}</span><small>${esc(pack.description)}</small><em>${builtin ? '内置主题包' : '我的主题包'}</em></button>${builtin ? '' : `<button type="button" class="sf-pack-delete" data-delete-pack="${esc(pack.id)}" title="删除主题包" aria-label="删除 ${esc(pack.name)}">${ico('trash')}</button>`}</article>`;
   };
   const builtin = themes.list([]).map(render).join('');
   const custom = prefs.custom.map(render).join('');
@@ -165,34 +107,24 @@ $('sf-theme-packs').addEventListener('click', e => {
     if (!themes.canDelete(id)) return;
     const next = themes.remove(prefs.custom, id);
     const selected = prefs.themePack === id;
-    if (commit(selected ? { custom: next, themePack: 'studio', accent: themes.get('studio').seed } : { custom: next })) { applyTheme(); themeStatus(); }
+    if (commit(selected ? { custom: next, themePack: themes.DEFAULT_ID, accent: themes.get(themes.DEFAULT_ID).seed } : { custom: next })) { applyTheme(); themeStatus(); }
     return;
   }
   const b = e.target.closest('[data-pack-select]'); if (!b) return;
   // 卡片把主题 ID 放在 data-pack-select；读取错误的 dataset.pack 会让
-  // themes.get(undefined) 静默回退到 Studio，造成“点击没有任何反应”。
+  // themes.get(undefined) 静默回退到默认包，造成“点击没有任何反应”。
   const pack = themes.get(b.dataset.packSelect, prefs.custom);
   if (commit({ themePack: pack.id, accent: pack.seed })) { applyTheme(); themeStatus(); }
 });
 function themeStatus() { $('sf-theme-status').textContent = t('外观已保存，刷新后保留。'); }
-for (const [id, key] of [['sf-glass-dim', 'glassDim'], ['sf-glass-blur', 'glassBlur'], ['sf-glass-opacity', 'glassOpacity']]) $(id).addEventListener('input', () => {
-  if (commit({ [key]: Number($(id).value) })) { applyTheme(); themeStatus(); }
+$('sf-scrim').addEventListener('input', () => {
+  if (commit({ scrim: Number($('sf-scrim').value) })) { applyTheme(); themeStatus(); }
 });
-for (const [id, key] of [['sf-mode', 'mode'], ['sf-background', 'background'], ['sf-motion', 'motion'], ['sf-aurora-motion', 'auroraMotion']]) $(id).addEventListener('change', () => {
+for (const [id, key] of [['sf-mode', 'mode'], ['sf-background', 'background'], ['sf-motion', 'motion']]) $(id).addEventListener('change', () => {
   if (commit({ [key]: $(id).value })) { applyTheme(); themeStatus(); }
 });
-// 只有可见的动态背景运行动画；静态/后台/减少动效不启动 JS 时钟。
+// 只有可见页面运行动画（波浪进度等）；后台/减少动效不启动 JS 时钟。
 document.addEventListener('visibilitychange', () => { document.body.dataset.pageVisible = String(!document.hidden); });
-$('sf-aurora-palette').addEventListener('change', () => {
-  const choice = $('sf-aurora-palette').value;
-  const colors = choice === 'theme' ? [] : auroraPalettes[choice] || [1, 2, 3].map(i => $('sf-aurora-color-' + i).value);
-  if (commit({ auroraColors: colors })) { applyTheme(); themeStatus(); }
-});
-for (let i = 1; i <= 3; i++) $('sf-aurora-color-' + i).addEventListener('change', () => {
-  const colors = [1, 2, 3].map(n => $('sf-aurora-color-' + n).value);
-  if (!colors.every(color => themes.hex(color))) { notice('主题色需要使用 #RRGGBB 格式。'); applyTheme(); return; }
-  if (commit({ auroraColors: colors })) { applyTheme(); themeStatus(); }
-});
 $('sf-color').addEventListener('change', () => {
   if (!themes.hex($('sf-color').value)) { notice('主题色需要使用 #RRGGBB 格式。'); return; }
   if (commit({ accent: $('sf-color').value })) { applyTheme(); themeStatus(); }
@@ -213,15 +145,18 @@ function download(name, data) {
 }
 $('sf-theme-export').addEventListener('click', () => {
   const pack = themes.get(prefs.themePack, prefs.custom);
-  download(`${pack.id}.theme.json`, { ...pack, seed: pack.design === 'uwp' ? pack.seed : prefs.accent });
+  const { builtin: _builtin, ...data } = pack;
+  download(`${pack.id}.theme.json`, { ...data, seed: prefs.accent });
 });
 $('sf-theme-import').addEventListener('click', () => $('sf-theme-file').click());
 $('sf-theme-file').addEventListener('change', async () => {
   const f = $('sf-theme-file').files[0]; $('sf-theme-file').value = ''; if (!f) return;
   try {
     if (f.size > 800000) throw Error('主题包过大，最大支持 800KB。');
-    const imported = JSON.parse(await f.text()); if (!themes.valid(imported)) throw Error('主题包格式无效，只支持声明式主题 JSON。');
-    let pack = imported;
+    const imported = JSON.parse(await f.text());
+    const legacy = themes.validV1(imported);
+    if (!legacy && !themes.valid(imported)) throw Error('主题包格式无效，只支持声明式主题 JSON。');
+    let pack = themes.upgrade(imported);
     if (themes.isBuiltin(pack)) {
       const base = pack.id + '-custom';
       let id = base, n = 2;
@@ -233,6 +168,7 @@ $('sf-theme-file').addEventListener('change', async () => {
     custom = [...custom.filter(p => p.id !== pack.id), pack];
     if (!themes.validList(custom)) throw Error('主题包数量已达上限。');
     if (commit({ custom, themePack: pack.id, accent: pack.seed })) { applyTheme(); themeStatus(); }
+    if (legacy) notice('这是旧版（v1）主题包：已按其种子色生成 Material 配色，原包里的界面颜色和设计风格不再沿用。');
   } catch (e) { notice(e.message); }
 });
 $('sf-image-pick').addEventListener('click', () => $('sf-image-file').click());
@@ -660,7 +596,8 @@ function installThemeChoices() {
   menu.setAttribute('role', 'listbox'); menu.setAttribute('data-sf-choice-control', ''); menu.hidden = true;
   document.body.appendChild(menu);
   let active = null, cursor = -1, fingerprint = '', typed = '', typedAt = 0;
-  const themed = () => ['studio', 'material', 'uwp'].includes(document.body.dataset.design);
+  // 曾按设计语言决定是否接管原生 select；MD3 统一后所有界面都使用自定义选择器。
+  const themed = () => true;
   const options = record => [...record.select.options];
   const unavailable = option => option.disabled || option.parentElement?.tagName === 'OPTGROUP' && option.parentElement.disabled;
   function name(select) {

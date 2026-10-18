@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SubFabric · 字幕工作台</title>
 <link rel="icon" href="/favicon.ico" sizes="any">
-<script src="js/accent.js"></script>
-<link rel="stylesheet" href="css/studio.css">
+<script src="js/md-color.js"></script>
+<link rel="stylesheet" href="css/app.css">
 <script>
 /* 前端错误上报: 任何 JS 报错/未处理 Promise 都上报到服务端日志(UI「日志」页可见),
  * 方便定位"界面异常但看不到原因"。放在所有脚本之前, 保证模块早期报错也能抓到。 */
@@ -33,8 +33,9 @@
 })();
 </script>
 </head>
-<body class="sf-studio" data-theme="light" data-design="studio" data-bg="solid">
-<div class="sf-ambient" aria-hidden="true"><i></i><i></i><i></i></div><div class="sf-backdrop" aria-hidden="true"></div>
+<body class="sf-studio" data-theme="light" data-design="material" data-bg="solid">
+<script>document.body.dataset.theme = document.documentElement.dataset.theme || 'light';</script>
+<div class="sf-backdrop" aria-hidden="true"></div>
 <aside id="sf-nav" class="sf-nav" aria-label="主导航">
   <a href="#/home" class="sf-brand"><span class="sf-brand-mark"><img src="/editor/assets/app-logo.png" alt=""></span><b><span class="sf-brand-title">SubFabric</span><small>字幕创作工作室</small></b></a>
   <span class="sf-nav-label">工作空间</span>
@@ -574,7 +575,7 @@
           <div class="set-group-head"><i class="set-dot" style="background:var(--accent)"></i><span class="set-group-title">外观</span><span class="set-group-note">主题色</span></div>
           <div class="theme-row">
             <div class="theme-swatches" id="theme-swatches-side" data-theme-swatches="1"></div>
-            <label class="theme-custom" title="自定义主题色"><input type="text" data-color-input="1" id="theme-color" value="#ff7a45">自定义</label>
+            <label class="theme-custom" title="自定义主题色"><input type="text" data-color-input="1" id="theme-color" value="#5789DC">自定义</label>
             <button type="button" class="btn btn-mini" id="theme-reset">恢复默认</button>
           </div>
           <div class="theme-preview">
@@ -1980,24 +1981,17 @@
       <div class="st-panel active" id="st-panel-theme" role="tabpanel" data-stp="theme">
         <div class="sf-settings-heading"><span class="sf-settings-scope">此浏览器</span><h2 id="sf-settings-heading-theme">外观与体验</h2><p>安静的背景、恰好的层次，以及自然的反馈。</p><p class="sf-settings-save-note">外观更改即时保存，稿件库与编辑器同步使用。</p></div>
         <div class="st-card sf-appearance-card"><h3>让工作空间，成为你的空间。</h3><p class="gl-hint">背景留在内容之下，清晰阅读始终优先。</p>
-          <div class="sf-settings-backgrounds" role="group" aria-label="背景材质"><button type="button" class="sf-background-choice" data-appearance-background="solid" aria-pressed="false"><span class="sf-background-thumb solid"><i></i></span><span>纯色<span class="sf-background-check" aria-hidden="true">✓</span></span></button><button type="button" class="sf-background-choice" data-appearance-background="aurora" aria-pressed="false"><span class="sf-background-thumb aurora"><i></i></span><span>模糊流光<span class="sf-background-check" aria-hidden="true">✓</span></span></button><button type="button" class="sf-background-choice" data-appearance-background="image" aria-pressed="false"><span class="sf-background-thumb image"><i></i></span><span>自定义图片<span class="sf-background-check" aria-hidden="true">✓</span></span></button></div>
-          <div hidden><select id="sf-background" aria-label="背景材质"><option value="solid">纯色</option><option value="aurora">模糊流光</option><option value="image">自定义图片</option></select></div>
-          <div id="sf-aurora-options" hidden>
-            <div class="sf-settings-line"><div><label for="sf-aurora-palette">流光色彩</label><p>流光独立于主题强调色，可使用配色或分别自定义。</p></div><select id="sf-aurora-palette"><option value="theme">跟随主题</option><option value="sage">苔绿</option><option value="ocean">海蓝</option><option value="sunset">暮霞</option><option value="custom">自定义</option></select></div>
-            <div class="sf-aurora-colors"><div class="sf-aurora-color"><label for="sf-aurora-color-1">流光色 1</label><input type="text" data-color-input="1" id="sf-aurora-color-1" aria-label="流光色 1"></div><div class="sf-aurora-color"><label for="sf-aurora-color-2">流光色 2</label><input type="text" data-color-input="1" id="sf-aurora-color-2" aria-label="流光色 2"></div><div class="sf-aurora-color"><label for="sf-aurora-color-3">流光色 3</label><input type="text" data-color-input="1" id="sf-aurora-color-3" aria-label="流光色 3"></div></div>
-            <div class="sf-settings-line"><div><label for="sf-aurora-motion">流光效果</label><p>静态保留柔和色彩；动态缓慢流动，减少动效时自动停止。</p></div><select id="sf-aurora-motion"><option value="dynamic">动态流光</option><option value="static">静态流光</option></select></div>
-          </div>
+          <div class="sf-settings-backgrounds" role="group" aria-label="背景材质"><button type="button" class="sf-background-choice" data-appearance-background="solid" aria-pressed="false"><span class="sf-background-thumb solid"><i></i></span><span>纯色<span class="sf-background-check" aria-hidden="true">✓</span></span></button><button type="button" class="sf-background-choice" data-appearance-background="image" aria-pressed="false"><span class="sf-background-thumb image"><i></i></span><span>自定义图片<span class="sf-background-check" aria-hidden="true">✓</span></span></button></div>
+          <div hidden><select id="sf-background" aria-label="背景材质"><option value="solid">纯色</option><option value="image">自定义图片</option></select></div>
           <div class="sf-settings-image-tools"><button type="button" class="btn" id="sf-image-pick">选择图片</button><button type="button" class="btn" id="sf-image-clear">清除图片</button><input type="file" id="sf-image-file" accept="image/png,image/jpeg,image/webp" hidden><span class="gl-hint">PNG、JPEG 或 WebP · 2MB 以内</span></div>
           <div class="sf-settings-line"><div><b>明暗模式</b><p>随系统变化，或保持喜欢的明暗。</p></div><div class="sf-settings-segments" role="group" aria-label="明暗模式"><button type="button" data-appearance-mode="light" aria-pressed="false">浅色</button><button type="button" data-appearance-mode="dark" aria-pressed="false">深色</button><button type="button" data-appearance-mode="system" aria-pressed="false">跟随系统</button></div><div hidden><select id="sf-mode" aria-label="明暗模式"><option value="light">浅色</option><option value="dark">深色</option><option value="system">跟随系统</option></select></div></div>
-          <div class="sf-settings-line"><div><label for="sf-motion">界面动效</label><p>页面转场、轻回弹与流光；系统减少动效偏好优先。</p></div><select id="sf-motion"><option value="on">开启</option><option value="off">减少动效</option></select></div>
-          <div class="sf-settings-line sf-glass-setting"><div><label for="sf-glass-dim">毛玻璃压暗</label><p>控制浅色与深色模式卡片底色的压暗程度，数值越高文字越清晰。</p></div><div class="sf-glass-range"><input type="range" id="sf-glass-dim" min="72" max="92" step="1" value="80"><output id="sf-glass-dim-value" for="sf-glass-dim">80%</output></div></div>
-          <div class="sf-settings-line sf-glass-setting"><div><label for="sf-glass-blur">毛玻璃模糊度</label><p>仅模糊卡片后方背景，文字与视频保持清晰，所有主题包通用。</p></div><div class="sf-glass-range"><input type="range" id="sf-glass-blur" min="0" max="32" step="1" value="18"><output id="sf-glass-blur-value" for="sf-glass-blur">18px</output></div></div>
-          <div class="sf-settings-line sf-glass-setting"><div><label for="sf-glass-opacity">毛玻璃透明度</label><p>降低数值可让背景更透；设置为 100% 时保持当前卡片的遮罩强度。</p></div><div class="sf-glass-range"><input type="range" id="sf-glass-opacity" min="20" max="100" step="1" value="100"><output id="sf-glass-opacity-value" for="sf-glass-opacity">100%</output></div></div>
+          <div class="sf-settings-line"><div><label for="sf-motion">界面动效</label><p>页面转场与轻回弹；系统减少动效偏好优先。</p></div><select id="sf-motion"><option value="on">开启</option><option value="off">减少动效</option></select></div>
+          <div class="sf-settings-line sf-scrim-setting"><div><label for="sf-scrim">背景遮罩强度</label><p>只作用于自定义图片背景：数值越高图片越淡，文字越清晰。界面卡片始终不透明。</p></div><div class="sf-scrim-range"><input type="range" id="sf-scrim" min="40" max="95" step="1" value="68"><output id="sf-scrim-value" for="sf-scrim">68%</output></div></div>
           <p id="sf-theme-status" class="gl-hint" role="status">外观更改立即保存。</p>
         </div>
-        <div class="st-card sf-theme-card"><h3>主题包与色彩</h3><p class="gl-hint">选择界面的轮廓与材质，再调整你的强调色。</p><div id="sf-theme-packs" class="sf-theme-packs"></div><div class="sf-theme-tools"><button type="button" class="btn" id="sf-theme-import">导入主题包</button><button type="button" class="btn" id="sf-theme-export">导出主题包</button><input type="file" id="sf-theme-file" accept=".json,application/json" hidden></div>
-          <div class="sf-settings-line setting-row sf-settings-color"><div><label for="sf-color">自定义主题色</label><p>只改界面强调色，不影响字幕颜色与角色色。</p></div><input type="text" id="sf-color" data-color-input="1" value="#5c7560" aria-label="自定义主题色"></div>
-          <div class="theme-row sf-settings-swatches"><div class="theme-swatches" data-theme-swatches="1"></div><label class="theme-custom" hidden><input type="text" data-color-input="1" id="theme-color-global" data-theme-color="1" value="#ff7a45">自定义</label><button type="button" class="btn btn-mini" id="theme-reset-global" data-theme-reset="1">恢复默认</button></div>
+        <div class="st-card sf-theme-card"><h3>主题色与主题包</h3><p class="gl-hint">界面按 Material Design 3 从一个种子色生成整套配色；也可以导入自己的主题包。</p><div id="sf-theme-packs" class="sf-theme-packs"></div><div class="sf-theme-tools"><button type="button" class="btn" id="sf-theme-import">导入主题包</button><button type="button" class="btn" id="sf-theme-export">导出主题包</button><input type="file" id="sf-theme-file" accept=".json,application/json" hidden></div>
+          <div class="sf-settings-line setting-row sf-settings-color"><div><label for="sf-color">种子色</label><p>决定界面的主色、容器色与中性色调，不影响字幕颜色与角色色。</p></div><input type="text" id="sf-color" data-color-input="1" value="#5789DC" aria-label="种子色"></div>
+          <div class="theme-row sf-settings-swatches"><div class="theme-swatches" data-theme-swatches="1"></div><label class="theme-custom" hidden><input type="text" data-color-input="1" id="theme-color-global" data-theme-color="1" value="#5789DC">自定义</label><button type="button" class="btn btn-mini" id="theme-reset-global" data-theme-reset="1">恢复默认</button></div>
         </div>
       </div>
 

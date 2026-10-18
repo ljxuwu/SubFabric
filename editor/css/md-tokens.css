@@ -1,0 +1,147 @@
+/* Material Design 3 设计令牌（@layer md.tokens，由 css/app.css 引入）。
+ *
+ * 颜色：运行时由 js/md-color.js 按用户种子色写到 :root 内联样式（优先级高于这里）；
+ * 下面两组只是默认种子 #5789DC 的回退值，保证脚本失败时界面仍可读。改默认种子后用
+ * md-color.js 重新生成这两组（tests/md-color-test.mjs 会检查每个角色都有回退值）。
+ * 其余令牌（字体层级 / 形状 / 高度 / 状态层 / 间距 / 动效）在 P2 起由 md-* 组件使用，
+ * 数值取自 MD3 规范；中文排版把正文行高调高、标签字距归零（拉丁字距不适合中文）。
+ */
+:root {
+  --md-sys-color-primary: #425E91;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #D7E3FF;
+  --md-sys-color-on-primary-container: #001B3F;
+  --md-sys-color-inverse-primary: #ABC7FF;
+  --md-sys-color-secondary: #565E71;
+  --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-secondary-container: #DAE2F9;
+  --md-sys-color-on-secondary-container: #131C2B;
+  --md-sys-color-tertiary: #705574;
+  --md-sys-color-on-tertiary: #FFFFFF;
+  --md-sys-color-tertiary-container: #FAD8FD;
+  --md-sys-color-on-tertiary-container: #29132E;
+  --md-sys-color-error: #BA1A1A;
+  --md-sys-color-on-error: #FFFFFF;
+  --md-sys-color-error-container: #FFDAD6;
+  --md-sys-color-on-error-container: #410002;
+  --md-sys-color-surface: #F9F9FF;
+  --md-sys-color-surface-dim: #D9D9E0;
+  --md-sys-color-surface-bright: #F9F9FF;
+  --md-sys-color-surface-container-lowest: #FFFFFF;
+  --md-sys-color-surface-container-low: #F3F3FA;
+  --md-sys-color-surface-container: #EDEDF4;
+  --md-sys-color-surface-container-high: #E7E8EE;
+  --md-sys-color-surface-container-highest: #E2E2E9;
+  --md-sys-color-on-surface: #1A1C20;
+  --md-sys-color-surface-variant: #E0E2EC;
+  --md-sys-color-on-surface-variant: #44474E;
+  --md-sys-color-inverse-surface: #2E3036;
+  --md-sys-color-inverse-on-surface: #F0F0F7;
+  --md-sys-color-outline: #74777F;
+  --md-sys-color-outline-variant: #C4C6D0;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+}
+:root[data-theme=dark] {
+  --md-sys-color-primary: #ABC7FF;
+  --md-sys-color-on-primary: #0C305F;
+  --md-sys-color-primary-container: #284677;
+  --md-sys-color-on-primary-container: #D7E3FF;
+  --md-sys-color-inverse-primary: #425E91;
+  --md-sys-color-secondary: #BEC6DC;
+  --md-sys-color-on-secondary: #283041;
+  --md-sys-color-secondary-container: #3E4759;
+  --md-sys-color-on-secondary-container: #DAE2F9;
+  --md-sys-color-tertiary: #DDBCE0;
+  --md-sys-color-on-tertiary: #3F2844;
+  --md-sys-color-tertiary-container: #573E5C;
+  --md-sys-color-on-tertiary-container: #FAD8FD;
+  --md-sys-color-error: #FFB4AB;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000A;
+  --md-sys-color-on-error-container: #FFDAD6;
+  --md-sys-color-surface: #111318;
+  --md-sys-color-surface-dim: #111318;
+  --md-sys-color-surface-bright: #37393E;
+  --md-sys-color-surface-container-lowest: #0C0E13;
+  --md-sys-color-surface-container-low: #1A1C20;
+  --md-sys-color-surface-container: #1E2025;
+  --md-sys-color-surface-container-high: #282A2F;
+  --md-sys-color-surface-container-highest: #33353A;
+  --md-sys-color-on-surface: #E2E2E9;
+  --md-sys-color-surface-variant: #44474E;
+  --md-sys-color-on-surface-variant: #C4C6D0;
+  --md-sys-color-inverse-surface: #E2E2E9;
+  --md-sys-color-inverse-on-surface: #2E3036;
+  --md-sys-color-outline: #8E9099;
+  --md-sys-color-outline-variant: #44474E;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+}
+
+:root {
+  /* 字体 */
+  --md-ref-typeface-plain: "Microsoft YaHei UI", "PingFang SC", "Noto Sans SC", "Segoe UI", system-ui, sans-serif;
+  --md-ref-typeface-brand: var(--md-ref-typeface-plain);
+  --md-ref-typeface-mono: "Cascadia Mono", "Consolas", "SFMono-Regular", ui-monospace, monospace;
+
+  /* 字体层级：<角色>-<尺寸>-{size,line-height,weight,tracking} */
+  --md-sys-typescale-display-large-size: 57px;   --md-sys-typescale-display-large-line-height: 64px;   --md-sys-typescale-display-large-weight: 400;   --md-sys-typescale-display-large-tracking: -0.25px;
+  --md-sys-typescale-display-medium-size: 45px;  --md-sys-typescale-display-medium-line-height: 52px;  --md-sys-typescale-display-medium-weight: 400;  --md-sys-typescale-display-medium-tracking: 0;
+  --md-sys-typescale-display-small-size: 36px;   --md-sys-typescale-display-small-line-height: 44px;   --md-sys-typescale-display-small-weight: 400;   --md-sys-typescale-display-small-tracking: 0;
+  --md-sys-typescale-headline-large-size: 32px;  --md-sys-typescale-headline-large-line-height: 40px;  --md-sys-typescale-headline-large-weight: 400;  --md-sys-typescale-headline-large-tracking: 0;
+  --md-sys-typescale-headline-medium-size: 28px; --md-sys-typescale-headline-medium-line-height: 36px; --md-sys-typescale-headline-medium-weight: 400; --md-sys-typescale-headline-medium-tracking: 0;
+  --md-sys-typescale-headline-small-size: 24px;  --md-sys-typescale-headline-small-line-height: 32px;  --md-sys-typescale-headline-small-weight: 400;  --md-sys-typescale-headline-small-tracking: 0;
+  --md-sys-typescale-title-large-size: 22px;     --md-sys-typescale-title-large-line-height: 28px;     --md-sys-typescale-title-large-weight: 400;     --md-sys-typescale-title-large-tracking: 0;
+  --md-sys-typescale-title-medium-size: 16px;    --md-sys-typescale-title-medium-line-height: 24px;    --md-sys-typescale-title-medium-weight: 500;    --md-sys-typescale-title-medium-tracking: 0;
+  --md-sys-typescale-title-small-size: 14px;     --md-sys-typescale-title-small-line-height: 20px;     --md-sys-typescale-title-small-weight: 500;     --md-sys-typescale-title-small-tracking: 0;
+  --md-sys-typescale-body-large-size: 16px;      --md-sys-typescale-body-large-line-height: 26px;      --md-sys-typescale-body-large-weight: 400;      --md-sys-typescale-body-large-tracking: 0;
+  --md-sys-typescale-body-medium-size: 14px;     --md-sys-typescale-body-medium-line-height: 22px;     --md-sys-typescale-body-medium-weight: 400;     --md-sys-typescale-body-medium-tracking: 0;
+  --md-sys-typescale-body-small-size: 12px;      --md-sys-typescale-body-small-line-height: 18px;      --md-sys-typescale-body-small-weight: 400;      --md-sys-typescale-body-small-tracking: 0;
+  --md-sys-typescale-label-large-size: 14px;     --md-sys-typescale-label-large-line-height: 20px;     --md-sys-typescale-label-large-weight: 500;     --md-sys-typescale-label-large-tracking: 0;
+  --md-sys-typescale-label-medium-size: 12px;    --md-sys-typescale-label-medium-line-height: 16px;    --md-sys-typescale-label-medium-weight: 500;    --md-sys-typescale-label-medium-tracking: 0;
+  --md-sys-typescale-label-small-size: 11px;     --md-sys-typescale-label-small-line-height: 16px;     --md-sys-typescale-label-small-weight: 500;     --md-sys-typescale-label-small-tracking: 0;
+
+  /* 形状 */
+  --md-sys-shape-corner-none: 0;
+  --md-sys-shape-corner-extra-small: 4px;
+  --md-sys-shape-corner-small: 8px;
+  --md-sys-shape-corner-medium: 12px;
+  --md-sys-shape-corner-large: 16px;
+  --md-sys-shape-corner-extra-large: 28px;
+  --md-sys-shape-corner-full: 9999px;
+
+  /* 高度：层级主要靠色调表面区分；阴影只给悬浮层（菜单、对话框、FAB、拖动中） */
+  --md-sys-elevation-shadow: color-mix(in srgb, var(--md-sys-color-shadow) 30%, transparent);
+  --md-sys-elevation-ambient: color-mix(in srgb, var(--md-sys-color-shadow) 15%, transparent);
+  --md-sys-elevation-level0: none;
+  --md-sys-elevation-level1: 0 1px 2px 0 var(--md-sys-elevation-shadow), 0 1px 3px 1px var(--md-sys-elevation-ambient);
+  --md-sys-elevation-level2: 0 1px 2px 0 var(--md-sys-elevation-shadow), 0 2px 6px 2px var(--md-sys-elevation-ambient);
+  --md-sys-elevation-level3: 0 1px 3px 0 var(--md-sys-elevation-shadow), 0 4px 8px 3px var(--md-sys-elevation-ambient);
+  --md-sys-elevation-level4: 0 2px 3px 0 var(--md-sys-elevation-shadow), 0 6px 10px 4px var(--md-sys-elevation-ambient);
+  --md-sys-elevation-level5: 0 4px 4px 0 var(--md-sys-elevation-shadow), 0 8px 12px 6px var(--md-sys-elevation-ambient);
+
+  /* 状态层不透明度（叠在内容色上） */
+  --md-sys-state-hover-state-layer-opacity: 0.08;
+  --md-sys-state-focus-state-layer-opacity: 0.1;
+  --md-sys-state-pressed-state-layer-opacity: 0.1;
+  --md-sys-state-dragged-state-layer-opacity: 0.16;
+
+  /* 间距：4dp 网格 */
+  --md-space-1: 4px;  --md-space-2: 8px;   --md-space-3: 12px;  --md-space-4: 16px;
+  --md-space-5: 20px; --md-space-6: 24px;  --md-space-7: 32px;  --md-space-8: 40px;
+  --md-space-9: 48px; --md-space-10: 56px; --md-space-11: 64px; --md-space-12: 80px;
+
+  /* 动效 */
+  --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --md-sys-motion-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
+  --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --md-sys-motion-duration-short1: 50ms;   --md-sys-motion-duration-short2: 100ms;
+  --md-sys-motion-duration-short3: 150ms;  --md-sys-motion-duration-short4: 200ms;
+  --md-sys-motion-duration-medium1: 250ms; --md-sys-motion-duration-medium2: 300ms;
+  --md-sys-motion-duration-medium3: 350ms; --md-sys-motion-duration-medium4: 400ms;
+  --md-sys-motion-duration-long1: 450ms;   --md-sys-motion-duration-long2: 500ms;
+}

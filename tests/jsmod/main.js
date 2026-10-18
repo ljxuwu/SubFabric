@@ -6507,7 +6507,8 @@ if (setTracks) setTracks.addEventListener('change', () => {
   applyTrackMode(true);
 });
 /* ─────────── 主题色(界面强调色) ───────────
- * 数学与套用都在 js/accent.js（head 里的经典脚本, 首屏已按用户存的颜色套过一次），
+ * 取色与套用都在 js/md-color.js（head 里的经典脚本, 首屏已按 Studio 偏好套过一次；SSAccent 是它的兼容接口，
+ * studio.js 把读写接到 Studio 偏好上），
  * 这里只做设置面板交互：点色块换色 / 拖色盘实时预览 / 一键恢复默认。
  * 自定义色用 input 事件做实时预览, change(松手) 时才重画选中态。 */
 const ACC = window.SSAccent;

@@ -71,8 +71,9 @@ ok(html.indexOf('id="range-bar"') > html.indexOf('id="vsplit"'),
   '批量浮条位于 #app 之外（处于 body 的固定定位坐标系）');
 ok(html.indexOf('id="range-bar"') > 0 && html.indexOf('id="fr-overlay"') > html.indexOf('id="range-bar"'),
   '批量浮条仍是独立元素，未落进其它 fixed 容器的包含块');
-ok(/backdrop-filter:blur\(var\(--sf-glass-blur\)\)!important/.test(css)
-  && /#timeline-panel/.test(css), '确认时间轴仍会建立固定定位包含块（这是移出浮条的原因）');
+// MD3（D1）后时间轴面板已是不透明表面、不再带 backdrop-filter；浮条仍留在 #app 外，防止以后再给面板加模糊时回归。
+ok(!/backdrop-filter:blur\(/.test(css.slice(css.indexOf('/* MD3 表面层级'))) && /#timeline-panel/.test(css),
+  '时间轴面板不再建立 backdrop-filter 包含块，浮条位置不依赖面板材质');
 ok(html === tpl, 'editor/studio.html 与生成模板逐字节一致（改模板后已重新生成）');
 
 console.log('\n== 3. 失败任务卡停止转圈 ==');
