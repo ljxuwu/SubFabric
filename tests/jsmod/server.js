@@ -317,7 +317,7 @@ function safeJoin(root, urlPath) {
 
 // 明确列出浏览器入口、依赖和双端纯模块；editor 下的后端模块不随目录一并公开。
 const STATIC_RESOURCES = new Set([
-  '/editor/studio.html', '/editor/css/app.css', '/editor/css/md-tokens.css', '/editor/css/studio.css', '/editor/css/md-compat.css', '/editor/css/md-components.css', '/editor/css/app-shell.css', '/editor/css/app-home.css',
+  '/editor/studio.html', '/editor/css/app.css', '/editor/css/md-tokens.css', '/editor/css/studio.css', '/editor/css/md-compat.css', '/editor/css/md-components.css', '/editor/css/app-shell.css', '/editor/css/app-home.css', '/editor/css/app-settings.css',
   '/editor/lang/zh-CN.json', '/editor/themes/material-you.theme.json', '/editor/assets/app-logo.png',
   ...['md-color', 'md', 'ass', 'assplayer', 'color-picker', 'editor', 'font-picker', 'i18n', 'icons',
     'karaoke', 'main', 'modal', 'overlay', 'postprocess', 'project', 'segment', 'shortcuts',

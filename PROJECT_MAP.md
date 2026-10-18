@@ -285,16 +285,16 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 - **项目包**：导出 tar 显式 `-C` 目标目录并传 cwd，只打包 CORE_FILES 普通文件，失败回退 PowerShell，成功响应及失败均清临时目录。导入先预检 ZIP 目录（128 文件、单文件 64MB、总量 128MB），拒绝越界/链接/重复/不支持格式，只流式提取核心文件，并检查实际字节、CRC 与 30 秒时限；读取前 stat，字幕有效才建成项目，失败清理本次目录。支持单层包装；ZIP64/加密/分卷明确拒绝。
 - **长音频分片**：静音优先切点（`audio-slice.js` 真 ffmpeg `silencedetect`；纯函数在 `asr-chunks.js`）。
 - **全局设置页的骨架是 CSS grid，别在外面再套 wrapper**（2026-10-12 实测踩过）：
-  `studio.css` 的 `#st-view .st-box` 是 `grid-template-columns: 192px minmax(0,1fr)` +
-  三行（head / body / actions），`.st-tabs`（竖排分类栏）、`.st-body`（右栏内容）、
-  `.st-actions` 必须是它的**直接子元素**。旧 UI 按 grid-area 定位；Studio 动作栏绝对定位到
-  `.settings-inner` 标题右侧，`#st-view` 为唯一页滚动区，`.st-body` 不单独滚动。多包一层 `<div>` 会让 grid
+  `css/app-settings.css`（MD3 重构 P5 起）的 `#st-view .st-box` 是 `grid-template-columns: 224px minmax(0,1fr)`，
+  `.st-tabs`（竖排分类栏，sticky）、`.st-body`（右栏内容）、`.st-actions` 必须是它的**直接子元素**；
+  动作栏绝对定位到 `.settings-inner` 标题右侧（<900px 时回到网格第一行、分类改为横向一行），
+  `#st-view` 为唯一页滚动区，`.st-body` 不单独滚动。多包一层 `<div>` 会让 grid
   拿不到它们 → **右栏被压成 0 宽**（rect.w = 0），整页看着空白。改版式前先读这条。
 - **Studio 设置页的层级（2026-10-14）**：六个一级分类（外观与体验 / 语音识别 / 翻译与术语 / 识别与校对 / 下载与登录 / 性能与调度）。时间轴/显示/角色/文件/导出、自愈与 ASS 完整控件固定在编辑器 #tab-settings；全局不再显示“编辑与工作台”。语音识别先展示 Whisper / Parakeet / 云端 / 前置大卡片；VibeVoice 作为可进入的 CUDA 4bit 系列卡，缺少运行时只显示显式安装按钮，不绑定 CPU/NPU 回退。Parakeet 内展示三种硬件模型，额外多说话人/双引擎在 details 中保留，展开状态使用 GROUP_OPEN。模型与环境下载/删除操作仍在 #st-panel-models 祖先中；Studio 进入页面只探测，缺失运行时通过显式按钮安装，避免导航触发下载。旧 UI 保留原分组与自动运行时链路。
 - **VibeVoice CUDA 4bit（2026-10-14）**：`ASR_MODELS` 的 `vibevoice-asr-4bit` 固定使用 `Dubedo/VibeVoice-ASR-HF-NF4` revision `289d51eeddb2f089f6478da4c0ace7d078a69596`。模型文件清单包含 `quantization_metadata.json`；`asr/vibevoice.py` 只走 Transformers 原生 VibeVoice 模型类、NF4 元数据校验与 `cuda:0` 映射，拒绝 CPU/NPU/disk offload/通用 Seq2Seq 回退。服务端的 `vibevoice` 运行时安装在检测到 NVIDIA GPU 后按 cu126 索引安装 CUDA PyTorch（必要时替换 CPU 版），再安装 Transformers/bitsandbytes；初稿和选区重识别均不回退其它设备；未验证的 OpenVINO/NPU 后端不得接入。
 - **识别前置与流光（2026-10-14）**：Studio 前置仅 Python/NeMo/说话人三列小卡，Python自定义路径details的开合由 GROUP_OPEN保存；#st-runtime-env只保留隐藏兼容节点，不重复探测/显示。重新识别select移到#sf-asr-rerecog-mount，主页底部显示，仍在#st-panel-models内使用原change API。所有下载按钮显式触发原后端。流光背景已在 MD3 重构 P1（2026-10-18）下线，旧偏好的 aurora 落回纯色。设置子视图必须自己承接flex gap，父panel gap不能穿过普通wrapper。
 - **设置重排使用同一份真实表单**：571旧控件保持稳定，编辑器组不再移动到全局；翻译表单仍是常驻 DOM，分类切换不会重建术语输入。命名方案主页面只显示已保存列表与添加入口，保存/测试位于展开表单内，识别与校对的全局保存只写热词配置，不能误覆盖翻译草稿。背景预览卡/明暗分段按钮同步原select的change。
-- **入口生成器**：tools/templates/studio-settings.html 为设置常驻表单模板（包含页面尾部闭合）；tools/generate-studio.mjs 用此模板及编辑器组ID再生新入口，ui-integration 在内存运行生成器检查真实控件完整/唯一及图标注册，禁止生成回旧设置布局。
+- **入口生成器**：tools/generate-studio.mjs 把 `tools/templates/studio.html` 原样复制为 `editor/studio.html`（两者必须逐字节一致，改入口时同步改模板）；ui-integration 在内存运行生成器检查真实控件完整/唯一及图标注册，禁止生成回旧设置布局。`tools/templates/studio-settings.html` 目前没有任何代码引用（2026-10-18 核实）。
 - **品牌版本与焦点（2026-10-14）**：Studio 启动将唯一 `#app-version` 节点移到 `.sf-brand-title`，版本仍由 main 的原服务响应更新；列表标题不另造版本。设置/导航/日志焦点 outline 向内绘制，避免滚动容器裁切；品牌底部留白使用 margin，不能包进链接焦点框。
 - **命名翻译方案（2026-10-14）**：`asr/settings.json` 的 `translateSchemes` 存独立名称/厂商/API/模型/参数/术语/提示词及加密 apiKeyEnc；`translateSchemeId` 表示当前方案，选用时原子复制到 `translate`，真实翻译/语义分句/跟随翻译的纠错继续读原配置。默认列表为空，不自动制造方案也不删除旧配置。`GET/POST /api/translate/schemes`、`PUT/DELETE /:id`、`POST /:id/activate` 管理方案；`POST /schemes/test` 仅测试草稿，Key 留空只复用该 id 的密文，不回落其它方案，不保存或切换。加密失败拒绝写入，无明文降级；响应只含 hasKey，不含明文或密文。旧 UI 的 `/api/translate/config` POST 解除命名方案关联，保存列表仍保留。
 - **LLM 方案展开区**：Studio 常驻 DOM 插入当前命名方案卡片下方，CSS grid 0fr→1fr 自适应术语表高度，关闭期间 inert；动画回调使用代次避免快速开关串入。旧 UI 保留右侧抽屉。重建列表前先移出表单，避免 innerHTML 删除原控件；`st-provider` / `st-baseurl` / `st-key` / `st-model` / `st-batch` / `st-prompt` / `gl-*` ID 稳定，新增 `st-scheme-name`、选用与自动翻译开关。术语分节先识别 ## 再忽略 # 注释，确保多语言独立恢复。
@@ -322,6 +322,8 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 **应用外壳（P3，2026-10-18）**：`css/app-shell.css` 在 `app` 层（最高），接管导航、顶栏、页面淡入、确认框与通用对话框外观、提示条、菜单与批量浮条；`studio.css` 里对应的旧规则已删除。≥1200px 为 248px 常驻导航抽屉，<1200px 收成 80px 导航栏（rail，`--sf-nav-w` 驱动顶栏与页面偏移），菜单按钮 `#sf-nav-toggle` 把导航展开为模态抽屉（`body[data-nav-open=true]` + `#sf-nav-scrim`，studio.js 的 `setNavOpen` 管理：路由变化、遮罩、Esc、窗口变宽时收起，Esc 和遮罩会把焦点还给菜单按钮）。顶栏高 64px（`--sf-top-h`）。toast（main.js）与 `#sf-notice`（studio.js）统一为底部居中的 MD3 snackbar；「ASS 渲染就绪」只在编辑器里提示。确认框 `role=alertdialog`，关闭后焦点回到打开前的元素。页面切换只做透明度淡入，不用 transform（避免给页面里的 fixed 浮层建立包含块）。
 
 **首页与工作台（P4，2026-10-18）**：`css/app-home.css`（`app` 层，排在 app-shell 之后）接管首页 / 稿件库 / 任务中心 / 新建 / 详情，`studio.css` 里对应的约 340 条旧规则已删除（`.np-file-row` / `.np-lbl` / `.np-file` / `.np-time` / `.np-tilde` / `.np-region-note` 仍给分段导入对话框用，保留在 legacy）。稿件库是 `minmax(280px, 1fr)` 自适应卡片网格（MD3 outlined card，封面 16:9 铺满顶部，状态纸片用容器色），列表视图为单列 list；主视觉三栏（花瓣 FAB · 继续编辑卡 · 40° 胶囊），胶囊栏宽按视口分档、容得下旋转后的包围盒。新建 / 详情页是 supporting-pane：`.ws-grid` 下 `.ws-main`（输入与配置、生成设置）+ `aside.ws-side`（稿件预览、处理进度），视口 <920px 单栏；步骤条为竖向 stepper，表单控件是 MD3 outlined 外观，勾选 / 开关直接给原生 input 加 `md-checkbox` / `md-switch`。`md-tokens.css` 新增 `--md-type-<角色>` 字体简写（`font: var(--md-type-title-medium)`）。卡片按钮在 project.js 里直接拼 md-button 类，不再用 `.btn`。
+
+**设置 / 帮助 / 日志（P5，2026-10-18）**：`css/app-settings.css`（`app` 层，排在 app-home 之后）接管设置页、帮助页、编辑器「日志」页的子页切换与日志列表，以及顶部横幅（新版本 / 缺渲染器，样式在 app-shell.css 的 `.sf-app-banner`）；`studio.css` 里对应的约 400 条旧规则已删除。设置是 list-detail：左侧分类为 MD3 导航条目（选中 secondary-container），右侧每组一张色调卡片（surface-container-low），行结构为标签 + 控件 + 说明；业务模板拼出的 `.btn` 在 `#st-view` / `#sf-help` 内统一映射为 MD3 描边 / 填充按钮（`.btn-accent`），不逐个改 JS 模板。翻译方案保持卡片下方的内联展开（grid 0fr→1fr，时长取 `--md-motion-medium` 300ms，必须短于 project.js 收起时的 320ms 计时），没有改成 side sheet。明暗模式是 `md-segmented`，遮罩强度是 `md-slider`（studio.js 改值后调用 `MDUI.syncSlider`）。「逐词字幕自愈」卡片由 studio.js 移进编辑器 `#tab-settings`，其卡片外观也在 app-settings.css。日志子页默认高亮「操作日志」，与默认显示的板块一致。
 
 `editor/js/studio.js` 只适配页面导航、外观、真实项目快照和播放器事件；`studio-state.js` 校验浏览器外观/文件夹关系（不储存字幕/模型/凭据）。`studio-themes.js` 提供唯一内置主题包 Material You 及“我的主题包”存储；`editor/themes/material-you.theme.json` 是可分发的同源 JSON，导入包只能使用种子色、MD3 角色白名单和本地 PNG/JPEG/WebP 预览图，不能执行脚本、注入 CSS 或引用远程资源。设置页按内置/自定义分组，内置包不可删除，自定义包可导出、替换和删除；格式与制作说明见 `docs/THEME_PACKS.md`。`studio-progress.js` 提供固定 CSS 波浪。全局模型、翻译与识别设置共用唯一“设置”入口；旧 `#/resources` 仅重定向至 `#/settings`。ASS 控件为同一组 DOM，始终停留在稿件编辑器的 #tab-settings，保留原监听器/文档保存链路；无当前 ASS 项目时由编辑器业务自身禁用文档操作，后处理为本机偏好。创建提交期间 Studio 路由统一互斥，避免上传回调读取被重置的材料。
 
@@ -362,6 +364,7 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 | `tests/md-color-test.mjs` | MD3 取色：HCT 移植逐值对照 `tests/md-color-expected.json`（material-color-utilities 0.3.0 生成，10 个种子 × 浅深 × 34 角色）、14 个种子 WCAG 对比度、首屏引导与偏好迁移、SSAccent 兼容、md-compat 别名与层序 | 纯 Node（vm），任何机器可跑；改默认种子或角色表后重新生成期望值 |
 | `tests/theme-packs-test.mjs` | 主题包 v2（种子色 + MD3 角色白名单）、v1 只取种子导入、旧内置包迁移、安全白名单、删除规则 | 纯 Node |
 | `tests/md-components-test.mjs` | MD3 组件层：源码约定（无写死颜色 / `!important` / ID 选择器 / `transition: all`，动效走令牌）、陈列页覆盖全部 md- 类、层名无点、入口接线、`md.js` 纯函数 | 纯 Node（vm） |
+| `tests/app-settings-test.mjs` | 设置 / 帮助 / 日志：只用令牌的样式约定、list-detail 与窄屏横排、卡片与按钮映射、方案展开时长早于 JS 收起、日志列表色调表面与等宽、旧规则已删除、分段按钮 / 滑块 / 勾选结构、横幅改用类名、入口接线 | 纯 Node |
 | `tests/app-home-test.mjs` | 首页与工作台：只用令牌的样式约定、卡片网格 / 列表 / supporting-pane 断点、F10/F11、旧规则已删除、筛选纸片 / 搜索 / 分段按钮结构、英文眉标已去掉、MD3 按钮与勾选、入口接线 | 纯 Node |
 | `tests/app-shell-test.mjs` | 应用外壳：外壳样式约定、导航宽度断点、snackbar、确认框语义与 D6、旧规则已删除、入口接线；导航栏展开 / 收起的运行时行为在 studio-navigation-test 里验证 | 纯 Node |
 | 其余 `tests/*-test.mjs` | ass / srt / role / postprocess / reseg / zh-* 等 | 多数独立可跑 |

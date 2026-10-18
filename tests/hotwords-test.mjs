@@ -132,7 +132,8 @@ console.log('\n== ⑦ 界面接线：挖掘按钮与候选区的 id 都在 ==');
   const HTML = fs.readFileSync(path.join(REPO, 'editor', 'studio.html'), 'utf8');
   const PJS = fs.readFileSync(path.join(REPO, 'editor', 'js', 'project.js'), 'utf8');
   const SRV = fs.readFileSync(path.join(REPO, 'editor', 'server.js'), 'utf8');
-  const CSS = fs.readFileSync(path.join(REPO, 'editor', 'css', 'studio.css'), 'utf8');
+  // MD3 重构 P5 起设置页样式在 app-settings.css，旧样式在 studio.css；两处合起来检查
+  const CSS = ['studio.css', 'app-settings.css'].map(f => fs.readFileSync(path.join(REPO, 'editor', 'css', f), 'utf8')).join('\n');
   for (const id of ['ah-mine', 'ah-mine-hint', 'ah-mine-list', 'ah-mine-foot',
                     'ah-mine-all', 'ah-mine-none', 'ah-mine-apply', 'ah-mine-count']) {
     ok(new RegExp(`id="${id}"`).test(HTML), `有 #${id}`);
@@ -177,7 +178,7 @@ console.log('\n== ⑧ LLM 分析这条链路的接线（踩过的坑都钉住）
   }
   ok(/llm=1/.test(PJS), 'project.js 会按开关带 ?llm=1');
   ok(/hw-mine-tag/.test(PJS) && /hw-mine-tag/.test(
-    fs.readFileSync(path.join(REPO, 'editor', 'css', 'studio.css'), 'utf8')),
+    fs.readFileSync(path.join(REPO, 'editor', 'css', 'app-settings.css'), 'utf8')),
     '候选带「模型」来源标记（有样式）');
 }
 

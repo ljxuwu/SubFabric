@@ -7060,10 +7060,9 @@ requestAnimationFrame(tick);
   const showBanner = () => {
     if (banner) return;
     banner = document.createElement('div');
-    banner.style.cssText = 'position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:9999;'
-      + 'background:#2563eb;color:#fff;padding:8px 14px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.3);'
-      + 'font:13px/1.4 system-ui,sans-serif;display:flex;gap:10px;align-items:center;cursor:pointer;';
-    banner.innerHTML = '已发布新版本，点击此处刷新页面 <b style="text-decoration:underline">刷新</b>';
+    banner.className = 'sf-app-banner';            // 外观在 css/app-shell.css（MD3 色调，随主题）
+    banner.setAttribute('role', 'status');
+    banner.innerHTML = '已发布新版本，点击此处刷新页面 <b>刷新</b>';
     banner.addEventListener('click', () => location.reload(true));
     (document.body || document.documentElement).appendChild(banner);
   };
@@ -7073,16 +7072,13 @@ requestAnimationFrame(tick);
   const showVendorBanner = (hint) => {
     if (vendorBanner || vendorDismissed) return;
     vendorBanner = document.createElement('div');
-    vendorBanner.style.cssText = 'position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:9998;'
-      + 'max-width:min(760px,92vw);background:#b45309;color:#fff;padding:10px 14px;border-radius:8px;'
-      + 'box-shadow:0 4px 16px rgba(0,0,0,.35);font:13px/1.5 system-ui,sans-serif;display:flex;'
-      + 'gap:12px;align-items:flex-start;';
+    vendorBanner.className = 'sf-app-banner sf-app-banner--warn';
+    vendorBanner.setAttribute('role', 'alert');
     const text = document.createElement('div');
     text.textContent = hint || '视频区不显示字幕：缺少 libass 渲染器，请运行 node editor/scripts/fetch-vendor.js';
     const close = document.createElement('button');
+    close.type = 'button';
     close.textContent = '知道了';
-    close.style.cssText = 'flex:none;background:rgba(255,255,255,.18);color:#fff;border:0;'
-      + 'border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit;';
     close.addEventListener('click', () => { vendorDismissed = true; hideVendorBanner(); });
     vendorBanner.appendChild(text);
     vendorBanner.appendChild(close);

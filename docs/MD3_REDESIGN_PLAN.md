@@ -1,6 +1,6 @@
 # Material Design 3 前端重构计划
 
-> 状态：P0–P4 已完成且已验证；P5–P8 未开始（2026-10-18）。执行进度只记在 [STATUS.md](STATUS.md)，本文件只在范围、顺序或验收变化时修改。
+> 状态：P0–P5 已完成且已验证；P6–P8 未开始（2026-10-18）。执行进度只记在 [STATUS.md](STATUS.md)，本文件只在范围、顺序或验收变化时修改。
 > 改代码前仍须读 [PROJECT_MAP.md](../PROJECT_MAP.md) §6、§7。
 
 ## 0. 需求与已确认决策
@@ -245,6 +245,12 @@ tools/md-gallery.html 组件陈列页（file:// 直接打开，只引 CSS 与经
 - 设置草稿离场保护、保存条外观改为 MD3 bottom app bar 或 banner。
 - 帮助页和日志页（运行日志 / 操作日志 / 备注）换外观，日志保持等宽字体。
 - 验收：`log-panel`、`hotwords`、`font-picker`、`theme-packs` 等测试通过；设置每个分类都能完整滚到底；键盘能走完整个设置页。
+- **P5 结果（2026-10-18，已完成且已验证）**：
+  - 新增 `editor/css/app-settings.css`（app 层），删除 `studio.css` 中被接管的约 400 条旧规则（3350 → 约 2710 行）。
+  - 设置：list-detail（224px 分类导航 + 内容），每组一张色调卡片；输入 / 下拉为 outlined，模板里的 `.btn` 映射为 MD3 按钮；明暗模式改为分段按钮，遮罩强度改为 MD3 滑块，勾选改为 md-checkbox；<900px 分类改为横向一行。去掉 "MAKE IT FEEL LIKE YOU" 眉标（F7 全部解决）。
+  - 与计划的差异：LLM 方案仍是卡片下方的内联展开（PROJECT_MAP 记录的 2026-10-14 决定），只换外观，没有改成 side sheet；硬件信息用色调条 + 纸片，没有单独做 filled card；保存条沿用标题右侧的动作区（「返回」tonal、「保存并返回」filled），没有改成 bottom app bar。
+  - 帮助页：卡片网格与 MD3 按钮。日志：子页切换为分段按钮，三个列表改为色调表面（浅色主题下原来是写死的黑块），保持等宽；修正默认高亮「运行日志」却显示操作日志的不一致。
+  - 顺带：新版本 / 缺渲染器横幅从内联写死的蓝 / 橙改为 MD3 色调（app-shell.css）。
 
 ### P6 编辑器工作台（L，风险最高）
 

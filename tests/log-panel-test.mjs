@@ -48,6 +48,8 @@ for (const id of ['log-sub-app', 'log-sub-op', 'log-sub-note',
 ok(/id="log-pane-op">/.test(HTML) && !/id="log-pane-op" hidden/.test(HTML),
   '★ 操作日志默认显示（它记的是"我改了什么"，用户最想看）');
 ok(/id="log-pane-app" hidden/.test(HTML), '运行日志默认隐藏');
+ok(/class="log-subtab active" data-log="op"/.test(HTML) && !/class="log-subtab active" data-log="(app|note)"/.test(HTML),
+  '默认选中的子标签与默认显示的板块一致（MD3 P5 修正：原来高亮的是「运行日志」）');
 ok(/id="log-pane-note" hidden/.test(HTML), '备注默认隐藏');
 ok(/data-log="app"/.test(HTML) && /data-log="op"/.test(HTML) && /data-log="note"/.test(HTML),
   '三个子标签都在');

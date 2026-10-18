@@ -1,6 +1,19 @@
 # 项目当前状态（唯一权威入口）
 
-- 当前任务（2026-10-18）：MD3 重构 **P4（首页 / 稿件库 / 任务中心 / 新建 / 详情）已完成且已验证；P5–P8 未开始。**
+- 当前任务（2026-10-18）：MD3 重构 **P5（设置 / 资源 / 帮助 / 日志）已完成且已验证；P6–P8 未开始。**
+  - 改了什么：
+    - 新增 `editor/css/app-settings.css`（app 层），删除 `studio.css` 里被接管的约 400 条旧规则和对应的空注释（3350 → 2711 行）。
+    - 设置：list-detail（左侧 MD3 导航条目、右侧色调卡片），输入与下拉为 outlined，业务模板的 `.btn` 在设置 / 帮助页映射为 MD3 按钮；明暗模式改分段按钮、遮罩强度改 MD3 滑块（`studio.js` 改值后同步填充）、6 个勾选改 md-checkbox；<900px 分类横排。去掉最后的英文眉标（F7 全部解决）。翻译方案保持内联展开（只换外观，展开时长 300ms 早于 JS 的 320ms 收起计时）。
+    - 帮助页：卡片网格 + MD3 按钮。日志页：子页切换改分段按钮，三个列表改为色调表面（浅色主题下原来是写死的黑块），等宽字体保留；修正默认高亮「运行日志」但显示操作日志的不一致（P1 截图里已存在）。
+    - 「逐词字幕自愈」卡片在编辑器设置页里的外观随之迁到 app-settings.css；新版本 / 缺渲染器横幅改为 `.sf-app-banner`（MD3 色调，`main.js` 不再写内联颜色）。
+    - PROJECT_MAP 修正一处与代码不符的描述：`tools/templates/studio-settings.html` 没有任何代码引用，生成器只复制 `tools/templates/studio.html`。
+  - 本次验证：
+    - 完整 JS 回归 `node tests/run-all.mjs --report _test/md3-p5-final.json`：95 通过、9 部分执行、0 失败、2 排除。新增 `app-settings-test`（68 项）；`hotwords-test` 改为同时检查 studio.css 与 app-settings.css；`log-panel-test` 增加默认子页高亮断言；`app-home-test` 放宽安装清单匹配。
+    - ESLint 0 error，19 个 warning 与 P4 相同（均为本次未改动的行）。
+    - 真实 Chrome（隔离副本）：6 个设置分类都能滚到最后一张卡片且无横向溢出；方向键切换分类并移动焦点；方案表单展开后焦点进入名称框、关闭后隐藏；1280 / 1024 / 900 宽为左右两栏，800 宽分类横排；帮助页与日志页正常；「自愈」卡片在编辑器里外观正确；浅色与深色各截图，控制台无错误。截图在 `_test/md3-p5/`。
+  - 未做：没有在真实模型 / GPU 环境里看模型下载进度与 Python 安装状态的外观（只看了未安装状态）；性能测试没有实际运行。
+  - GitHub：按用户指示提交到 `ljxuwu/SubFabric` main，与 P4 的提交核对补记一起入库；提交标识见最终报告。
+- 上一阶段（2026-10-18）：MD3 重构 **P4（首页 / 稿件库 / 任务中心 / 新建 / 详情）已完成且已验证。**
   - 改了什么：
     - 新增 `editor/css/app-home.css`（app 层），删除 `studio.css` 里被接管的约 340 条旧规则（3836 → 3350 行）；`md-tokens.css` 新增 `--md-type-*` 字体简写；`md-checkbox` / `md-switch` 显式 `box-shadow: none`，挡住旧样式给所有勾选框加的悬停光圈。
     - 稿件库 / 任务中心：自适应卡片网格（outlined card，封面 16:9，状态纸片用容器色），列表视图为 MD3 list；筛选纸片、搜索栏、视图分段按钮（`#sf-view` 取代 `#sf-list-mode`，`studio.js` 同步 `aria-pressed`）；卡片按钮由 `project.js` 拼成 md-button；文件夹下拉只在已有文件夹时显示。
@@ -13,6 +26,7 @@
     - 真实 Chrome（隔离副本）：5 个视口下首页无横向溢出，卡片列数 4 / 3 / 3 / 2 / 2；新建页 1600 宽为主栏 772 + 辅栏 380，900 宽为单栏；详情页步骤条 5 步；筛选纸片 aria-pressed、搜索、视图切换、初稿模式下的开关与勾选都正常；浅色与深色各截图，控制台无错误。截了 13 张图（`_test/md3-p4/`）。
   - 未做：没有跑真实的新建 → 下载 / 识别流程（需要真实媒体与模型）；F10 由源码断言覆盖，没有再用高亮黄种子截图复核。
   - GitHub：按用户指示提交到 `ljxuwu/SubFabric` main，与 P3 的提交核对补记一起入库；提交标识见最终报告。
+  - GitHub 核对（提交后确认，随下一次提交入库）：main 已指向 `d04bdc63d1ae372dac869867b4577fc12b1741f1`（父提交 `124420b`，Verified）；compare 为 ahead 1 / behind 0，22 个文件；远端 447 个文件与本地按 blob SHA 逐个一致。CI run 39111911157 中「JS · ESLint + 全量测试」和「Python · ruff + 单测」均 success。
 - 上一阶段（2026-10-18）：MD3 重构 **P3（应用外壳、导航与全局弹层）已完成且已验证。**
   - 改了什么：
     - 新增 `editor/css/app-shell.css`（app 层），删除 `studio.css` 里被接管的约 107 行旧规则。

@@ -34,7 +34,7 @@ for (const role of [...css.matchAll(/var\(--md-type-([a-z-]+)\)/g)].map(m => m[1
 const app = read('editor/css/app.css');
 ok(/@import url\("app-home\.css"\) layer\(app\);/.test(app) && app.indexOf('"app-shell.css"') < app.indexOf('"app-home.css"'), 'imported into the app layer after the shell');
 ok(read('editor/server.js').includes("'/editor/css/app-home.css'"), 'static allowlist serves app-home.css');
-ok(/'app-home'\]\.map\(n => `editor\/css\/\$\{n\}\.css`\)/.test(read('tools/studio-install.mjs')), 'UI installer ships app-home.css');
+ok(/'app-home'[,\]][^\n]*\]\.map\(n => `editor\/css\/\$\{n\}\.css`\)/.test(read('tools/studio-install.mjs')), 'UI installer ships app-home.css');
 
 // 3. 被接管的旧规则已删除（只剩共享的 .np-file-row 等给分段导入对话框用）
 const legacy = read('editor/css/studio.css');

@@ -49,7 +49,7 @@
 <div id="sf-nav-scrim" aria-hidden="true"></div>
 <header id="sf-topbar" class="sf-topbar"><span>工作空间 <i>/</i> <b id="sf-breadcrumb">稿件库</b></span><div><button type="button" class="md-button md-button--tonal" id="sf-direct-editor">打开编辑器</button><button type="button" class="md-button md-button--filled" id="sf-create" data-ico="plus">新建稿件</button></div></header>
 <div id="sf-notice" role="status" hidden></div>
-<section id="sf-help" class="sf-page" hidden><div class="sf-page-content"><p class="sf-eyebrow">SUBFABRIC STUDIO</p><h1>让每一句话，清晰可见。</h1><p>真实媒体、字幕与识别任务都在本机处理。编辑器沿用原有操作习惯。</p><div class="sf-help-grid"><article><h2>从视频到稿件</h2><p>新建稿件 → 选择本地视频或链接 → 导入字幕或生成初稿 → 在任务中心查看处理 → 打开编辑器复核 → 导出字幕或项目包。</p><button class="btn btn-accent" data-go="new">创建稿件</button></article><article><h2>编辑与保存</h2><p>单击字幕就地编辑，Enter 提交，Esc 取消。时间轴拖动句子和逐词边界。角色单击分配，右键修改名字与颜色。项目自动保存；保存冲突会明确提示。</p><p>ASS 字体与颜色写入当前稿件，可导出样式预设；后处理特效保存在本机，导出时应用。</p></article><article><h2>快捷键与日志</h2><p>可在此查看固定快捷键；操作日志、备注、热词与服务日志保留在编辑器「日志」页。</p><button class="btn" id="sf-shortcuts">查看快捷键</button></article></div></div></section>
+<section id="sf-help" class="sf-page" hidden><div class="sf-page-content"><h1>让每一句话，清晰可见。</h1><p>真实媒体、字幕与识别任务都在本机处理。编辑器沿用原有操作习惯。</p><div class="sf-help-grid"><article><h2>从视频到稿件</h2><p>新建稿件 → 选择本地视频或链接 → 导入字幕或生成初稿 → 在任务中心查看处理 → 打开编辑器复核 → 导出字幕或项目包。</p><button type="button" class="md-button md-button--tonal" data-go="new">创建稿件</button></article><article><h2>编辑与保存</h2><p>单击字幕就地编辑，Enter 提交，Esc 取消。时间轴拖动句子和逐词边界。角色单击分配，右键修改名字与颜色。项目自动保存；保存冲突会明确提示。</p><p>ASS 字体与颜色写入当前稿件，可导出样式预设；后处理特效保存在本机，导出时应用。</p></article><article><h2>快捷键与日志</h2><p>可在此查看固定快捷键；操作日志、备注、热词与服务日志保留在编辑器「日志」页。</p><button type="button" class="md-button md-button--outlined" id="sf-shortcuts">查看快捷键</button></article></div></div></section>
 <div id="app">
 
   <!-- ══════════ 工具栏 ══════════ -->
@@ -625,10 +625,10 @@
            ══════════════════════════════════════════════════════════════════ -->
       <div id="tab-logs" class="tab-body">
         <div class="log-subtabs">
-          <button type="button" class="log-subtab" data-log="op" id="log-sub-op">
+          <button type="button" class="log-subtab active" data-log="op" id="log-sub-op">
             操作日志<span class="log-subtab-cnt" id="oplog-cnt" hidden></span>
           </button>
-          <button type="button" class="log-subtab active" data-log="app" id="log-sub-app">
+          <button type="button" class="log-subtab" data-log="app" id="log-sub-app">
             运行日志<span class="log-subtab-cnt" id="log-cnt" hidden></span>
           </button>
           <button type="button" class="log-subtab" data-log="note" id="log-sub-note">
@@ -1449,7 +1449,6 @@
       <span class="page-brand" data-ico="film">SubFabric <span>/ 全局设置</span></span>
     </header>
     <div class="page-intro">
-      <div class="page-eyebrow">MAKE IT FEEL LIKE YOU</div>
       <h1>设置</h1>
       <p>让工作空间更贴近你的习惯。按用途配置，按作用范围保存。</p>
     </div>
@@ -1751,7 +1750,7 @@
                本项目的 LLM 请求全部由**本地 Node 服务端**发出（server.js 的 llmChat 直接 fetch），
                服务端之间没有浏览器同源策略，CORS 这个问题**根本不存在**；
                再加一层中转只会多一个要维护的失败点。所以这里如实说明，不摆一个空开关。 -->
-<div class="sf-scheme-options"><label><input type="checkbox" id="st-scheme-activate" checked> 保存后使用此方案</label><label><input type="checkbox" id="st-scheme-auto" checked> 创建稿件后自动翻译</label></div>
+<div class="sf-scheme-options"><label><input type="checkbox" class="md-checkbox" id="st-scheme-activate" checked> 保存后使用此方案</label><label><input type="checkbox" class="md-checkbox" id="st-scheme-auto" checked> 创建稿件后自动翻译</label></div>
         </div>
 
         <div class="st-drawer-foot">
@@ -1796,7 +1795,7 @@
             <!-- 交给 LLM 再筛一遍：规则只看单条编辑，看不出"同一个词被改成了好几种写法"，
                  也分不清哪是专名、哪只是语气词。默认不开（要花 token / 等模型）。 -->
             <label class="hw-llm-toggle">
-              <input type="checkbox" id="ah-use-llm">
+              <input type="checkbox" class="md-checkbox" id="ah-use-llm">
               <span>交给 LLM 再分析一遍</span>
               <span class="hw-llm-note" id="ah-llm-note">用模型判断哪些真是专有名词（模型在下面「用于分析热词的模型」里选）</span>
             </label>
@@ -1806,7 +1805,7 @@
           <div class="st-card-title">LLM 分角色 <span class="st-card-note">用视频简介推断人物，再把说话人对应到角色名</span></div>
           <div class="st-row">
             <label class="st-lbl" style="display:flex;align-items:center;gap:6px;min-width:auto">
-              <input type="checkbox" id="st-cast-enabled"> 启用
+              <input type="checkbox" class="md-checkbox" id="st-cast-enabled"> 启用
             </label>
             <span class="gl-hint" style="flex:1" id="st-cast-note">先用视频标题/简介让模型判断有几个人物，按这个人数做说话人分离；分离后把说话人换成真实角色名，没对应上的保留说话人编号。模型用「字幕翻译」里配的那份。</span>
           </div>
@@ -1843,7 +1842,7 @@
           </div>
           <div class="st-row" style="margin-top:8px">
             <label class="st-lbl" style="display:flex;align-items:center;gap:6px;min-width:auto">
-              <input type="checkbox" id="st-correct-usetranslate" checked> 用字幕翻译的模型
+              <input type="checkbox" class="md-checkbox" id="st-correct-usetranslate" checked> 用字幕翻译的模型
             </label>
             <span class="gl-hint" style="flex:1" id="st-correct-eff"></span>
           </div>
@@ -1930,7 +1929,7 @@
           </div>
           <div class="st-row" style="margin-bottom:8px">
             <label class="st-lbl" style="display:flex;align-items:center;gap:6px;min-width:auto">
-              <input type="checkbox" id="an-use-translate" checked> 跟随字幕翻译的模型
+              <input type="checkbox" class="md-checkbox" id="an-use-translate" checked> 跟随字幕翻译的模型
             </label>
             <span class="gl-hint" style="flex:1" id="an-follow-note">跟着「翻译」页里配的那套走</span>
           </div>
@@ -1968,9 +1967,9 @@
           <div class="sf-settings-backgrounds" role="group" aria-label="背景材质"><button type="button" class="sf-background-choice" data-appearance-background="solid" aria-pressed="false"><span class="sf-background-thumb solid"><i></i></span><span>纯色<span class="sf-background-check" aria-hidden="true">✓</span></span></button><button type="button" class="sf-background-choice" data-appearance-background="image" aria-pressed="false"><span class="sf-background-thumb image"><i></i></span><span>自定义图片<span class="sf-background-check" aria-hidden="true">✓</span></span></button></div>
           <div hidden><select id="sf-background" aria-label="背景材质"><option value="solid">纯色</option><option value="image">自定义图片</option></select></div>
           <div class="sf-settings-image-tools"><button type="button" class="btn" id="sf-image-pick">选择图片</button><button type="button" class="btn" id="sf-image-clear">清除图片</button><input type="file" id="sf-image-file" accept="image/png,image/jpeg,image/webp" hidden><span class="gl-hint">PNG、JPEG 或 WebP · 2MB 以内</span></div>
-          <div class="sf-settings-line"><div><b>明暗模式</b><p>随系统变化，或保持喜欢的明暗。</p></div><div class="sf-settings-segments" role="group" aria-label="明暗模式"><button type="button" data-appearance-mode="light" aria-pressed="false">浅色</button><button type="button" data-appearance-mode="dark" aria-pressed="false">深色</button><button type="button" data-appearance-mode="system" aria-pressed="false">跟随系统</button></div><div hidden><select id="sf-mode" aria-label="明暗模式"><option value="light">浅色</option><option value="dark">深色</option><option value="system">跟随系统</option></select></div></div>
+          <div class="sf-settings-line"><div><b>明暗模式</b><p>随系统变化，或保持喜欢的明暗。</p></div><div class="md-segmented md-segmented--dense sf-settings-segments" role="group" aria-label="明暗模式"><button type="button" class="md-segment" data-appearance-mode="light" aria-pressed="false">浅色</button><button type="button" class="md-segment" data-appearance-mode="dark" aria-pressed="false">深色</button><button type="button" class="md-segment" data-appearance-mode="system" aria-pressed="false">跟随系统</button></div><div hidden><select id="sf-mode" aria-label="明暗模式"><option value="light">浅色</option><option value="dark">深色</option><option value="system">跟随系统</option></select></div></div>
           <div class="sf-settings-line"><div><label for="sf-motion">界面动效</label><p>页面转场与轻回弹；系统减少动效偏好优先。</p></div><select id="sf-motion"><option value="on">开启</option><option value="off">减少动效</option></select></div>
-          <div class="sf-settings-line sf-scrim-setting"><div><label for="sf-scrim">背景遮罩强度</label><p>只作用于自定义图片背景：数值越高图片越淡，文字越清晰。界面卡片始终不透明。</p></div><div class="sf-scrim-range"><input type="range" id="sf-scrim" min="40" max="95" step="1" value="68"><output id="sf-scrim-value" for="sf-scrim">68%</output></div></div>
+          <div class="sf-settings-line sf-scrim-setting"><div><label for="sf-scrim">背景遮罩强度</label><p>只作用于自定义图片背景：数值越高图片越淡，文字越清晰。界面卡片始终不透明。</p></div><div class="sf-scrim-range"><input type="range" class="md-slider" id="sf-scrim" min="40" max="95" step="1" value="68"><output id="sf-scrim-value" for="sf-scrim">68%</output></div></div>
           <p id="sf-theme-status" class="gl-hint" role="status">外观更改立即保存。</p>
         </div>
         <div class="st-card sf-theme-card"><h3>主题色与主题包</h3><p class="gl-hint">界面按 Material Design 3 从一个种子色生成整套配色；也可以导入自己的主题包。</p><div id="sf-theme-packs" class="sf-theme-packs"></div><div class="sf-theme-tools"><button type="button" class="btn" id="sf-theme-import">导入主题包</button><button type="button" class="btn" id="sf-theme-export">导出主题包</button><input type="file" id="sf-theme-file" accept=".json,application/json" hidden></div>

@@ -42,7 +42,7 @@ function applyTheme() {
   window.SF_MD.apply(accent, dark, themes.roleOverrides(pack, dark));
   const st = document.documentElement.style;
   st.setProperty('--sf-backdrop-scrim', prefs.scrim + '%');
-  $('sf-scrim').value = String(prefs.scrim);
+  $('sf-scrim').value = String(prefs.scrim); window.MDUI?.syncSlider($('sf-scrim'));
   $('sf-scrim-value').textContent = prefs.scrim + '%';
   $('sf-background').value = prefs.background; $('sf-mode').value = prefs.mode; $('sf-motion').value = prefs.motion; $('sf-color').value = accent;
   $('sf-image-pick').disabled = prefs.background !== 'image';

@@ -237,6 +237,34 @@
   to { opacity: 0; transform: translate(-50%, 8px); }
 }
 
+/* ── 顶部横幅：新版本提示（点一下刷新）与缺少渲染器的警示（main.js 创建，只换外观） ── */
+.sf-app-banner {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  max-width: min(760px, calc(100vw - 32px));
+  min-height: 48px;
+  padding: 8px 8px 8px 16px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  font: var(--md-type-body-medium);
+  box-shadow: var(--md-sys-elevation-level2);
+  transform: translateX(-50%);
+  cursor: pointer;
+  animation: sf-fade-in var(--md-motion-medium) var(--md-ease-enter);
+}
+.sf-app-banner b { padding: 0 8px; font: var(--md-type-label-large); text-decoration: underline; }
+.sf-app-banner--warn { z-index: 9998; align-items: flex-start; background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); cursor: default; }
+.sf-app-banner--warn > div { padding: 6px 0; }
+.sf-app-banner--warn > button { flex: none; min-height: 36px; padding: 0 12px; border: 0; border-radius: var(--md-sys-shape-corner-full); background: transparent; color: inherit; font: var(--md-type-label-large); cursor: pointer; }
+.sf-app-banner--warn > button:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
+
 /* ── 菜单：右键菜单、查找替换的角色下拉、自定义下拉框、倍速菜单（只换外观，定位仍由各自脚本负责） ── */
 .sf-studio :is(#tl-menu, #card-menu, #role-menu, .fr-menu, .sf-choice-menu, .sf-rate-menu) {
   padding: 8px 0;
