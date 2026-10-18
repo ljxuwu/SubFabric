@@ -737,4 +737,27 @@ assert.equal(location.hash, '#/home', 'navigation unlocks after completion');
 assert.deepEqual(unexpected, [], 'all fetches stay in the explicit in-memory API map');
 assert.deepEqual(asyncErrors, []);
 assert.equal(eventJobs.size, 0, 'no event handler remains pending');
+// MD3 导航栏（rail，<1200px）：菜单按钮展开模态抽屉；Esc / 遮罩 / 路由切换收起，Esc 与遮罩把焦点还给菜单按钮。
+const escapeKey = () => { const ev = Object.assign(new Event('keydown', { cancelable: true }), { key: 'Escape' }); document.dispatchEvent(ev); return ev; };
+assert.equal($('sf-nav-toggle').getAttribute('aria-controls'), 'sf-nav');
+media.matches = true;
+await click('sf-nav-toggle');
+assert.equal(document.body.dataset.navOpen, 'true', 'menu button opens the modal drawer');
+assert.equal($('sf-nav-toggle').getAttribute('aria-expanded'), 'true');
+assert.equal($('sf-nav-toggle').getAttribute('aria-label'), '收起导航');
+assert.equal(document.activeElement, $('sf-nav').querySelector('.md-nav-item'), 'focus moves to the first destination');
+escapeKey(); await settle();
+assert.equal(document.body.dataset.navOpen, 'false', 'Escape closes the drawer');
+assert.equal(document.activeElement, $('sf-nav-toggle'), 'Escape returns focus to the menu button');
+assert.equal($('sf-nav-toggle').getAttribute('aria-expanded'), 'false');
+await click('sf-nav-toggle'); await click('sf-nav-scrim');
+assert.equal(document.body.dataset.navOpen, 'false', 'scrim click closes the drawer');
+await click('sf-nav-toggle');
+location.hash = '#/tasks'; await settle();
+assert.equal(document.body.dataset.navOpen, 'false', 'route changes close the drawer');
+assert.equal(escapeKey().defaultPrevented, false, 'Escape is left to other handlers when the drawer is closed');
+media.matches = false;
+await click('sf-nav-toggle');
+assert.equal(document.body.dataset.navOpen, 'false', 'wide windows keep the permanent drawer (no modal state)');
+
 console.log('studio-navigation: immediate scrub/late-media/keyboard/hover/reset, direct editor, settings return, legacy resources alias, settings save, stale ASS guard, deferred upload navigation lock and original submission payload passed');

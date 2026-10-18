@@ -317,7 +317,7 @@ $('sf-shortcuts').addEventListener('click', () => {
 });
 
 function renderFolders() {
-  $('sf-folders').innerHTML = prefs.folders.map(f => `<div class="sf-folder"><button type="button" class="${folder === f.id ? 'active' : ''}" data-folder="${f.id}">${ico('folder')}<span>${esc(f.name)}</span><small>${projects.filter(p => prefs.assignments[p.id] === f.id).length}</small></button><button type="button" data-remove-folder="${f.id}" aria-label="移除文件夹">×</button></div>`).join('');
+  $('sf-folders').innerHTML = prefs.folders.map(f => `<div class="sf-folder"><button type="button" class="md-nav-item${folder === f.id ? ' active' : ''}" data-folder="${f.id}"${folder === f.id ? ' aria-current="page"' : ''}>${ico('folder')}<span>${esc(f.name)}</span><small>${projects.filter(p => prefs.assignments[p.id] === f.id).length}</small></button><button type="button" class="md-icon-button md-icon-button--small" data-remove-folder="${f.id}" aria-label="移除文件夹">${ico('x')}</button></div>`).join('');
 }
 $('sf-folder-add').addEventListener('click', () => {
   const name = prompt(t('文件夹名称')); if (!name?.trim()) return;
@@ -338,6 +338,26 @@ $('sf-folders').addEventListener('drop', e => {
   const id = e.dataTransfer.getData('application/x-subfabric-project'); if (!projects.some(p => p.id === id)) return;
   if (commit({ assignments: { ...prefs.assignments, [id]: f.dataset.folder } })) { renderFolders(); refreshLibrary(); notice('稿件已移入文件夹。'); }
 });
+// MD3 导航栏（<1200px 收成 80px rail）：菜单按钮把完整导航临时展开成模态抽屉；
+// 选路由 / 文件夹、点遮罩、Esc、路由变化或窗口变宽时收起。宽屏下导航常驻，不存在"展开"状态。
+const railQuery = matchMedia('(max-width: 1199px)');
+function setNavOpen(open, restoreFocus = false) {
+  const next = Boolean(open) && railQuery.matches;
+  const was = document.body.dataset.navOpen === 'true';
+  document.body.dataset.navOpen = String(next);
+  $('sf-nav-toggle').setAttribute('aria-expanded', String(next));
+  $('sf-nav-toggle').setAttribute('aria-label', t(next ? '收起导航' : '展开导航'));
+  if (next && !was) $('sf-nav').querySelector('.md-nav-item')?.focus();
+  else if (!next && was && restoreFocus) $('sf-nav-toggle').focus();
+}
+$('sf-nav-toggle').addEventListener('click', () => setNavOpen(document.body.dataset.navOpen !== 'true'));
+$('sf-nav-scrim').addEventListener('click', () => setNavOpen(false, true));
+$('sf-nav').addEventListener('click', e => { if (e.target.closest('[data-route], [data-folder], .sf-brand')) setNavOpen(false); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape' || document.body.dataset.navOpen !== 'true') return;
+  e.preventDefault(); e.stopPropagation(); setNavOpen(false, true);
+}, true);
+railQuery.addEventListener?.('change', () => { if (!railQuery.matches) setNavOpen(false); });
 $('sf-nav').querySelector('[data-route="home"]').addEventListener('click', () => { folder = ''; filter = 'all'; renderFolders(); refreshLibrary(); });
 $('sf-filters').addEventListener('click', e => { const b = e.target.closest('[data-filter]'); if (b) { filter = b.dataset.filter; refreshLibrary(); } });
 $('sf-search').addEventListener('input', refreshLibrary);
@@ -568,6 +588,7 @@ window.__sfStudio = {
   projects(snapshot) { projects = snapshot; renderFolders(); refreshLibrary(); },
   route(h, project, format) {
     if (h === '#/resources') h = '#/settings';
+    if (document.body.dataset.navOpen === 'true') setNavOpen(false);
     const previous = route; route = h;
     const editor = h === '#/editor' || h.startsWith('#/project/');
     document.body.dataset.workspace = editor ? 'editor' : h.slice(2).split('/')[0];

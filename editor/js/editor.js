@@ -446,10 +446,13 @@ export class EditorPanel {
     const noBtn = document.getElementById('confirm-no');
     yesBtn.textContent = t(yesText || '确定');
     noBtn.textContent = t(noText || '取消');
+    const opener = document.activeElement;
     ov.hidden = false;
     const done = (ok) => {
       ov.hidden = true;
       document.removeEventListener('keydown', onKey, true);
+      // 关闭后焦点回到打开前的位置（键盘用户不会被丢到页面开头）；回调里若另开弹窗，以回调为准
+      if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
       if (ok && onYes) onYes();
     };
     const onKey = (e) => {

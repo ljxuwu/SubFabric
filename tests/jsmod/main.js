@@ -147,7 +147,8 @@ video.addEventListener('click', (e) => {
 /* ─────────── 模块实例 ─────────── */
 const overlay = new SrtOverlay(document.getElementById('srt-overlay'), video);
 const assPlayer = new AssPlayer(video, (msg) => {
-  toast(msg);
+  // 渲染器在应用启动时就初始化，「就绪」只对编辑器有意义；首页等页面不弹这条（P0 问题 F3）。错误类消息照常提示。
+  if (msg !== 'ASS 渲染就绪' || document.body.dataset.workspace === 'editor') toast(msg);
   if (msg === 'ASS 渲染就绪' && state.format === 'ass' && assStyleEls.status) {
     assStyleEls.status.textContent = pendingFontNotice
       ? `ASS 预览已就绪；${pendingFontNotice}。`

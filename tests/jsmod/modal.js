@@ -79,7 +79,7 @@ export function bindModalDrag(surface, handle) {
 export function bindModalDrags(root = document) {
   const definitions = [
     ['#fr-overlay', '.fr-box', '.fr-head'],
-    ['#confirm-overlay', '.rn-box', '.rn-title'],
+    // 确认框固定居中、不可拖动（MD3 重构决策 D6）；大型工具对话框保留拖动。
     ['#role-new', '.rn-box', '.rn-title'],
     ['#pick-overlay', '.pick-box', '.pick-title'],
     ['#fix-overlay', '.fix-box', '.rn-title'],

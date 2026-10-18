@@ -1,6 +1,6 @@
 # Material Design 3 前端重构计划
 
-> 状态：P0、P1、P2 已完成且已验证；P3–P8 未开始（2026-10-18）。执行进度只记在 [STATUS.md](STATUS.md)，本文件只在范围、顺序或验收变化时修改。
+> 状态：P0–P3 已完成且已验证；P4–P8 未开始（2026-10-18）。执行进度只记在 [STATUS.md](STATUS.md)，本文件只在范围、顺序或验收变化时修改。
 > 改代码前仍须读 [PROJECT_MAP.md](../PROJECT_MAP.md) §6、§7。
 
 ## 0. 需求与已确认决策
@@ -215,6 +215,14 @@ tools/md-gallery.html 组件陈列页（file:// 直接打开，只引 CSS 与经
 - `modal.js` 对话框、确认框、toast → snackbar、`#sf-notice` → banner、右键菜单与 `#range-bar` 浮条换成 menu 样式。
   **`#range-bar` 必须留在 `#app` 外**（PROJECT_MAP §6 的 fixed 包含块问题）。
 - 验收：导航在 5 个尺寸下正确切换；所有弹层的 Esc、焦点、位置正确；相关测试（`studio-navigation`、`ui-feedback-20261017`）更新后通过。
+- **P3 结果（2026-10-18，已完成且已验证）**：
+  - 新增 `editor/css/app-shell.css`（app 层），删除 `studio.css` 中被接管的约 107 行旧规则。
+  - 导航：抽屉 / rail / 模态抽屉。顶栏：MD3 top app bar，主操作为 filled，次要为 tonal。
+  - toast 与通知改为 snackbar；菜单与批量浮条改为 MD3 外观，定位逻辑不变。
+  - 确认框有 alertdialog 语义、固定居中（D6），关闭后归还焦点。
+  - 页面切换只做淡入：shared-axis 的位移会给页面里的 fixed 浮层建立包含块，没有采用。
+  - 解决 P0 的 F3。F2（800×600 编辑器工具栏截断、视频区被压）属于编辑器内部布局，留给 P6。
+  - 新发现 F11（1024 宽首页内容区出现横向滚动条，P1 已存在），留给 P4。
 
 ### P4 首页 / 稿件库 / 任务中心 / 新建 / 详情（L）
 

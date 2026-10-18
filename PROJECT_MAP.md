@@ -214,7 +214,7 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 | `video-hover-tip.js` | **进度条悬浮时间提示**：悬在**原生** `<video controls>` 的进度条上时，在画面上方显示该位置的时间。实测依据与几何口径写在文件头（控制条区域的事件目标就是 `<video>`，所以一个 mousemove 监听即可，不必自建控制条；横向按"去黑边"的画面矩形换算）。**唯一一个自初始化的模块**（不 import main.js，main.js 也无 export），由 studio.html 里第二个 `<script type="module">` 加载 |
 | `util.js` | 时间格式化 / 转义 / 二分查找 / `popOrigin` 等工具 |
 | `i18n.js` | 文案词典（`lang/zh-CN.json`：键=原文，值可改；缺失回退原文） |
-| `modal.js` | 可拖动二级窗口（对齐 / 视口边界） |
+| `modal.js` | 可拖动二级窗口（对齐 / 视口边界）；确认框（`#confirm-overlay`）按决策 D6 固定居中、不参与拖动 |
 | `shortcuts.js` | 固定键盘快捷键表（刻意不可配置） |
 | `md-color.js` | MD3 取色（经典脚本，`<head>` 内同步执行防首屏闪色）：移植 material-color-utilities 的 HCT / TonalPalette（Apache-2.0，`tests/md-color-test.mjs` 对照官方期望值），按种子色生成 TonalSpot 配色并只写 `--md-sys-color-*`；`window.SF_MD` 为取色 API，`window.SSAccent` 为旧强调色接口兼容层（main.js 色块仍用） |
 | `md.js` | MD3 组件行为辅助（经典脚本，`window.MDUI`）：标签页方向键 / Home / End 与漫游 tabindex、`openMenu(menu, anchor)` / `closeMenu()` 定位与焦点、`.md-slider` 填充比例；纯函数 `nextIndex` / `placeMenu` / `sliderFill` 供测试。对话框用原生 `<dialog>.showModal()` |
@@ -319,6 +319,8 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 
 **MD3 组件（P2，2026-10-18）**：`css/md-components.css` 在 `md-components` 层，类名一律 `md-` 前缀（按钮 `md-button--filled|tonal|elevated|outlined|text[--small|--error]`、`md-icon-button`、`md-fab`、`md-segmented`/`md-segment`、`md-chip[--filter|--input]`、`md-badge`、`md-field`（外框 + 浮动标签）/`md-input`/`md-select`/`md-search`、`md-switch`/`md-checkbox`/`md-radio`、`md-slider`、`md-tabs`/`md-tab`、`md-nav-item`、`md-top-app-bar`、`md-card`、`md-list`/`md-list-item`、`md-expansion`、`md-menu`/`md-menu-item`、`md-dialog`、`md-side-sheet`、`md-snackbar`、`md-tooltip`、`md-linear-progress`/`md-circular-progress`、`md-typescale-*`），全部变体见 `tools/md-gallery.html`。规则：只用 MD3 令牌、不写死颜色、不用 `!important` 和 ID 选择器、动效时长只走 `--md-motion-*`（减少动效时归零）；选中态用 `aria-pressed` / `aria-selected` / `aria-current`；`md-field` 的 `<input placeholder=" ">` 必须在 `.md-field__label` 之前；浮动标签底色取容器的 `--md-field-bg`。**层名不能带点**（`a.b` 是 `a` 的子层，会整体排到 legacy 前面，P2 实测踩过）。给业务元素换 md 类时先确认旧样式没有对同一属性用 `!important`（旧层的 `!important` 会压过组件层）。
 
+**应用外壳（P3，2026-10-18）**：`css/app-shell.css` 在 `app` 层（最高），接管导航、顶栏、页面淡入、确认框与通用对话框外观、提示条、菜单与批量浮条；`studio.css` 里对应的旧规则已删除。≥1200px 为 248px 常驻导航抽屉，<1200px 收成 80px 导航栏（rail，`--sf-nav-w` 驱动顶栏与页面偏移），菜单按钮 `#sf-nav-toggle` 把导航展开为模态抽屉（`body[data-nav-open=true]` + `#sf-nav-scrim`，studio.js 的 `setNavOpen` 管理：路由变化、遮罩、Esc、窗口变宽时收起，Esc 和遮罩会把焦点还给菜单按钮）。顶栏高 64px（`--sf-top-h`）。toast（main.js）与 `#sf-notice`（studio.js）统一为底部居中的 MD3 snackbar；「ASS 渲染就绪」只在编辑器里提示。确认框 `role=alertdialog`，关闭后焦点回到打开前的元素。页面切换只做透明度淡入，不用 transform（避免给页面里的 fixed 浮层建立包含块）。
+
 `editor/js/studio.js` 只适配页面导航、外观、真实项目快照和播放器事件；`studio-state.js` 校验浏览器外观/文件夹关系（不储存字幕/模型/凭据）。`studio-themes.js` 提供唯一内置主题包 Material You 及“我的主题包”存储；`editor/themes/material-you.theme.json` 是可分发的同源 JSON，导入包只能使用种子色、MD3 角色白名单和本地 PNG/JPEG/WebP 预览图，不能执行脚本、注入 CSS 或引用远程资源。设置页按内置/自定义分组，内置包不可删除，自定义包可导出、替换和删除；格式与制作说明见 `docs/THEME_PACKS.md`。`studio-progress.js` 提供固定 CSS 波浪。全局模型、翻译与识别设置共用唯一“设置”入口；旧 `#/resources` 仅重定向至 `#/settings`。ASS 控件为同一组 DOM，始终停留在稿件编辑器的 #tab-settings，保留原监听器/文档保存链路；无当前 ASS 项目时由编辑器业务自身禁用文档操作，后处理为本机偏好。创建提交期间 Studio 路由统一互斥，避免上传回调读取被重置的材料。
 
 相关验收与安装范围见 `docs/UI_INTEGRATION.md`；`tools/studio-install.mjs --prepare` 产生安装候选和哈希清单，候选验收通过后 `--apply <backup-directory>` 才进入备份/锁/替换/失败回滚。仅合并本次 UI 增量，不整体安装先前源码修复，不改 EXE/运行时/设置/项目。
@@ -358,6 +360,7 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 | `tests/md-color-test.mjs` | MD3 取色：HCT 移植逐值对照 `tests/md-color-expected.json`（material-color-utilities 0.3.0 生成，10 个种子 × 浅深 × 34 角色）、14 个种子 WCAG 对比度、首屏引导与偏好迁移、SSAccent 兼容、md-compat 别名与层序 | 纯 Node（vm），任何机器可跑；改默认种子或角色表后重新生成期望值 |
 | `tests/theme-packs-test.mjs` | 主题包 v2（种子色 + MD3 角色白名单）、v1 只取种子导入、旧内置包迁移、安全白名单、删除规则 | 纯 Node |
 | `tests/md-components-test.mjs` | MD3 组件层：源码约定（无写死颜色 / `!important` / ID 选择器 / `transition: all`，动效走令牌）、陈列页覆盖全部 md- 类、层名无点、入口接线、`md.js` 纯函数 | 纯 Node（vm） |
+| `tests/app-shell-test.mjs` | 应用外壳：外壳样式约定、导航宽度断点、snackbar、确认框语义与 D6、旧规则已删除、入口接线；导航栏展开 / 收起的运行时行为在 studio-navigation-test 里验证 | 纯 Node |
 | 其余 `tests/*-test.mjs` | ass / srt / role / postprocess / reseg / zh-* 等 | 多数独立可跑 |
 | `tools/http_layer_probe.mjs` | HTTP 层探针（守卫 / 形状 / 设置往返 / 项目全生命周期） | 自带服务启停，但会写同树设置/项目；只有隔离副本才可执行，旧字幕保存探针尚需适配 revision 协议；本轮以 repair 测试验证 |
 | `tools/route_smoke.mjs` | 24 路由冒烟 | 需先起服务：`PORT=8399 node editor/server.js` |

@@ -1,6 +1,21 @@
 # 项目当前状态（唯一权威入口）
 
-- 当前任务（2026-10-18）：MD3 重构 **P2（组件库）已完成且已验证；P3–P8 未开始。**
+- 当前任务（2026-10-18）：MD3 重构 **P3（应用外壳、导航与全局弹层）已完成且已验证；P4–P8 未开始。**
+  - 改了什么：
+    - 新增 `editor/css/app-shell.css`（app 层），删除 `studio.css` 里被接管的约 107 行旧规则。
+    - 导航：≥1200px 为 248px 抽屉，<1200px 为 80px rail，菜单按钮展开模态抽屉（`studio.js` 的 `setNavOpen`）。
+    - 顶栏改为 MD3 top app bar，按钮换成 md-button。
+    - toast 与 `#sf-notice` 改为底部 snackbar；「ASS 渲染就绪」只在编辑器提示（解决 F3）。
+    - 确认框有 alertdialog 语义，按 D6 不可拖动、固定居中，关闭后归还焦点（`editor.js` / `modal.js`）。
+    - 右键菜单、下拉菜单、倍速菜单与批量浮条改为 MD3 外观，定位逻辑不变。
+    - 新增 `menu` 图标与两条文案（`展开导航` / `收起导航`）。
+  - 本次验证：
+    - 完整 JS 回归 `node tests/run-all.mjs --report _test/md3-p3-final.json`：93 通过、9 部分执行、0 失败、2 排除。新增 `app-shell-test`（42 项）；`studio-navigation-test` 增加 rail 展开 / 收起 / Esc / 遮罩 / 路由收起 / 宽屏不可展开的断言。
+    - ESLint 0 error，5 个 warning 都是原有的。
+    - 真实 Chrome（隔离副本）：5 个视口下导航宽度、顶栏与内容偏移正确且无横向溢出；模态抽屉展开时焦点进入，Esc 收起并还焦点；确认框居中、不可拖动，Esc 取消后焦点回到删除按钮且稿件没有被删；首页不再弹 ASS 提示，编辑器里 snackbar 距底 24px；右键菜单为 MD3 外观；控制台无错误。截了 6 张图（`_test/md3-p3/`）。
+  - 遗留：F2（800×600 编辑器内部布局）留给 P6；新发现 F11（1024 宽首页内容区横向滚动条，P1 已存在）留给 P4。
+  - GitHub：按用户指示提交到 `ljxuwu/SubFabric` main，与 P2 的提交核对补记一起入库；提交标识见最终报告。
+- 上一阶段（2026-10-18）：MD3 重构 **P2（组件库）已完成且已验证。**
   - 改了什么：
     - 新增 `editor/css/md-components.css`（122 个 md- 类）、`editor/js/md.js`（`window.MDUI`）、`tools/md-gallery.html`（组件陈列页）和 `tests/md-components-test.mjs`。
     - 接入 `app.css`、`studio.html`、静态白名单、`tools/studio-install.mjs`，模板与入口逐字节一致。业务页面还没有用这些组件，界面没有可见变化。
@@ -11,6 +26,7 @@
     - 真实 Chrome 检查陈列页（本机只读静态服务）：标签页方向键与漫游 tabindex、菜单定位与键盘、Esc 归还焦点、原生对话框、滑块填充都正常；组件实际压过旧样式（内边距与背景已核对）；没有控制台错误（只有临时服务没提供 favicon 的 404）。
     - 按用户要求压缩截图：只截了陈列页（`_test/md3-p2/`），没有重跑整套界面截图。
   - GitHub：P2 按用户指示提交到 `ljxuwu/SubFabric` main，与上次 P1 提交的 STATUS 补记一起入库；提交标识见最终报告。
+  - GitHub 核对（提交后确认，随下一次提交入库）：main 已指向 `5c00302391e3d65ffe1feb8b6e46078cf15826e5`（父提交 `1efc6f3`，Verified）；compare 为 ahead 1 / behind 0，17 个文件；远端 443 个文件与本地按 blob SHA 逐个一致。fork 的 Actions 这次已经运行：CI run 39108048995 中「JS · ESLint + 全量测试」和「Python · ruff + 单测」均 success。
 - 上一阶段（2026-10-18）：MD3 重构 **P1（颜色令牌、HCT 取色、主题统一）已完成且已验证。**
   - 改了什么：
     - 新增 `editor/js/md-color.js`：移植 material-color-utilities 0.3.0 的 HCT / TonalPalette，按种子色生成 TonalSpot 配色。它在 `<head>` 里同步执行，只写 `--md-sys-color-*`，同时提供 `SSAccent` 兼容接口。替代原来的 `accent.js`。

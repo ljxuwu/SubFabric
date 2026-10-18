@@ -1,0 +1,312 @@
+/* 应用外壳（@layer app，由 css/app.css 引入；MD3 重构计划 P3）。
+ *
+ * 范围：导航抽屉 / 导航栏（rail）、顶部应用栏、页面切换、确认框与通用对话框外观、提示条（toast / 通知）、
+ *       右键菜单与下拉菜单、时间轴批量浮条。只改外观与排版，元素的 id、业务类名和定位逻辑不动。
+ * 这一层高于 legacy 与 md-components：同属性直接胜出；旧样式里的 !important 仍会压过这里（层叠规则），
+ * 已被本文件完整接管的旧规则已从 studio.css 删除。动效时长只用 --md-motion-*（减少动效时归零）。
+ *
+ * 窗口尺寸：≥1200px（large 及以上）为常驻导航抽屉；<1200px 收成 80px 导航栏（rail），
+ * 顶部的菜单按钮把完整导航作为模态抽屉临时展开（body[data-nav-open=true]，由 studio.js 管理）。
+ */
+
+:root { --sf-nav-w: 248px; --sf-top-h: 64px; }
+@media (max-width: 1199px) { :root { --sf-nav-w: 80px; } }
+
+/* ── 导航抽屉 ── */
+.sf-studio .sf-nav {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-sizing: border-box;
+  width: var(--sf-nav-w);
+  padding: 12px 12px 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 0;
+  background: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-on-surface-variant);
+}
+.sf-studio .sf-nav-toggle { display: none; align-self: center; margin: 0 0 8px; }
+.sf-studio .sf-nav .sf-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  margin: 0 0 8px;
+  padding: 0 16px 0 12px;
+  border-radius: var(--md-sys-shape-corner-full);
+  color: var(--md-sys-color-on-surface);
+  text-decoration: none;
+}
+.sf-studio .sf-nav .sf-brand:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: -3px; }
+.sf-studio .sf-brand-mark { display: grid; place-items: center; flex: none; width: 32px; height: 32px; overflow: hidden; border-radius: var(--md-sys-shape-corner-small); background: transparent; }
+.sf-studio .sf-brand-mark img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sf-studio .sf-brand > b { flex: 1; min-width: 0; font: var(--md-sys-typescale-title-medium-weight) var(--md-sys-typescale-title-medium-size) / var(--md-sys-typescale-title-medium-line-height) var(--md-ref-typeface-brand); }
+.sf-studio .sf-brand-title { display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+.sf-studio .sf-brand #app-version { display: inline; flex: none; margin: 0; color: var(--md-sys-color-on-surface-variant); font-size: var(--md-sys-typescale-label-small-size); font-weight: 500; }
+.sf-studio .sf-brand small { display: block; margin-top: 0; color: var(--md-sys-color-on-surface-variant); font: var(--md-sys-typescale-label-small-weight) var(--md-sys-typescale-label-small-size) / var(--md-sys-typescale-label-small-line-height) var(--md-ref-typeface-plain); }
+.sf-studio .sf-nav-label,
+.sf-studio .sf-folder-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 8px 16px 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-title-small-weight) var(--md-sys-typescale-title-small-size) / var(--md-sys-typescale-title-small-line-height) var(--md-ref-typeface-plain);
+}
+.sf-studio .sf-folder-head { padding-inline-end: 4px; margin-top: 8px; }
+.sf-studio .sf-nav .md-nav-item > svg { width: 24px; height: 24px; }
+.sf-studio .sf-nav .md-nav-item.active { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+.sf-studio #sf-task-count { margin-inline-start: auto; color: inherit; font: var(--md-sys-typescale-label-large-weight) var(--md-sys-typescale-label-large-size) / 1 var(--md-ref-typeface-plain); font-variant-numeric: tabular-nums; }
+.sf-studio #sf-folders { min-height: 0; overflow-y: auto; }
+.sf-studio .sf-folder { display: flex; align-items: center; gap: 4px; }
+.sf-studio .sf-folder > .md-nav-item { flex: 1; min-width: 0; min-height: 40px; }
+.sf-studio .sf-folder > .md-nav-item > svg { width: 20px; height: 20px; }
+.sf-studio .sf-folder > .md-nav-item span { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sf-studio .sf-folder > .md-nav-item small { color: inherit; font-size: var(--md-sys-typescale-label-medium-size); font-variant-numeric: tabular-nums; }
+.sf-studio .sf-folder > .md-icon-button { opacity: 0; transition: opacity var(--md-motion-short) var(--md-ease); }
+.sf-studio .sf-folder:is(:hover, :focus-within) > .md-icon-button { opacity: 1; }
+.sf-studio .sf-nav-bottom { display: flex; flex-direction: column; gap: 2px; margin-top: auto; padding-top: 16px; }
+.sf-studio .sf-nav-bottom p { margin: 12px 16px 0; color: var(--md-sys-color-on-surface-variant); font: var(--md-sys-typescale-label-small-weight) var(--md-sys-typescale-label-small-size) / var(--md-sys-typescale-label-small-line-height) var(--md-ref-typeface-plain); }
+.sf-studio #sf-nav-scrim { display: none; }
+
+/* ── 导航栏（rail）：<1200px 且未展开时 ── */
+@media (max-width: 1199px) {
+  .sf-studio:not([data-nav-open=true]) .sf-nav { align-items: center; padding: 12px 0 16px; }
+  .sf-studio .sf-nav-toggle { display: inline-grid; }
+  .sf-studio:not([data-nav-open=true]) .sf-nav .sf-brand { justify-content: center; width: 56px; padding: 0; }
+  .sf-studio:not([data-nav-open=true]) .sf-nav :is(.sf-brand > b, .sf-nav-label, .sf-folder-head, #sf-folders, .sf-nav-bottom p) { display: none; }
+  .sf-studio:not([data-nav-open=true]) .sf-nav-bottom { align-items: center; }
+  .sf-studio:not([data-nav-open=true]) .sf-nav .md-nav-item {
+    position: relative;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 4px;
+    width: 72px;
+    min-height: 56px;
+    margin: 0 0 4px;
+    padding: 0 0 4px;
+    border-radius: 0;
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    font: var(--md-sys-typescale-label-medium-weight) var(--md-sys-typescale-label-medium-size) / var(--md-sys-typescale-label-medium-line-height) var(--md-ref-typeface-plain);
+    text-align: center;
+  }
+  /* MD3 导航栏：选中指示器和状态层只包住图标（56×32 胶囊），文字在下方 */
+  .sf-studio:not([data-nav-open=true]) .sf-nav .md-nav-item > svg {
+    box-sizing: content-box;
+    width: 24px;
+    height: 24px;
+    padding: 4px 16px;
+    border-radius: var(--md-sys-shape-corner-full);
+    transition: background-color var(--md-motion-short) var(--md-ease);
+  }
+  .sf-studio:not([data-nav-open=true]) .sf-nav .md-nav-item::before { inset: 0 auto auto 50%; width: 56px; height: 32px; transform: translateX(-50%); border-radius: var(--md-sys-shape-corner-full); }
+  .sf-studio:not([data-nav-open=true]) .sf-nav .md-nav-item:is(.active, [aria-current=page]) { background: transparent; color: var(--md-sys-color-on-surface); font-weight: 700; }
+  .sf-studio:not([data-nav-open=true]) .sf-nav .md-nav-item:is(.active, [aria-current=page]) > svg { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+  .sf-studio:not([data-nav-open=true]) #sf-task-count:not(:empty) {
+    position: absolute;
+    top: -2px;
+    left: calc(50% + 6px);
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    border-radius: var(--md-sys-shape-corner-full);
+    background: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error);
+    font: var(--md-sys-typescale-label-small-weight) var(--md-sys-typescale-label-small-size) / 16px var(--md-ref-typeface-plain);
+    text-align: center;
+  }
+  /* 展开为模态抽屉：盖在内容上，内容区仍按 80px 排版，不跳动 */
+  .sf-studio[data-nav-open=true] .sf-nav {
+    z-index: 82;
+    width: min(320px, calc(100vw - 56px));
+    border-radius: 0 var(--md-sys-shape-corner-large) var(--md-sys-shape-corner-large) 0;
+    box-shadow: var(--md-sys-elevation-level1);
+    animation: sf-drawer-in var(--md-motion-medium) var(--md-ease-enter);
+  }
+  .sf-studio[data-nav-open=true] #sf-nav-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 81;
+    display: block;
+    background: color-mix(in srgb, var(--md-sys-color-scrim) 32%, transparent);
+    animation: sf-fade-in var(--md-motion-medium) var(--md-ease);
+  }
+  .sf-studio[data-nav-open=true] .sf-nav-toggle { align-self: flex-start; margin-inline-start: 4px; }
+}
+@keyframes sf-drawer-in {
+  from { transform: translateX(-24px); opacity: 0.6; }
+  to { transform: none; opacity: 1; }
+}
+
+/* ── 顶部应用栏 ── */
+.sf-studio .sf-topbar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: var(--sf-nav-w);
+  z-index: 69;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-sizing: border-box;
+  height: var(--sf-top-h);
+  padding: 0 24px;
+  border: 0;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-label-large-weight) var(--md-sys-typescale-label-large-size) / var(--md-sys-typescale-label-large-line-height) var(--md-ref-typeface-plain);
+}
+.sf-studio .sf-topbar > span { display: flex; align-items: baseline; gap: 8px; min-width: 0; overflow: hidden; white-space: nowrap; }
+.sf-studio .sf-topbar i { padding: 0; font-style: normal; color: var(--md-sys-color-outline); }
+.sf-studio .sf-topbar b { overflow: hidden; color: var(--md-sys-color-on-surface); font: var(--md-sys-typescale-title-medium-weight) var(--md-sys-typescale-title-medium-size) / var(--md-sys-typescale-title-medium-line-height) var(--md-ref-typeface-plain); text-overflow: ellipsis; }
+.sf-studio .sf-topbar > div { display: flex; flex: none; gap: 8px; }
+
+/* ── 页面切换：淡入（只动透明度，不用 transform，避免给页面里的 fixed 浮层建立包含块） ── */
+.sf-studio :is(#home-view, .workspace-page, .sf-page):not([hidden]) { animation: sf-fade-in var(--md-motion-medium) var(--md-ease-enter); }
+@keyframes sf-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── 对话框：遮罩与外观（D6：确认框固定居中；大型工具对话框仍可拖动，内部细节在 P6 处理） ── */
+.sf-studio :is(#confirm-overlay, #role-new, #pick-overlay, #fix-overlay, #cue-text-overlay):not([hidden]) {
+  background: color-mix(in srgb, var(--md-sys-color-scrim) 32%, transparent);
+}
+.sf-studio :is(.rn-box, .pick-box, .fix-box, .ctd-box) {
+  gap: 16px;
+  padding: 24px;
+  border: 0;
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  box-shadow: var(--md-sys-elevation-level3);
+}
+.sf-studio :is(.rn-title, .pick-title) {
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-sys-typescale-headline-small-weight) var(--md-sys-typescale-headline-small-size) / var(--md-sys-typescale-headline-small-line-height) var(--md-ref-typeface-brand);
+  letter-spacing: 0;
+}
+.sf-studio .rn-msg { color: var(--md-sys-color-on-surface-variant); font: var(--md-sys-typescale-body-medium-weight) var(--md-sys-typescale-body-medium-size) / var(--md-sys-typescale-body-medium-line-height) var(--md-ref-typeface-plain); white-space: pre-line; }
+.sf-studio :is(.rn-actions, .pick-actions) { gap: 8px; justify-content: flex-end; margin-top: 0; padding-top: 8px; border-top: 0; }
+.sf-studio #confirm-overlay .rn-box { width: min(400px, calc(100vw - 48px)); }
+
+/* ── 提示条：编辑器 toast 与 Studio 通知统一为 MD3 snackbar（底部居中、反色表面） ── */
+#toast,
+.sf-studio #sf-notice {
+  position: fixed;
+  top: auto;
+  bottom: 24px;
+  left: 50%;
+  z-index: 5100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  min-height: 48px;
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 12px 16px;
+  border: 0;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  font: var(--md-sys-typescale-body-medium-weight) var(--md-sys-typescale-body-medium-size) / var(--md-sys-typescale-body-medium-line-height) var(--md-ref-typeface-plain);
+  box-shadow: var(--md-sys-elevation-level3);
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+.sf-studio #sf-notice:not([hidden]) { animation: sf-snackbar-in var(--md-motion-medium) var(--md-ease-enter) both; }
+#toast .ico { width: 20px; height: 20px; flex: none; color: var(--md-sys-color-inverse-primary); }
+#toast.toast-warn .ico { color: var(--md-sys-color-tertiary-container); }
+#toast.toast-err .ico { color: var(--md-sys-color-error-container); }
+#toast.toast-in { animation: sf-snackbar-in var(--md-motion-medium) var(--md-ease-enter) both; }
+#toast.toast-out { animation: sf-snackbar-out var(--md-motion-short) var(--md-ease) both; }
+@keyframes sf-snackbar-in {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes sf-snackbar-out {
+  from { opacity: 1; transform: translate(-50%, 0); }
+  to { opacity: 0; transform: translate(-50%, 8px); }
+}
+
+/* ── 菜单：右键菜单、查找替换的角色下拉、自定义下拉框、倍速菜单（只换外观，定位仍由各自脚本负责） ── */
+.sf-studio :is(#tl-menu, #card-menu, #role-menu, .fr-menu, .sf-choice-menu, .sf-rate-menu) {
+  padding: 8px 0;
+  border: 0;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+  box-shadow: var(--md-sys-elevation-level2);
+}
+.sf-studio :is(.tl-menu-item, .fr-menu-item, .sf-choice-option, .sf-rate-menu button) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 36px;
+  margin: 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-sys-typescale-body-medium-weight) var(--md-sys-typescale-body-medium-size) / var(--md-sys-typescale-body-medium-line-height) var(--md-ref-typeface-plain);
+  text-align: start;
+  transform: none;
+  cursor: pointer;
+  transition: background-color var(--md-motion-short) var(--md-ease);
+}
+.sf-studio :is(.tl-menu-item, .fr-menu-item, .sf-choice-option, .sf-rate-menu button):is(:hover, :focus-visible, .is-active) {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+  color: var(--md-sys-color-on-surface);
+  outline: 0;
+}
+.sf-studio :is(.tl-menu-item, .fr-menu-item, .sf-choice-option, .sf-rate-menu button):active { background: color-mix(in srgb, var(--md-sys-color-on-surface) 10%, transparent); transform: none; }
+.sf-studio :is(.sf-choice-option, .sf-rate-menu button):is([aria-selected=true], [aria-checked=true]) { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+.sf-studio .sf-choice-option { justify-content: space-between; min-height: 40px; }
+.sf-studio .sf-choice-option:disabled { background: transparent; color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent); opacity: 1; cursor: default; }
+.sf-studio :is(.tl-menu-item, .fr-menu-item) .ico { width: 18px; height: 18px; flex: none; margin: 0; color: var(--md-sys-color-on-surface-variant); }
+.sf-studio .tl-menu-item.danger,
+.sf-studio .tl-menu-item.danger .ico { color: var(--md-sys-color-error); }
+.sf-studio .tl-menu-item.danger:is(:hover, :focus-visible) { background: color-mix(in srgb, var(--md-sys-color-error) 8%, transparent); color: var(--md-sys-color-error); }
+
+/* ── 时间轴批量浮条（必须挂在 #app 之外，见 PROJECT_MAP §6）：MD3 浮动工具栏 ── */
+.sf-studio #range-bar {
+  gap: 4px;
+  padding: 4px 4px 4px 16px;
+  border: 0;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-sys-typescale-label-large-weight) var(--md-sys-typescale-label-large-size) / var(--md-sys-typescale-label-large-line-height) var(--md-ref-typeface-plain);
+  box-shadow: var(--md-sys-elevation-level3);
+}
+.sf-studio #range-bar .rb-count { color: var(--md-sys-color-on-surface-variant); }
+.sf-studio #range-bar .rb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  font: inherit;
+  transform: none;
+  transition: background-color var(--md-motion-short) var(--md-ease);
+}
+.sf-studio #range-bar .rb-btn .ico { width: 18px; height: 18px; }
+.sf-studio #range-bar .rb-btn:is(:hover, :focus-visible) { background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent); }
+.sf-studio #range-bar .rb-btn.danger { background: transparent; color: var(--md-sys-color-error); }
+.sf-studio #range-bar .rb-btn.danger:is(:hover, :focus-visible) { background: color-mix(in srgb, var(--md-sys-color-error) 8%, transparent); }
+.sf-studio #range-bar .rb-btn:disabled { background: transparent; color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent); opacity: 1; }

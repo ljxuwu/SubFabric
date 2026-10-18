@@ -37,15 +37,17 @@
 <script>document.body.dataset.theme = document.documentElement.dataset.theme || 'light';</script>
 <div class="sf-backdrop" aria-hidden="true"></div>
 <aside id="sf-nav" class="sf-nav" aria-label="主导航">
+  <button type="button" class="md-icon-button sf-nav-toggle" id="sf-nav-toggle" data-ico="menu" aria-label="展开导航" aria-expanded="false" aria-controls="sf-nav"></button>
   <a href="#/home" class="sf-brand"><span class="sf-brand-mark"><img src="/editor/assets/app-logo.png" alt=""></span><b><span class="sf-brand-title">SubFabric</span><small>字幕创作工作室</small></b></a>
   <span class="sf-nav-label">工作空间</span>
-  <a href="#/home" data-route="home" data-ico="folder">稿件库</a>
-  <a href="#/tasks" data-route="tasks" data-ico="activity">任务中心 <span id="sf-task-count"></span></a>
-  <div class="sf-folder-head"><span>文件夹</span><button type="button" id="sf-folder-add" aria-label="新建文件夹">＋</button></div>
+  <a href="#/home" class="md-nav-item" data-route="home" data-ico="folder">稿件库</a>
+  <a href="#/tasks" class="md-nav-item" data-route="tasks" data-ico="activity">任务中心 <span id="sf-task-count"></span></a>
+  <div class="sf-folder-head"><span>文件夹</span><button type="button" class="md-icon-button md-icon-button--small" id="sf-folder-add" data-ico="plus" aria-label="新建文件夹"></button></div>
   <div id="sf-folders"></div>
-  <div class="sf-nav-bottom"><a href="#/settings" data-route="settings" data-ico="sliders">设置</a><a href="#/help" data-route="help" data-ico="info">帮助与快捷键</a><p>本地工作空间 · 自动保存</p></div>
+  <div class="sf-nav-bottom"><a href="#/settings" class="md-nav-item" data-route="settings" data-ico="sliders">设置</a><a href="#/help" class="md-nav-item" data-route="help" data-ico="info">帮助与快捷键</a><p>本地工作空间 · 自动保存</p></div>
 </aside>
-<header id="sf-topbar" class="sf-topbar"><span>工作空间 <i>/</i> <b id="sf-breadcrumb">稿件库</b></span><div><button type="button" class="btn" id="sf-direct-editor">打开编辑器</button><button type="button" class="btn btn-accent" id="sf-create">新建稿件</button></div></header>
+<div id="sf-nav-scrim" aria-hidden="true"></div>
+<header id="sf-topbar" class="sf-topbar"><span>工作空间 <i>/</i> <b id="sf-breadcrumb">稿件库</b></span><div><button type="button" class="md-button md-button--tonal" id="sf-direct-editor">打开编辑器</button><button type="button" class="md-button md-button--filled" id="sf-create" data-ico="plus">新建稿件</button></div></header>
 <div id="sf-notice" role="status" hidden></div>
 <section id="sf-help" class="sf-page" hidden><div class="sf-page-content"><p class="sf-eyebrow">SUBFABRIC STUDIO</p><h1>让每一句话，清晰可见。</h1><p>真实媒体、字幕与识别任务都在本机处理。编辑器沿用原有操作习惯。</p><div class="sf-help-grid"><article><h2>从视频到稿件</h2><p>新建稿件 → 选择本地视频或链接 → 导入字幕或生成初稿 → 在任务中心查看处理 → 打开编辑器复核 → 导出字幕或项目包。</p><button class="btn btn-accent" data-go="new">创建稿件</button></article><article><h2>编辑与保存</h2><p>单击字幕就地编辑，Enter 提交，Esc 取消。时间轴拖动句子和逐词边界。角色单击分配，右键修改名字与颜色。项目自动保存；保存冲突会明确提示。</p><p>ASS 字体与颜色写入当前稿件，可导出样式预设；后处理特效保存在本机，导出时应用。</p></article><article><h2>快捷键与日志</h2><p>可在此查看固定快捷键；操作日志、备注、热词与服务日志保留在编辑器「日志」页。</p><button class="btn" id="sf-shortcuts">查看快捷键</button></article></div></div></section>
 <div id="app">
@@ -842,12 +844,12 @@
 
 <!-- 通用确认弹窗(如"删除项目") -->
 <div id="confirm-overlay" hidden>
-  <div class="rn-box modal-surface">
-    <div class="rn-title modal-drag-handle" id="confirm-title">确认</div>
+  <div class="rn-box modal-surface" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-msg">
+    <div class="rn-title" id="confirm-title">确认</div>
     <div class="rn-msg" id="confirm-msg"></div>
     <div class="rn-actions">
-      <button type="button" class="btn" id="confirm-no">取消</button>
-      <button type="button" class="btn btn-accent" id="confirm-yes">确定</button>
+      <button type="button" class="md-button md-button--text" id="confirm-no">取消</button>
+      <button type="button" class="md-button md-button--filled" id="confirm-yes">确定</button>
     </div>
   </div>
 </div>
