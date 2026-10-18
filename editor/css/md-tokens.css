@@ -102,6 +102,9 @@
   --md-sys-typescale-label-medium-size: 12px;    --md-sys-typescale-label-medium-line-height: 16px;    --md-sys-typescale-label-medium-weight: 500;    --md-sys-typescale-label-medium-tracking: 0;
   --md-sys-typescale-label-small-size: 11px;     --md-sys-typescale-label-small-line-height: 16px;     --md-sys-typescale-label-small-weight: 500;     --md-sys-typescale-label-small-tracking: 0;
 
+  /* 警示色（项目扩展：MD3 没有 warning 角色）：由 error 与 on-surface 混出，浅深色都有足够对比度、随种子色变化 */
+  --sf-color-warning: color-mix(in srgb, var(--md-sys-color-error) 55%, var(--md-sys-color-on-surface));
+
   /* font 简写（项目扩展，不是 MD3 官方令牌名）：业务样式一行取用 `font: var(--md-type-title-medium)` */
   --md-type-display-small: var(--md-sys-typescale-display-small-weight) var(--md-sys-typescale-display-small-size) / var(--md-sys-typescale-display-small-line-height) var(--md-ref-typeface-brand);
   --md-type-headline-medium: var(--md-sys-typescale-headline-medium-weight) var(--md-sys-typescale-headline-medium-size) / var(--md-sys-typescale-headline-medium-line-height) var(--md-ref-typeface-brand);

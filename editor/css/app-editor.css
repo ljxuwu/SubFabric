@@ -1,0 +1,250 @@
+/* 编辑器工作台（@layer app，由 css/app.css 引入；MD3 重构计划 P6）。
+ *
+ * 只换外观：#app 的网格、可拖动分割线（#hsplit / #vsplit）、虚拟滚动、时间轴画布、就地编辑的几何计算都不动。
+ * 字幕卡（Quiet Card）的尺寸规则在 studio.css 里与 .cue-measure 共用，这里只通过 --cc-* 变量换颜色、不改尺寸。
+ * 业务模板里的 .btn 在编辑器各区域（工具栏、右侧面板、时间轴面板、编辑器弹窗）映射为 MD3 按钮外观；
+ * 播放器控制条（#sf-player）有自己的按钮样式，不在映射范围内。
+ */
+
+/* ═══ 外壳：工具栏透明（顶部应用栏），视频区 / 时间轴 / 右侧面板为色调卡片 ═══ */
+.sf-studio[data-workspace=editor] { --sf-panel-card: var(--md-sys-color-surface-container-lowest); }
+.sf-studio[data-workspace=editor][data-theme=dark] { --sf-panel-card: var(--md-sys-color-surface-container); }
+.sf-studio #app { padding: 8px 12px 12px; grid-template-rows: 56px minmax(0, 1fr) 8px var(--tl-h); }
+.sf-studio :is(#stage-wrap, #editor-panel, #timeline-panel) {
+  border: 0;
+  border-radius: var(--md-sys-shape-corner-large);
+  background: var(--md-sys-color-surface-container-low);
+  box-shadow: none;
+}
+.sf-studio #editor-panel { margin-left: 4px; overflow: hidden; }
+.sf-studio #timeline-panel { overflow: hidden; }
+.sf-studio #stage-hint { color: var(--md-sys-color-on-surface-variant); }
+
+/* 顶部应用栏 */
+.sf-studio #toolbar {
+  gap: 8px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--md-sys-color-on-surface-variant);
+  scrollbar-width: none;
+}
+.sf-studio #toolbar .tb-group + .tb-group { padding-left: 0; border-left: 0; }
+.sf-studio #toolbar .app-logo { gap: 8px; margin-right: 4px; color: var(--md-sys-color-on-surface); font: var(--md-type-title-medium); }
+.sf-studio #toolbar .app-logo b { color: inherit; font: inherit; }
+.sf-studio #toolbar .status-file { max-width: 320px; color: var(--md-sys-color-on-surface-variant); font: var(--md-type-label-medium); }
+.sf-studio #toolbar .save-state { display: inline-flex; align-items: center; color: var(--md-sys-color-on-surface-variant); font: var(--md-type-label-medium); }
+.sf-studio #toolbar .save-state::before { background: var(--md-sys-color-primary); }
+.sf-studio #toolbar .save-state.saving { color: var(--md-sys-color-primary); }
+
+/* ═══ 按钮：编辑器区域内的 .btn → MD3（.btn 描边，.btn-accent 填充，.btn-mini 紧凑） ═══ */
+.sf-studio :is(#toolbar, #editor-panel, #timeline-panel, .modal-surface, .fr-box, .rn-box, .pick-box, .fix-box, .ctd-box, #job-card) .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  min-height: 36px;
+  margin: 0;
+  padding: 0 16px;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  font: var(--md-type-label-large);
+  white-space: nowrap;
+  box-shadow: none;
+  filter: none;
+  transform: none;
+  cursor: pointer;
+  transition: background-color var(--md-motion-short) var(--md-ease), box-shadow var(--md-motion-short) var(--md-ease);
+}
+.sf-studio :is(#toolbar, #editor-panel, #timeline-panel, .modal-surface, .fr-box, .rn-box, .pick-box, .fix-box, .ctd-box, #job-card) .btn:hover { background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent); border-color: var(--md-sys-color-outline); }
+.sf-studio :is(#toolbar, #editor-panel, #timeline-panel, .modal-surface, .fr-box, .rn-box, .pick-box, .fix-box, .ctd-box, #job-card) .btn:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
+.sf-studio :is(#toolbar, #editor-panel, #timeline-panel, .modal-surface, .fr-box, .rn-box, .pick-box, .fix-box, .ctd-box, #job-card) .btn .ico { width: 18px; height: 18px; margin: 0; }
+.sf-studio :is(#toolbar, #editor-panel, #timeline-panel, .modal-surface, .fr-box, .rn-box, .pick-box, .fix-box, .ctd-box, #job-card) .btn.btn-mini { min-height: 30px; padding: 0 12px; font: var(--md-type-label-medium); }
+.sf-studio :is(#toolbar, #editor-panel, #timeline-panel, .modal-surface, .fr-box, .rn-box, .pick-box, .fix-box, .ctd-box, #job-card) .btn.btn-mini .ico { width: 16px; height: 16px; }
+.sf-studio :is(#toolbar, #editor-panel, #timeline-panel, .modal-surface, .fr-box, .rn-box, .pick-box, .fix-box, .ctd-box, #job-card) .btn.btn-accent { border-color: transparent; background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
+.sf-studio :is(#toolbar, #editor-panel, #timeline-panel, .modal-surface, .fr-box, .rn-box, .pick-box, .fix-box, .ctd-box, #job-card) .btn.btn-accent:hover { background: color-mix(in srgb, var(--md-sys-color-on-primary) 8%, var(--md-sys-color-primary)); box-shadow: var(--md-sys-elevation-level1); }
+.sf-studio :is(#toolbar, #editor-panel, #timeline-panel, .modal-surface, .fr-box, .rn-box, .pick-box, .fix-box, .ctd-box, #job-card) .btn:is(.toggle.active, [aria-pressed=true]) { border-color: transparent; background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+.sf-studio :is(#toolbar, #editor-panel, #timeline-panel, .modal-surface, .fr-box, .rn-box, .pick-box, .fix-box, .ctd-box, #job-card) .btn.btn-danger { color: var(--md-sys-color-error); }
+.sf-studio :is(#toolbar, #editor-panel, #timeline-panel, .modal-surface, .fr-box, .rn-box, .pick-box, .fix-box, .ctd-box, #job-card) .btn.btn-ghost { border-color: transparent; }
+.sf-studio :is(#toolbar, #editor-panel, #timeline-panel, .modal-surface, .fr-box, .rn-box, .pick-box, .fix-box, .ctd-box, #job-card) .btn:disabled { border-color: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent); background: transparent; color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent); box-shadow: none; opacity: 1; cursor: default; }
+.sf-studio :is(#toolbar, #editor-panel, #timeline-panel, .modal-surface, .fr-box, .rn-box, .pick-box, .fix-box, .ctd-box, #job-card) .btn.btn-accent:disabled { border-color: transparent; background: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent); }
+/* 工具栏：「导出字幕」是唯一的填充主操作，其余为文字按钮 */
+.sf-studio #toolbar .btn:not(.btn-accent) { border-color: transparent; }
+.sf-studio #toolbar #btn-home { border-color: var(--md-sys-color-outline); }
+
+/* ═══ 开关：旧的 .switch / .switch-slider 结构不变，外观改为 MD3 ═══ */
+.sf-studio .switch-slider {
+  box-sizing: border-box;
+  width: 36px;
+  height: 20px;
+  flex: none;
+  border: 2px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container-highest);
+  box-shadow: none;
+  transition: background-color var(--md-motion-short) var(--md-ease), border-color var(--md-motion-short) var(--md-ease);
+}
+.sf-studio .switch-slider::after { top: 2px; left: 2px; width: 12px; height: 12px; background: var(--md-sys-color-outline); transform: none; transition: transform var(--md-motion-short) var(--md-ease), background-color var(--md-motion-short) var(--md-ease); }
+.sf-studio .switch input:checked + .switch-slider { border-color: transparent; background: var(--md-sys-color-primary); }
+.sf-studio .switch input:checked + .switch-slider::after { background: var(--md-sys-color-on-primary); transform: translateX(16px); }
+.sf-studio .switch-mini .switch-slider { width: 30px; height: 18px; }
+.sf-studio .switch-mini .switch-slider::after { width: 10px; height: 10px; }
+.sf-studio .switch-mini input:checked + .switch-slider::after { transform: translateX(12px); }
+.sf-studio .switch:hover .switch-slider { box-shadow: 0 0 0 4px color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+.sf-studio .switch input:focus-visible + .switch-slider { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
+
+/* ═══ 右侧面板：MD3 secondary tabs + 列表工具条 ═══ */
+.sf-studio #panel-tabs { gap: 0; padding: 0 8px; border-bottom: 1px solid var(--md-sys-color-outline-variant); background: transparent; }
+.sf-studio #panel-tabs .ptab {
+  flex: 1;
+  min-height: 48px;
+  margin: 0 0 -1px;
+  padding: 0 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-type-title-small);
+  box-shadow: none;
+  transform: none;
+  transition: background-color var(--md-motion-short) var(--md-ease), color var(--md-motion-short) var(--md-ease);
+}
+.sf-studio #panel-tabs .ptab:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); color: var(--md-sys-color-on-surface); }
+.sf-studio #panel-tabs .ptab.active { border-bottom-color: var(--md-sys-color-primary); background: transparent; color: var(--md-sys-color-on-surface); }
+.sf-studio #panel-tabs .ptab:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: -3px; }
+.sf-studio :is(.panel-head, .tab-head) { padding: 12px 16px; border-bottom: 1px solid var(--md-sys-color-outline-variant); background: transparent; color: var(--md-sys-color-on-surface); }
+.sf-studio .ph-name,
+.sf-studio .tab-head-title { color: var(--md-sys-color-on-surface); font: var(--md-type-title-medium); }
+.sf-studio .tab-head-sub { color: var(--md-sys-color-on-surface-variant); font: var(--md-type-body-small); }
+.sf-studio #editor-panel .badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--md-sys-shape-corner-small);
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-type-label-small);
+}
+.sf-studio #editor-panel .badge.ass { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+.sf-studio #editor-panel .badge.srt { background: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container); }
+.sf-studio .ph-search { gap: 8px; margin-bottom: 8px; }
+.sf-studio .ph-search .sf-choice-shell { flex: 0 1 auto; max-width: 160px; }
+.sf-studio #search-box {
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-type-body-medium);
+}
+.sf-studio #search-box::placeholder { color: var(--md-sys-color-on-surface-variant); }
+.sf-studio #search-box:focus { outline: 2px solid var(--md-sys-color-primary); outline-offset: -2px; }
+.sf-studio .ph-search-btn { width: 36px; height: 36px; border: 0; background: transparent; color: var(--md-sys-color-on-surface-variant); transform: none; }
+.sf-studio .ph-search-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); color: var(--md-sys-color-on-surface); }
+.sf-studio .ph-row { gap: 6px; }
+.sf-studio :is(.ph-lbl, .follow-label) { color: var(--md-sys-color-on-surface-variant); font: var(--md-type-label-medium); }
+/* 筛选类控件（角色、显示模式下拉；异常行 / 低置信度切换）：filter chip 外观 */
+.sf-studio #editor-panel .sf-choice-toggle {
+  min-height: 32px;
+  padding: 0 4px 0 10px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-small);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-type-label-large);
+  transform: none;
+}
+.sf-studio #editor-panel .sf-choice-toggle:is(:hover, [aria-expanded=true]) { border-color: var(--md-sys-color-outline); background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); color: var(--md-sys-color-on-surface); }
+.sf-studio #editor-panel .sf-choice-toggle:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
+.sf-studio #editor-panel .btn:is(.warn-toggle, .conf-toggle) { gap: 4px; min-height: 32px; padding: 0 8px; border-color: var(--md-sys-color-outline-variant); border-radius: var(--md-sys-shape-corner-small); background: transparent; color: var(--sf-color-warning); font: var(--md-type-label-large); }
+.sf-studio #editor-panel .btn:is(.warn-toggle, .conf-toggle).active { border-color: transparent; background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+.sf-studio #editor-panel .btn:is(.warn-toggle, .conf-toggle) .ico { width: 16px; height: 16px; }
+.sf-studio #list-actions { border-top: 1px solid var(--md-sys-color-outline-variant); background: transparent; }
+.sf-studio .la-hint { color: var(--md-sys-color-on-surface-variant); font: var(--md-type-body-small); }
+
+/* 面板里的卡片（角色、设置分组）：与字幕卡同一层级的表面 */
+.sf-studio #editor-panel :is(.role-card, .settings-list .set-group) { border-color: var(--md-sys-color-outline-variant); background: var(--sf-panel-card); color: var(--md-sys-color-on-surface); box-shadow: none; }
+.sf-studio #editor-panel .setting-row { border-color: var(--md-sys-color-outline-variant); background: transparent; color: var(--md-sys-color-on-surface); }
+.sf-studio #editor-panel .setting-name { color: var(--md-sys-color-on-surface); font: var(--md-type-body-medium); }
+.sf-studio #editor-panel .set-group-title { color: var(--md-sys-color-on-surface); font: var(--md-type-title-small); }
+.sf-studio #editor-panel .set-group-note { color: var(--md-sys-color-on-surface-variant); font: var(--md-type-body-small); }
+
+/* ═══ 时间轴面板外壳（画布配色在 P7） ═══ */
+.sf-studio :is(.tl-toolbar, .tl-head) { border-color: var(--md-sys-color-outline-variant); background: transparent; }
+.sf-studio .tl-hint { color: var(--md-sys-color-on-surface-variant); font: var(--md-type-body-small); }
+.sf-studio #note-bar { border-color: var(--md-sys-color-outline-variant); background: transparent; }
+.sf-studio #note-input {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container-lowest);
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-type-body-medium);
+}
+.sf-studio #note-input:focus { border-color: var(--md-sys-color-primary); outline: 0; box-shadow: inset 0 0 0 1px var(--md-sys-color-primary); }
+
+/* ═══ 查找与批量替换（F9：浅色主题下的深色块已改为色调表面） ═══ */
+.sf-studio .fr-box { gap: 12px; padding: 24px; border: 0; border-radius: var(--md-sys-shape-corner-extra-large); color: var(--md-sys-color-on-surface); box-shadow: var(--md-sys-elevation-level3); }
+.sf-studio .fr-title { color: var(--md-sys-color-on-surface); font: var(--md-type-headline-small); }
+.sf-studio .fr-tabs { gap: 0; padding: 0; overflow: hidden; border: 1px solid var(--md-sys-color-outline); border-radius: var(--md-sys-shape-corner-full); background: transparent; }
+.sf-studio .fr-tab { min-height: 32px; padding: 0 16px; border: 0; border-inline-start: 1px solid var(--md-sys-color-outline); border-radius: 0; background: transparent; color: var(--md-sys-color-on-surface); font: var(--md-type-label-large); }
+.sf-studio .fr-tab:first-child { border-inline-start: 0; }
+.sf-studio .fr-tab.active { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+.sf-studio .fr-tab:disabled { color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent); opacity: 1; }
+.sf-studio :is(.fr-lbl, .fr-chk) { color: var(--md-sys-color-on-surface-variant); font: var(--md-type-label-large); }
+.sf-studio .fr-chk input { accent-color: var(--md-sys-color-primary); }
+.sf-studio .fr-input {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-type-body-medium);
+}
+.sf-studio .fr-input:focus { border-color: var(--md-sys-color-primary); box-shadow: inset 0 0 0 1px var(--md-sys-color-primary); }
+.sf-studio .fr-input::placeholder { color: var(--md-sys-color-on-surface-variant); }
+.sf-studio .fr-hint { padding: 8px 12px; border: 0; border-radius: var(--md-sys-shape-corner-small); background: var(--md-sys-color-surface-container-highest); color: var(--md-sys-color-on-surface-variant); font: var(--md-type-body-small); }
+.sf-studio .fr-status { color: var(--md-sys-color-on-surface-variant); font: var(--md-type-body-small); }
+
+/* ═══ 其他编辑器弹窗与浮层：只换色调与字体，几何与拖动不变 ═══ */
+.sf-studio :is(.pick-row, .fix-issue) { border-color: var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface-container); color: var(--md-sys-color-on-surface); }
+.sf-studio .pick-row:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, var(--md-sys-color-surface-container)); border-color: var(--md-sys-color-primary); }
+.sf-studio #job-card { border-color: var(--md-sys-color-outline-variant); border-radius: var(--md-sys-shape-corner-large); background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); box-shadow: var(--md-sys-elevation-level3); }
+.sf-studio #job-card .jc-title { color: var(--md-sys-color-on-surface); font: var(--md-type-title-small); }
+.sf-studio #job-card :is(.jc-msg, .jc-foot) { color: var(--md-sys-color-on-surface-variant); font: var(--md-type-body-small); }
+.sf-studio #job-card .jc-bar { background: var(--md-sys-color-surface-container-highest); }
+.sf-studio #job-card .jc-bar-in { background: var(--md-sys-color-primary); }
+.sf-studio #job-card.jc-err .jc-bar-in { background: var(--md-sys-color-error); }
+.sf-studio #cue-inline-editor { border-color: var(--md-sys-color-primary); border-radius: var(--md-sys-shape-corner-extra-small); background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); box-shadow: var(--md-sys-elevation-level2); }
+.sf-studio #cue-inline-editor .cie-hints { color: var(--md-sys-color-on-surface-variant); }
+
+/* ═══ 窄窗口（F2）：<1100px 隐藏文件名；≤900px（与 studio.css 的窄屏定位同一断点）改为纵向堆叠、body 整页滚动，
+ *     工具栏按钮只留图标；字幕面板限高，列表在面板内滚动（虚拟滚动需要固定视口） ═══ */
+@media (max-width: 1099px) {
+  .sf-studio #toolbar .status-file { display: none; }
+}
+@media (max-width: 900px) {
+  .sf-studio[data-workspace=editor] #app {
+    height: auto;
+    min-height: 100vh;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(280px, 52vh) 8px var(--tl-h) minmax(480px, 80vh);
+  }
+  .sf-studio #toolbar { flex-wrap: wrap; row-gap: 4px; padding: 4px; overflow: visible; }
+  .sf-studio #toolbar .tb-right { margin-left: auto; }
+  .sf-studio #toolbar .app-logo b { display: none; }
+  .sf-studio #toolbar .btn:has(> .ico) { width: 40px; min-width: 40px; padding: 0; font-size: 0; }
+  .sf-studio #toolbar .btn:has(> .ico) .ico { width: 20px; height: 20px; }
+  .sf-studio #editor-panel { margin: 4px 0 0; }
+}

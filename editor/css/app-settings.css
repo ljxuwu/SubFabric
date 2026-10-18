@@ -632,7 +632,7 @@
 .sf-studio #log-view { font: 12px / 1.6 var(--md-ref-typeface-mono); }
 .sf-studio .log-line { color: var(--md-sys-color-on-surface); }
 .sf-studio .log-err { color: var(--md-sys-color-error); }
-.sf-studio .log-warn { color: color-mix(in srgb, var(--md-sys-color-error) 55%, var(--md-sys-color-on-surface)); }
+.sf-studio .log-warn { color: var(--sf-color-warning); }
 .sf-studio .oplog-row { border-bottom-color: var(--md-sys-color-outline-variant); }
 .sf-studio .oplog-row:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
 .sf-studio .oplog-t { font-family: var(--md-ref-typeface-mono); }
@@ -641,6 +641,6 @@
 .sf-studio .log-hint { color: var(--md-sys-color-on-surface-variant); font: var(--md-type-body-small); }
 .sf-studio .log-empty { border-color: var(--md-sys-color-outline-variant); background: transparent; color: var(--md-sys-color-on-surface-variant); font: var(--md-type-body-small); }
 /* 「逐词字幕自愈」卡片由 studio.js 移进编辑器的设置页（#tab-settings），在那里保持同样的卡片外观 */
-.sf-studio #tab-settings > .st-card { margin: 12px 0; padding: 16px; border: 0; border-radius: var(--md-sys-shape-corner-large); background: var(--md-sys-color-surface-container-low); color: var(--md-sys-color-on-surface); }
+.sf-studio #tab-settings > .st-card { margin: 12px 0; padding: 16px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: var(--md-sys-shape-corner-large); background: var(--sf-panel-card, var(--md-sys-color-surface-container-low)); color: var(--md-sys-color-on-surface); }
 .sf-studio #tab-settings > .st-card .st-card-title { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 8px; color: var(--md-sys-color-on-surface); font: var(--md-type-title-small); }
 .sf-studio #tab-settings > .st-card .gl-hint { margin: 4px 0 0; color: var(--md-sys-color-on-surface-variant); font: var(--md-type-body-small); }

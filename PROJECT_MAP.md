@@ -325,6 +325,8 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 
 **设置 / 帮助 / 日志（P5，2026-10-18）**：`css/app-settings.css`（`app` 层，排在 app-home 之后）接管设置页、帮助页、编辑器「日志」页的子页切换与日志列表，以及顶部横幅（新版本 / 缺渲染器，样式在 app-shell.css 的 `.sf-app-banner`）；`studio.css` 里对应的约 400 条旧规则已删除。设置是 list-detail：左侧分类为 MD3 导航条目（选中 secondary-container），右侧每组一张色调卡片（surface-container-low），行结构为标签 + 控件 + 说明；业务模板拼出的 `.btn` 在 `#st-view` / `#sf-help` 内统一映射为 MD3 描边 / 填充按钮（`.btn-accent`），不逐个改 JS 模板。翻译方案保持卡片下方的内联展开（grid 0fr→1fr，时长取 `--md-motion-medium` 300ms，必须短于 project.js 收起时的 320ms 计时），没有改成 side sheet。明暗模式是 `md-segmented`，遮罩强度是 `md-slider`（studio.js 改值后调用 `MDUI.syncSlider`）。「逐词字幕自愈」卡片由 studio.js 移进编辑器 `#tab-settings`，其卡片外观也在 app-settings.css。日志子页默认高亮「操作日志」，与默认显示的板块一致。
 
+**编辑器工作台（P6，2026-10-18）**：`css/app-editor.css`（`app` 层，最后引入）只换外观：工具栏为透明顶部应用栏，视频区 / 时间轴 / 右侧面板为 surface-container-low 卡片，右侧页签为 secondary tabs，`#toolbar / #editor-panel / #timeline-panel / 编辑器弹窗` 内的 `.btn` 映射为 MD3 按钮（`#sf-player` 不在映射范围），旧 `.switch` 外观改为 MD3。**字幕卡的尺寸规则仍只在 studio.css（与 `.cue-measure` 同源），app-editor.css 不得写 `.cue-card` / `.cc-*`**；配色只经 `--cc-*` 变量（已改为 MD3 角色，`--cc-shadow: none`）。窄屏断点与 studio.css 的纵向堆叠一致（≤900px），只在 `body[data-workspace=editor]` 时放开 `#app` 高度并限制面板高度（虚拟滚动需要固定视口）。警示色统一用 `--sf-color-warning`（md-tokens.css，error 与 on-surface 混出）。`studio.html` 里第 840 行附近带「/#app」注释的 `</div>` 是早已存在的多余闭合，`#app` 实际在其前面闭合，`#range-bar` 仍是 body 的直接子元素（app-editor-test 按 div 嵌套核对）。
+
 `editor/js/studio.js` 只适配页面导航、外观、真实项目快照和播放器事件；`studio-state.js` 校验浏览器外观/文件夹关系（不储存字幕/模型/凭据）。`studio-themes.js` 提供唯一内置主题包 Material You 及“我的主题包”存储；`editor/themes/material-you.theme.json` 是可分发的同源 JSON，导入包只能使用种子色、MD3 角色白名单和本地 PNG/JPEG/WebP 预览图，不能执行脚本、注入 CSS 或引用远程资源。设置页按内置/自定义分组，内置包不可删除，自定义包可导出、替换和删除；格式与制作说明见 `docs/THEME_PACKS.md`。`studio-progress.js` 提供固定 CSS 波浪。全局模型、翻译与识别设置共用唯一“设置”入口；旧 `#/resources` 仅重定向至 `#/settings`。ASS 控件为同一组 DOM，始终停留在稿件编辑器的 #tab-settings，保留原监听器/文档保存链路；无当前 ASS 项目时由编辑器业务自身禁用文档操作，后处理为本机偏好。创建提交期间 Studio 路由统一互斥，避免上传回调读取被重置的材料。
 
 相关验收与安装范围见 `docs/UI_INTEGRATION.md`；`tools/studio-install.mjs --prepare` 产生安装候选和哈希清单，候选验收通过后 `--apply <backup-directory>` 才进入备份/锁/替换/失败回滚。仅合并本次 UI 增量，不整体安装先前源码修复，不改 EXE/运行时/设置/项目。
@@ -364,6 +366,7 @@ SEA 打包入口 `editor/scripts/sea-launcher.cjs` 用 `Module._compile` 从磁�
 | `tests/md-color-test.mjs` | MD3 取色：HCT 移植逐值对照 `tests/md-color-expected.json`（material-color-utilities 0.3.0 生成，10 个种子 × 浅深 × 34 角色）、14 个种子 WCAG 对比度、首屏引导与偏好迁移、SSAccent 兼容、md-compat 别名与层序 | 纯 Node（vm），任何机器可跑；改默认种子或角色表后重新生成期望值 |
 | `tests/theme-packs-test.mjs` | 主题包 v2（种子色 + MD3 角色白名单）、v1 只取种子导入、旧内置包迁移、安全白名单、删除规则 | 纯 Node |
 | `tests/md-components-test.mjs` | MD3 组件层：源码约定（无写死颜色 / `!important` / ID 选择器 / `transition: all`，动效走令牌）、陈列页覆盖全部 md- 类、层名无点、入口接线、`md.js` 纯函数 | 纯 Node（vm） |
+| `tests/app-editor-test.mjs` | 编辑器工作台：只用令牌、不碰字幕卡尺寸、F2 窄屏堆叠与断点、F9 查找替换色调、旧样式无深色表面 / 警示黄、卡片无逐项阴影、`#range-bar` 在 `#app` 之外、入口接线 | 纯 Node |
 | `tests/app-settings-test.mjs` | 设置 / 帮助 / 日志：只用令牌的样式约定、list-detail 与窄屏横排、卡片与按钮映射、方案展开时长早于 JS 收起、日志列表色调表面与等宽、旧规则已删除、分段按钮 / 滑块 / 勾选结构、横幅改用类名、入口接线 | 纯 Node |
 | `tests/app-home-test.mjs` | 首页与工作台：只用令牌的样式约定、卡片网格 / 列表 / supporting-pane 断点、F10/F11、旧规则已删除、筛选纸片 / 搜索 / 分段按钮结构、英文眉标已去掉、MD3 按钮与勾选、入口接线 | 纯 Node |
 | `tests/app-shell-test.mjs` | 应用外壳：外壳样式约定、导航宽度断点、snackbar、确认框语义与 D6、旧规则已删除、入口接线；导航栏展开 / 收起的运行时行为在 studio-navigation-test 里验证 | 纯 Node |

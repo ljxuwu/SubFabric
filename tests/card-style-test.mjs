@@ -70,7 +70,12 @@ ok(/font-size:\s*10\.4px/.test(l2 || ''), '英文行 10.4px（比中文退一档
 
 console.log('\n== 主题与兼容 ==');
 ok(/body\[data-theme="light"\] :is\(#editor-panel #cue-list, \.cue-measure\)/.test(CSS), '浅色主题有独立卡片变量');
-ok(/--cc-bg:\s*#fbfcfc/.test(CSS) && /--cc-text:\s*#202930/.test(CSS), '浅色卡片底色/正文色已定义');
+ok(/--cc-bg: var\(--md-sys-color-surface-container-lowest\)/.test(CSS) && /--cc-text: var\(--md-sys-color-on-surface\)/.test(CSS), '卡片底色/正文色取 MD3 角色（MD3 重构 P6，随种子色与明暗变化）');
+ok(/--cc-shadow: none;/.test(CSS), '长列表不加逐项阴影（计划 §2.3）');
+{
+  const vars = CSS.slice(CSS.indexOf(':is(#editor-panel #cue-list, .cue-measure) {'), CSS.indexOf(':is(#editor-panel #cue-list, .cue-measure) .cue-card {'));
+  ok(!/#[0-9a-fA-F]{3,8}\b|rgba?\(/.test(vars), '卡片变量里不再写死颜色');
+}
 ok(/@media/.test(CSS), '媒体查询结构仍在（未误删）');
 ok(!/data-design=uwp/.test(CSS), 'MD3 统一主题后不再残留 UWP 专用的卡片覆盖');
 ok(/\.cc-left-stack \.cc-rerecog/.test(CSS), '重识别按钮仍在左列样式内');

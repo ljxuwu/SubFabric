@@ -38,7 +38,7 @@ for (const role of new Set([...css.matchAll(/var\(--md-type-([a-z-]+)\)/g)].map(
 const app = read('editor/css/app.css');
 ok(/@import url\("app-settings\.css"\) layer\(app\);/.test(app) && app.indexOf('"app-home.css"') < app.indexOf('"app-settings.css"'), 'imported into the app layer after the home styles');
 ok(read('editor/server.js').includes("'/editor/css/app-settings.css'"), 'static allowlist serves app-settings.css');
-ok(/'app-settings'\]\.map\(n => `editor\/css\/\$\{n\}\.css`\)/.test(read('tools/studio-install.mjs')), 'UI installer ships app-settings.css');
+ok(/'app-settings'[,\]][^\n]*\]\.map\(n => `editor\/css\/\$\{n\}\.css`\)/.test(read('tools/studio-install.mjs')), 'UI installer ships app-settings.css');
 
 // 3. 被接管的旧规则已删除
 const legacy = read('editor/css/studio.css');
@@ -48,7 +48,7 @@ for (const [re, what] of [[/#st-view\b(?!\.is-leaving)/, '#st-view'], [/\.settin
   ok(!re.test(legacy), 'legacy rule removed: ' + what);
 }
 ok(/\.log-subtab\.active/.test(legacy) && /\.log-pane\s*\{[^}]*flex: 1/.test(legacy), 'base log layout rules stay (log-panel-test)');
-ok(/\.sf-studio \.ptab:focus-visible/.test(legacy), 'editor tab focus ring survived the cleanup');
+ok(/#panel-tabs \.ptab:focus-visible \{ outline: 3px solid var\(--md-sys-color-secondary\)/.test(read('editor/css/app-editor.css')), 'editor tab focus ring survived the cleanup (moved to app-editor.css in P6)');
 
 // 4. 结构钩子
 const html = read('editor/studio.html');
