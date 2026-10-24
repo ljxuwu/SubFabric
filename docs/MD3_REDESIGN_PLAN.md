@@ -1,6 +1,6 @@
 # Material Design 3 前端重构计划
 
-> 状态：P0–P7 已完成且已验证；P8 未开始（2026-10-24）。执行进度只记在 [STATUS.md](STATUS.md)，本文件只在范围、顺序或验收变化时修改。
+> 状态：P0–P8 全部已完成且已验证（2026-10-24）。执行进度只记在 [STATUS.md](STATUS.md)，本文件只在范围、顺序或验收变化时修改。
 > 改代码前仍须读 [PROJECT_MAP.md](../PROJECT_MAP.md) §6、§7。
 
 ## 0. 需求与已确认决策
@@ -285,6 +285,12 @@ tools/md-gallery.html 组件陈列页（file:// 直接打开，只引 CSS 与经
 - 目标：`!important` 降到个位数（只留给 `[hidden]` 等），`backdrop-filter` 只用在少数悬浮层；记录 CSS 总行数。
 - 文档：`PROJECT_MAP.md` §2 / §4 / §6 / §7 / §8、`README.md`（主题说明）、`docs/THEME_PACKS.md`、`docs/UI_INTEGRATION.md`；用 `tests/gen-lang.mjs` 重新生成 `lang/zh-CN.json` 并核对文案。
 - 验收：完整回归 0 失败；ESLint 0 error；全尺寸、浅深色、reduced-motion 截图验收；源码服务冒烟（`/api/version`、静态白名单可达）；可选：SEA 构建＋安装包冒烟（不覆盖用户已装版本）。
+
+- **P8 结果（2026-10-24，已完成且已验证；按用户要求精简测试）**：
+  - 删除 `md-compat.css` 别名层：`studio.css` / `main.js` / `project.js` / `studio.html` 里 612 处旧变量引用替换为 MD3 角色，`timeline.js` 不再回退读 `--accent`；层序变为 `md-tokens, legacy, md-components, app`。
+  - `studio.css` 的 `!important` 49 → 13（只剩 `[hidden]`、libass 内联样式、减少动效、JS 内联宽度），`backdrop-filter` 全部删除（原来 7 处都是为压过已下线的毛玻璃写的 `none`）；顺带删掉一条无效规则（选择器里嵌 @media）。
+  - CSS 总行数 5707（studio.css 2694，P0 时 studio.css 4291）。
+  - 未做：`studio.css` 里编辑器内部的旧规则没有继续拆到 app 层（仍在 legacy 层，已全部改用 MD3 角色）；`tests/gen-lang.mjs` 仍读已不存在的 index.html，词典没有重新生成（新文案在各阶段已手动加入）；F8 样式重算没有专门优化；按用户要求没有做全尺寸 × 明暗 × 减少动效的整套截图与 SEA / 安装包冒烟。
 
 ### 工作量与顺序
 

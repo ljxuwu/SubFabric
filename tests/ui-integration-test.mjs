@@ -54,7 +54,8 @@ assert.ok(fresh.includes('id="sf-settings-tab-theme"'));
 assert.match(fresh, /背景遮罩强度/);
 assert.doesNotMatch(fresh, /毛玻璃|模糊流光|sf-aurora-/, 'glass and aurora controls are retired (MD3 D1)');
 assert.doesNotMatch(studioCss, /--sf-glass-|backdrop-filter:blur\(var/, 'surfaces no longer depend on glass variables');
-assert.match(studioCss, /\/\* MD3 表面层级[\s\S]*surface-container-low[\s\S]*backdrop-filter:none!important/, 'opaque MD3 tonal surfaces replace the glass layer');
+assert.match(studioCss, /\/\* MD3 表面层级[\s\S]*surface-container-low/, 'opaque MD3 tonal surfaces replace the glass layer');
+assert.doesNotMatch(studioCss, /backdrop-filter\s*:/, 'no backdrop-filter left in the legacy layer (P8)');
 assert.match(studioJs, /window\.SF_MD\.apply\(accent, dark, themes\.roleOverrides\(pack, dark\)\)/, 'Studio applies colors through the MD3 scheme');
 assert.doesNotMatch(studioJs, /--sf-glass|auroraColors|design === 'uwp'/, 'Studio adapter no longer carries glass, aurora or UWP branches');
 const ids = text => [...text.replace(/<!--[\s\S]*?-->/g, '').matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
@@ -108,7 +109,7 @@ try {
       : [...text.matchAll(/(?:from\s*|import\s*\()?['"]((?:\.{1,2}\/|\/)[^'"\n]+\.js(?:\?[^'"\n]*)?)['"]/g)].map(m => m[1]);
     for (const ref of refs) if (!ref.startsWith('#') && !/^[a-z]+:/i.test(ref)) queue.push(new URL(ref, server.origin + url).pathname);
   }
-  for (const ref of ['/editor/js/md-color.js', '/editor/js/studio.js', '/editor/js/studio-state.js', '/editor/js/studio-themes.js', '/editor/js/studio-progress.js', '/editor/css/app.css', '/editor/css/md-tokens.css', '/editor/css/studio.css', '/editor/css/md-compat.css']) assert.ok(seen.has(ref), ref);
+  for (const ref of ['/editor/js/md-color.js', '/editor/js/studio.js', '/editor/js/studio-state.js', '/editor/js/studio-themes.js', '/editor/js/studio-progress.js', '/editor/css/app.css', '/editor/css/md-tokens.css', '/editor/css/studio.css', '/editor/css/md-components.css']) assert.ok(seen.has(ref), ref);
   assert.equal((await server.call('/ui-config.json')).status, 403);
   console.log(`Studio parity: ${new Set(ids(fresh)).size} controls, ${seen.size} resources, single-entry/config privacy and real-state filters passed`);
 } finally { await server.close(); }

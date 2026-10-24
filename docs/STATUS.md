@@ -1,6 +1,14 @@
 # 项目当前状态（唯一权威入口）
 
-- 当前任务（2026-10-24）：MD3 重构 **P7（时间轴 canvas）已完成且已验证；P8 未开始。**
+- 当前任务（2026-10-24）：MD3 重构 **P8（清理与收尾）已完成且已验证，MD3 重构 P0–P8 全部完成。** 用户要求本阶段少做测试、尽快完成。
+  - 改了什么：
+    - 删除 `editor/css/md-compat.css`：`studio.css` / `main.js` / `project.js` / `studio.html` 共 612 处旧变量（`--accent` / `--bg-1` / `--text-0` / `--danger` 等）替换为 `--md-sys-color-*`；`app.css` 层序改为 `md-tokens, legacy, md-components, app`；静态白名单、安装清单同步去掉该文件；`timeline.js` 不再回退读 `--accent`。
+    - `studio.css` 的 `!important` 49 → 13，`backdrop-filter` 7 → 0；删掉一条无效规则。CSS 共 5707 行（studio.css 2694）。
+    - 测试：`md-color-test` 改为断言旧变量名已全部清除；`md-components` / `ui-integration` / `ui-feedback-20261017` 中依赖旧写法的断言随之更新。
+  - 本次验证（精简）：完整 JS 回归 `node tests/run-all.mjs --report _test/md3-p8-final.json` 首跑 7 项失败，均为生成模板未同步与旧写法断言，修正后逐项重跑通过；ESLint 0 error、19 个 warning 不变。隔离副本冒烟：`/api/version` 正常，8 个 CSS 与 md-color / md / timeline 脚本 200，`md-compat.css` 已不在白名单（403）；浅色 / 深色各一组首页与编辑器截图，无横向溢出、控制台无错误（`_test/md3-p8/`）。
+  - 未做：没有整套全尺寸 × 明暗 × 减少动效截图；没有 SEA / 安装包冒烟；`tests/gen-lang.mjs` 仍读已不存在的 index.html，词典未重新生成；F8 未专门优化；编辑器内部旧规则仍在 legacy 层（已全部改用 MD3 角色）。
+  - GitHub：按用户指示提交到 `ljxuwu/SubFabric` main，与 P7 的提交核对补记一起入库；提交标识见最终报告。
+- 上一阶段（2026-10-24）：MD3 重构 **P7（时间轴 canvas）已完成且已验证。**
   - 改了什么：
     - `editor/js/timeline.js`：新增 `_syncColors()`，轨道 / 波形带 / 胶片 / 刻度 / 游标 / 选中环 / 坏行 / 重新识别带 / 轨道标签取 MD3 角色，画布字体取 MD3 字体令牌；`ss-accent` 与 `sf-studio-theme` 合并为同一刷新入口。字幕块文字层分明暗两套：深色沿用原取值，浅色提亮块区域、深色字，中文行用新的 `readableOnLight()` 按 WCAG 加深角色色到 ≥ 4.5:1。新增 devicePixelRatio 变化监听（换显示器时画布不再发虚）。
     - `app-editor.css`：时间轴边缘提示与进度条悬浮时间改为 MD3 plain tooltip；`studio.css` 的 `#tl-canvas-wrap` 去掉写死的深色底。
@@ -10,6 +18,7 @@
     - 真实 Chrome：本次会话的临时目录已被清空，重新搭了隔离副本（Windows ffmpeg 包装脚本、40s testsrc2 视频、12 行三角色双语逐词 ASS，经 API 建项目）。浅色 / 深色 × DPR 1 / 1.25 / 1.5 / 2：画布像素与 DPR 一致（1170 → 1463 / 1755 / 2340）；浅色下黄 / 青 / 绿角色的中文行加深后清楚可读；右键菜单在指针处弹出且在视口内；边缘提示距指针 14/16px、为反色表面；运行中换种子色后时间轴主色与表面立即跟着变；控制台无错误。截图在 `_test/md3-p7/`。
     - CDP 模拟改 DPR 不会触发 matchMedia 的 change，所以 DPR 截图是先设 DPR 再载入页面；监听逻辑由单测覆盖，真实换显示器未实测。
   - GitHub：按用户指示提交到 `ljxuwu/SubFabric` main，与 P6 的提交核对补记一起入库；提交标识见最终报告。
+  - GitHub 核对（提交后确认，随下一次提交入库）：main 已指向 `64381b27305db9e254694be32b8c75c920b691cd`（父提交 `e8e132a`，Verified）；compare 为 ahead 1 / behind 0，9 个文件；远端 452 个文件与本地按 blob SHA 逐个一致。CI run 40054856849 中「JS · ESLint + 全量测试」和「Python · ruff + 单测」均 success。
 - 上一阶段（2026-10-18）：MD3 重构 **P6（编辑器工作台）已完成且已验证。**
   - 改了什么：
     - 新增 `editor/css/app-editor.css`（app 层）：透明顶部应用栏（「导出字幕」唯一填充），视频区 / 时间轴 / 右侧面板为色调卡片，右侧页签为 secondary tabs，列表工具条为筛选纸片 + 搜索栏，旧开关改 MD3 外观，编辑器各区域与弹窗里的 `.btn` 映射为 MD3 按钮；`studio.css` 删除被接管的 18 条 Studio 外壳规则（2705 → 2699 行）。

@@ -4849,8 +4849,8 @@ function reflectRender() {
       `通读 <b>${s.rows || 0}</b> 行（${s.batches || 1} 批）→ 建议 <b>${s.findings || 0}</b> 条：${reflectEsc(kindTxt)}<br>`
       + `实际需要重识别 <b>${s.regions || 0}</b> 段、共 <b>${secs.toFixed(1)}</b> 秒音频`
       + `（同段只跑一遍；模型 ${reflectEsc(s.model || '?')}）`
-      + (s.dropped ? `<br><span style="color:var(--text-2)">已丢弃 ${s.dropped} 条与其它建议重复的条目</span>` : '')
-      + ((d.notes && d.notes.length) ? `<br><span style="color:var(--text-2)">${reflectEsc(d.notes.join('；'))}</span>` : '');
+      + (s.dropped ? `<br><span style="color:var(--md-sys-color-on-surface-variant)">已丢弃 ${s.dropped} 条与其它建议重复的条目</span>` : '')
+      + ((d.notes && d.notes.length) ? `<br><span style="color:var(--md-sys-color-on-surface-variant)">${reflectEsc(d.notes.join('；'))}</span>` : '');
   }
   // gap 也是可执行项了，所以参与"全选"与计数
   const actionable = (d.findings || []).length;
@@ -4950,7 +4950,7 @@ async function startReflect() {
     // 仍弹窗，让用户在弹窗里看到完整原因（卡片的字体小、两行就截断了）
     reflectShow(true);
     if (reflectEls.msg) {
-      reflectEls.msg.innerHTML = `<span style="color:var(--danger)">反思失败：${reflectEsc(e.message)}</span>`;
+      reflectEls.msg.innerHTML = `<span style="color:var(--md-sys-color-error)">反思失败：${reflectEsc(e.message)}</span>`;
     }
     if (reflectEls.reload) reflectEls.reload.hidden = false;
   } finally {

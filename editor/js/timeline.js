@@ -389,8 +389,8 @@ export class Timeline {
     /* 主题色：游标 / 选中环 / 波形都跟着界面主题走（canvas 里读不到 CSS 变量，只能缓存一份）。
        MD3 重构 P7：颜色统一由 _syncColors() 从 MD3 角色取；换种子色（ss-accent）与换明暗 / 主题包
        （sf-studio-theme）走同一个刷新入口，不再两套监听各管一半。 */
-    this.accent = cssVar('--accent', C.accent);
-    this.accentInk = cssVar('--accent-ink', '#22150e');
+    this.accent = cssVar('--md-sys-color-primary', C.accent);
+    this.accentInk = cssVar('--md-sys-color-on-primary', '#22150e');
     this.colors = { ...C, rulerBg0: '#16161c', rulerBg1: '#101015' };
     this.ink = INK_DARK;
     this.ui = UI_DEFAULT;
@@ -1225,8 +1225,8 @@ export class Timeline {
 
   /** 从 MD3 角色（--md-sys-color-*，md-color.js 写成 #rrggbb）刷新画布配色缓存。 */
   _syncColors() {
-    this.accent = cssVar('--md-sys-color-primary', cssVar('--accent', C.accent));
-    this.accentInk = cssVar('--md-sys-color-on-primary', cssVar('--accent-ink', '#22150e'));
+    this.accent = cssVar('--md-sys-color-primary', C.accent);
+    this.accentInk = cssVar('--md-sys-color-on-primary', '#22150e');
     if (!document.body?.classList?.contains('sf-studio')) { this._dirty = true; return; }
     const v = (role, fallback) => cssVar('--md-sys-color-' + role, fallback);
     const dark = document.body.dataset.theme !== 'light';

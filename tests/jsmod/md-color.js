@@ -14,7 +14,7 @@
  * neutral 6、neutral-variant 8、error 色相 25 / 色度 84；颜色角色取 MD3 静态 tone 表（见 ROLES）。
  *
  * 对外：window.SF_MD（取色 API）与 window.SSAccent（旧强调色接口的兼容层，main.js 的色块仍在用）。
- * 写到 :root 的只有 --md-sys-color-*；旧变量名（--accent、--bg-1 …）由 css/md-compat.css 别名到这里。
+ * 写到 :root 的只有 --md-sys-color-*；样式与脚本都直接使用这些角色名（旧变量名的别名层已在 MD3 重构 P8 删除）。
  */
 (function (w, d) {
   'use strict';

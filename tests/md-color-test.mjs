@@ -69,7 +69,7 @@ for (const seed of seeds) {
   assert.equal(def.documentElement.dataset.theme, 'light', 'no prefs → light');
   assert.equal(def.props.get('--md-sys-color-primary'), expected.seeds['#5789DC'].light.primary, 'no prefs → default seed');
   assert.equal(def.props.size, MD.ROLE_NAMES.length, 'only --md-sys-color-* roles are written');
-  assert.ok([...def.props.keys()].every(k => k.startsWith('--md-sys-color-')), 'legacy variables are left to md-compat.css');
+  assert.ok([...def.props.keys()].every(k => k.startsWith('--md-sys-color-')), 'only MD3 roles are written');
   const dark = load({ prefs: { mode: 'dark', accent: '#FF7A45' } });
   assert.equal(dark.documentElement.dataset.theme, 'dark');
   assert.equal(dark.documentElement.style.colorScheme, 'dark');
@@ -100,20 +100,18 @@ for (const seed of seeds) {
   assert.equal(SSAccent.reset(), '#5789DC');
 }
 
-// 5. 兼容别名层与令牌文件：旧变量全部指向 MD3 角色，不再写死颜色
+// 5. 旧变量名已删除（P8）：样式与脚本只用 MD3 角色；令牌文件给出默认种子的回退值
 {
-  const compat = fs.readFileSync(path.join(root, 'editor/css/md-compat.css'), 'utf8');
-  for (const name of ['--bg', '--surface', '--surface-2', '--text', '--muted', '--line', '--outline', '--accent', '--accent-soft', '--on-accent',
-    '--bg-0', '--bg-1', '--bg-2', '--bg-3', '--border', '--text-0', '--text-1', '--text-2', '--accent-2', '--accent-ink', '--danger', '--zh', '--en']) {
-    const m = compat.match(new RegExp(`\\s${name}:\\s*([^;]+);`));
-    assert.ok(m, `${name} is aliased`);
-    assert.match(m[1], /var\(--md-sys-color-/, `${name} points at an MD3 role`);
+  assert.ok(!fs.existsSync(path.join(root, 'editor/css/md-compat.css')), 'the compat alias layer is gone');
+  const OLD = /var\(--(bg|surface|surface-2|text|text-[0-3]|muted|line|outline|accent|accent-soft|accent-2|accent-ink|accent-a\d\d|accent-glow|on-accent|on-container|bg-[0-3]|border|danger|zh|en)\b/;
+  for (const rel of ['editor/css/studio.css', 'editor/css/app-shell.css', 'editor/css/app-home.css', 'editor/css/app-settings.css', 'editor/css/app-editor.css', 'editor/css/md-components.css', 'editor/js/main.js', 'editor/js/project.js', 'editor/js/studio.js', 'editor/studio.html']) {
+    assert.doesNotMatch(fs.readFileSync(path.join(root, rel), 'utf8'), OLD, rel + ' uses MD3 role names only');
   }
   const app = fs.readFileSync(path.join(root, 'editor/css/app.css'), 'utf8');
-  assert.match(app, /^@layer md-tokens, legacy, md-compat, md-components, app;/m, 'cascade layer order is declared first');
+  assert.match(app, /^@layer md-tokens, legacy, md-components, app;/m, 'cascade layer order is declared first');
   assert.match(app, /@import url\("studio\.css"\) layer\(legacy\);/, 'the legacy stylesheet lives in its own layer');
   const tokens = fs.readFileSync(path.join(root, 'editor/css/md-tokens.css'), 'utf8');
   for (const role of MD.ROLE_NAMES) assert.match(tokens, new RegExp(`--md-sys-color-${role}:\\s*#[0-9A-F]{6};`), `fallback value for ${role}`);
 }
 
-console.log(`MD3 color: ${checks} role values match material-color-utilities, ${seeds.length} seeds × 2 modes meet WCAG (worst text pair ${worst.toFixed(2)}:1), boot + compat checks passed`);
+console.log(`MD3 color: ${checks} role values match material-color-utilities, ${seeds.length} seeds × 2 modes meet WCAG (worst text pair ${worst.toFixed(2)}:1), boot checks passed, no legacy variable names left`);

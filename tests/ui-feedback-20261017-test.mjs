@@ -108,7 +108,7 @@ ok(/#fr-overlay\s*\{[\s\S]{0,500}?background: transparent;/.test(css),
 const dimRule = css.match(/#confirm-overlay,[^{]*\{[^}]*rgba\(5, 5, 8/);
 ok(!!dimRule && !dimRule[0].includes('#fr-overlay'),
   '统一的黑玻璃遮罩分组不再包含 #fr-overlay（其它弹窗不受影响）');
-ok(/#fr-overlay \.fr-box \{[\s\S]{0,300}background: var\(--bg-2\) !important;/.test(css),
+ok(/#fr-overlay \.fr-box \{[\s\S]{0,300}background: var\(--md-sys-color-surface-container\);/.test(css),
   '查找弹窗自身保持不透明实底（移除压暗后表单不会透出视频）');
 ok(/\.fr-box \{[\s\S]{0,200}gap: 10px;/.test(css), '弹窗纵向 gap 从 14px 收紧到 10px');
 ok(/#fr-overlay \.fr-head \{ padding-bottom: 8px; margin-bottom: 0; \}/.test(css),

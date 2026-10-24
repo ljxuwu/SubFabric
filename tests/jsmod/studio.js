@@ -37,7 +37,7 @@ function applyTheme() {
   document.body.dataset.bg = prefs.background;
   document.body.dataset.motion = prefs.motion;
   document.body.dataset.pageVisible = String(!document.hidden);
-  // 颜色只写 MD3 角色（--md-sys-color-*）；旧变量名由 css/md-compat.css 别名，不再逐个写内联样式。
+  // 颜色只写 MD3 角色（--md-sys-color-*），样式直接引用这些角色，不再逐个写内联样式。
   // 主题包的角色覆盖在种子色方案之上生效；种子色本身始终是用户偏好。
   window.SF_MD.apply(accent, dark, themes.roleOverrides(pack, dark));
   const st = document.documentElement.style;

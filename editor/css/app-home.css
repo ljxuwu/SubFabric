@@ -239,7 +239,7 @@
 .sf-studio .pc-draft { margin-top: 12px; }
 .sf-studio .pc-draft-bar:not(.sf-progress) { height: 4px; overflow: hidden; border-radius: var(--md-sys-shape-corner-full); background: var(--md-sys-color-surface-container-highest); }
 .sf-studio .pc-draft-bar:not(.sf-progress) .pc-draft-bar-in { height: 100%; border-radius: inherit; background: var(--md-sys-color-primary); }
-.sf-studio .pc-draft.error .sf-progress { --accent: var(--md-sys-color-error); --accent-soft: var(--md-sys-color-error-container); }
+.sf-studio .pc-draft.error .sf-progress { --md-sys-color-primary: var(--md-sys-color-error); --md-sys-color-primary-container: var(--md-sys-color-error-container); }
 .sf-studio .pc-draft-txt { display: flex; justify-content: space-between; gap: 8px; margin-top: 4px; color: var(--md-sys-color-on-surface-variant); font: var(--md-type-body-small); }
 .sf-studio .pc-draft-txt > span:first-child { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .sf-studio .pc-draft-txt .pct { flex: none; color: var(--md-sys-color-primary); font: var(--md-type-label-medium); font-variant-numeric: tabular-nums; }

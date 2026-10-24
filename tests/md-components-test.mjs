@@ -53,7 +53,7 @@ ok(!/<script type="module"/.test(gallery), 'gallery uses classic scripts only (w
 // 3. 入口接线
 const app = read('editor/css/app.css');
 ok(/@import url\("md-components\.css"\) layer\(md-components\);/.test(app), 'components are imported into the md-components layer');
-ok(app.indexOf('md-compat.css') < app.indexOf('md-components.css'), 'components import after compat');
+ok(app.indexOf('studio.css') < app.indexOf('md-components.css') && !/@import url\("md-compat/.test(app), 'components import after the legacy layer; the compat alias layer is gone (P8)');
 ok(!/@layer[^;{]*\./.test(app) && !/layer\([^)]*\./.test(app), 'layer names have no dots (a.b nests b inside a, which sorted before legacy)');
 const html = read('editor/studio.html');
 ok(/<script src="js\/md\.js"><\/script>/.test(html), 'studio.html loads md.js as a classic script');

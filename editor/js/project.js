@@ -1695,7 +1695,7 @@ function perfRenderResult(r) {
       if (!p) return '<td>—</td>';
       // 有实测值的（纯单引擎基线与验证过的最优）标粗，其余是推算值
       const val = p.measuredSec != null ? `<b>${p.measuredSec}s</b>` : `${p.predictedSec}s`;
-      const mark = (k === e.bestRatio) ? ' style="background:var(--accent-soft,rgba(90,140,255,.14))"' : '';
+      const mark = (k === e.bestRatio) ? ' style="background:var(--md-sys-color-primary-container)"' : '';
       return `<td${mark} title="${p.gpuSlices} 片 GPU / ${p.npuSlices} 片 NPU">${val}</td>`;
     }).join('');
     return `<tr><td>${e.sliceSec}s</td><td>${e.slices}</td>${cells}`
@@ -2090,23 +2090,23 @@ function modelRowHtml(m, d, dlOf) {
   } else if (st.running || (m.needRuntime && rtSt.running)) {
     state = `<span class="sm-state running">${esc((st.running ? st.msg : rtSt.msg) || '下载中…')} ${(st.running ? st.pct : rtSt.pct) || 0}%</span>`;
   } else if (st.error) {
-    state = `<span class="sm-state" style="color:var(--danger)">${esc(st.msg || st.error)}</span>`;
+    state = `<span class="sm-state" style="color:var(--md-sys-color-error)">${esc(st.msg || st.error)}</span>`;
   } else if (gpuUnknown && m.engine === 'nemo') {
     state = '<span class="sm-state">检测中…（正在查显卡）</span>';
   } else if (gpuUnknown && m.engine === 'vibevoice') {
     state = '<span class="sm-state">检测中…（正在查 CUDA GPU）</span>';
   } else if (vibeBlocked) {
     state = d.vibevoice && d.vibevoice.cuda
-      ? '<span class="sm-state" style="color:var(--danger)">CUDA GPU 已检测到，但 VibeVoice 运行时未就绪；不支持 CPU 或 NPU</span>'
-      : '<span class="sm-state" style="color:var(--danger)">只支持 NVIDIA CUDA GPU；不支持 CPU 或 NPU，无法下载</span>';
+      ? '<span class="sm-state" style="color:var(--md-sys-color-error)">CUDA GPU 已检测到，但 VibeVoice 运行时未就绪；不支持 CPU 或 NPU</span>'
+      : '<span class="sm-state" style="color:var(--md-sys-color-error)">只支持 NVIDIA CUDA GPU；不支持 CPU 或 NPU，无法下载</span>';
   } else if (pyBlocked) {
     state = m.engine === 'nemo'
-      ? '<span class="sm-state" style="color:var(--danger)">只支持 N 卡（NVIDIA 显卡）。当前没检测到 N 卡，不支持 CPU 推理，无法下载</span>'
-      : '<span class="sm-state" style="color:var(--danger)">需要 CUDA GPU（N 卡）才能下载使用，不支持 CPU。先在上面把 Python 环境装好</span>';
+      ? '<span class="sm-state" style="color:var(--md-sys-color-error)">只支持 N 卡（NVIDIA 显卡）。当前没检测到 N 卡，不支持 CPU 推理，无法下载</span>'
+      : '<span class="sm-state" style="color:var(--md-sys-color-error)">需要 CUDA GPU（N 卡）才能下载使用，不支持 CPU。先在上面把 Python 环境装好</span>';
   } else if (m.engine === 'vibevoice' && m.needRuntime) {
     state = `<span class="sm-state">${m.filesOk ? '模型已下载 · ' : ''}${esc(d.vibevoice?.msg || '需要安装独立 CUDA 4bit 运行时')}</span>`;
   } else if (m.needNemo) {
-    state = '<span class="sm-state ok">✓ 已下载</span> <span class="sm-state" style="color:var(--danger)">还差 NeMo 运行时（见下方「NeMo 运行时」）</span>';
+    state = '<span class="sm-state ok">✓ 已下载</span> <span class="sm-state" style="color:var(--md-sys-color-error)">还差 NeMo 运行时（见下方「NeMo 运行时」）</span>';
   } else if (m.ready) state = '<span class="sm-state ok">✓ 已就绪</span>';
   else state = `<span class="sm-state">未下载 · ${m.sizeMB} MB</span>`;
   if (dlThis) btn = '';
@@ -2209,15 +2209,15 @@ async function renderAsrModels() {
     if (pySt.running) {
       pyState = `<span class="sm-state running">${esc(pySt.msg || '安装中…')} ${pySt.pct || 0}%</span>`;
     } else if (pySt.error) {
-      pyState = `<span class="sm-state" style="color:var(--danger)">${esc(pySt.msg || pySt.error)} <button type="button" class="btn btn-mini sm-pyinstall">重试安装</button></span>`;
+      pyState = `<span class="sm-state" style="color:var(--md-sys-color-error)">${esc(pySt.msg || pySt.error)} <button type="button" class="btn btn-mini sm-pyinstall">重试安装</button></span>`;
     } else if (!py) {
       pyState = '<span class="sm-state">检测中…</span>';          // 预检还没跑完(后台探测中), 别误报"不可用"
     } else if (py.ok) {
       pyState = d.provider === 'cuda'
         ? `<span class="sm-state ok">✓ 可用（${esc(py.msg || '')} · GPU·CUDA${d.gpu ? ' · ' + esc(d.gpu) : ''}）</span>`
-        : `<span class="sm-state" style="color:var(--danger)">基础环境可用，但没启用 GPU·CUDA。说话人分离能用；Parakeet 识别必须 N 卡（不支持 CPU），有 N 卡可以点「安装」换 CUDA 版 <button type="button" class="btn btn-mini sm-pyinstall">安装</button></span>`;
+        : `<span class="sm-state" style="color:var(--md-sys-color-error)">基础环境可用，但没启用 GPU·CUDA。说话人分离能用；Parakeet 识别必须 N 卡（不支持 CPU），有 N 卡可以点「安装」换 CUDA 版 <button type="button" class="btn btn-mini sm-pyinstall">安装</button></span>`;
     } else {
-      pyState = `<span class="sm-state" style="color:var(--danger)">不可用${py && py.msg ? '：' + esc(py.msg) : ''} <button type="button" class="btn btn-mini sm-pyinstall">安装</button></span>`;
+      pyState = `<span class="sm-state" style="color:var(--md-sys-color-error)">不可用${py && py.msg ? '：' + esc(py.msg) : ''} <button type="button" class="btn btn-mini sm-pyinstall">安装</button></span>`;
     }
     let rows = `<div class="sm-model">
       <div class="sm-head"><span class="sm-name">Python 环境</span></div>
@@ -2269,7 +2269,7 @@ async function renderAsrModels() {
       ? '<button type="button" class="btn btn-mini sm-del" data-id="diarize" title="删除分离模型文件">删除</button>'
       : '<button type="button" class="btn btn-mini sm-dl" data-id="diarize">下载</button>');
     const dzState = dzSt.running ? `<span class="sm-state running">${esc(dzSt.msg || '下载中…')} ${dzSt.pct || 0}%</span>`
-      : (dzSt.error ? `<span class="sm-state" style="color:var(--danger)">${esc(dzSt.msg || dzSt.error)}</span>`
+      : (dzSt.error ? `<span class="sm-state" style="color:var(--md-sys-color-error)">${esc(dzSt.msg || dzSt.error)}</span>`
       : (dz.ready ? '<span class="sm-state ok">✓ 已就绪</span>' : '<span class="sm-state">未下载 · 32 MB</span>'));
     // NeMo 运行时(只有 multitalker 多说话人模型用得到): PyTorch + NeMo, 约 5GB, 仅 N 卡
     const nemo = d.nemo || {};
@@ -2301,11 +2301,11 @@ async function renderAsrModels() {
     }
     let nemoState;
     if (nemoSt.running) nemoState = `<span class="sm-state running">${esc(nemoSt.msg || '安装中…')} ${nemoSt.pct || 0}%</span>`;
-    else if (nemoSt.error) nemoState = `<span class="sm-state" style="color:var(--danger)">${esc(nemoSt.msg || nemoSt.error)}</span>`;
+    else if (nemoSt.error) nemoState = `<span class="sm-state" style="color:var(--md-sys-color-error)">${esc(nemoSt.msg || nemoSt.error)}</span>`;
     else if (nemo.ok && nemo.cuda) nemoState = `<span class="sm-state ok">✓ 可用（${esc(nemo.msg || '')}${nemo.gpu ? ' · ' + esc(nemo.gpu) : ''}）</span>`;
-    else if (nemo.ok) nemoState = '<span class="sm-state" style="color:var(--danger)">装到的是 CPU 版 PyTorch，多说话人模型在 CPU 上跑不了。点「重新安装」换 CUDA 版</span>';
+    else if (nemo.ok) nemoState = '<span class="sm-state" style="color:var(--md-sys-color-error)">装到的是 CPU 版 PyTorch，多说话人模型在 CPU 上跑不了。点「重新安装」换 CUDA 版</span>';
     else if (nemoPending) nemoState = '<span class="sm-state">检测中…（要导入 PyTorch，首次约半分钟）</span>';
-    else nemoState = `<span class="sm-state" style="color:var(--danger)">不可用${nemo.msg ? '：' + esc(nemo.msg) : ''}</span>`;
+    else nemoState = `<span class="sm-state" style="color:var(--md-sys-color-error)">不可用${nemo.msg ? '：' + esc(nemo.msg) : ''}</span>`;
     /* 检测中 / 安装中都不给按钮 —— 检测中给了按钮，用户会以为没装、白点一下。 */
     const nemoBtn = (nemoSt.running || nemoPending || (nemo.ok && nemo.cuda)) ? ''
       : `<button type="button" class="btn btn-mini sm-nemoinstall">${nemo.ok ? '重新安装' : '安装'}</button>`;
@@ -2966,13 +2966,13 @@ async function renderAsrModels() {
       if (v.ready) {
         note.innerHTML = '✓ 模型可用。纠错会消耗模型调用（长稿分批多次）；实际重识别的音频量由上面的「上下文」决定。';
       } else if (!v.effectiveBaseUrl || !v.effectiveModel) {
-        note.innerHTML = '<span style="color:var(--danger)">模型还不可用：还没填「接口地址」与「模型名」</span>'
+        note.innerHTML = '<span style="color:var(--md-sys-color-error)">模型还不可用：还没填「接口地址」与「模型名」</span>'
           + '<span class="gl-hint"> —— 想省事就勾上「用字幕翻译的模型」（跟着「翻译」页那套走）；'
           + '想单独指定就填一个 OpenAI 兼容服务的地址，本机地址（127.0.0.1）免 Key。</span>';
       } else if (!v.hasKey) {
-        note.innerHTML = '<span style="color:var(--danger)">模型还不可用：这是非本机地址，必须填 API Key</span>';
+        note.innerHTML = '<span style="color:var(--md-sys-color-error)">模型还不可用：这是非本机地址，必须填 API Key</span>';
       } else {
-        note.innerHTML = `<span style="color:var(--danger)">模型还不可用：${esc(v.effectiveBaseUrl)} 这套配置没通过检查</span>`;
+        note.innerHTML = `<span style="color:var(--md-sys-color-error)">模型还不可用：${esc(v.effectiveBaseUrl)} 这套配置没通过检查</span>`;
       }
     }
   }
