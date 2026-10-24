@@ -122,7 +122,10 @@ ok(!/ctx\.rect\(x1, band\.y, wpx, band\.h\)[\s\S]{0,80}fill\(\)/.test(SRC),
 
 console.log('\n== 波形配色压暗（让字幕读到前面来）==');
 // 原来接近白的浅灰，整条带子比字幕块还抢眼；中文字幕压在上面就不好认。
-const stops = [...SRC.matchAll(/g\.addColorStop\([^,]+,\s*'rgba\((\d+),(\d+),(\d+),([\d.]+)\)'\)/g)]
+// MD3 重构 P7 起深色主题的波形色标在 INK_DARK（waveEdge / waveMid），绘制处按主题取 ink.waveEdge / ink.waveMid
+const inkDark = SRC.slice(SRC.indexOf('const INK_DARK = Object.freeze({'), SRC.indexOf('});', SRC.indexOf('const INK_DARK = Object.freeze({')));
+ok(/g\.addColorStop\(0, ink\.waveEdge\)/.test(SRC) && /g\.addColorStop\(0\.5, ink\.waveMid\)/.test(SRC), '波形渐变按主题取色（深色用 INK_DARK）');
+const stops = [...inkDark.matchAll(/wave(?:Edge|Mid): 'rgba\((\d+),(\d+),(\d+),([\d.]+)\)'/g), ...inkDark.matchAll(/waveEdge: 'rgba\((\d+),(\d+),(\d+),([\d.]+)\)'/g)]
   .map(m => ({ r: +m[1], g: +m[2], b: +m[3], a: +m[4] }));
 const waveStops = stops.filter(s => s.r === s.g && s.b > s.r);   // 波形是灰调（R=G，B 略高）
 ok(waveStops.length >= 3, `找到波形渐变的 ${waveStops.length} 个色标`, JSON.stringify(waveStops));
@@ -141,6 +144,25 @@ const textL = (0.299 * 0xf2 + 0.587 * 0xf2 + 0.114 * 0xf7) / 255;
 const before = (textL + 0.05) / (0.899 + 0.05);
 const after = (textL + 0.05) / (maxWaveL + 0.05);
 ok(after > before, `文字/波形对比提升（${before.toFixed(2)} → ${after.toFixed(2)}）`);
+
+console.log('\n== 浅色主题：块区域提亮、中文行按对比度加深（MD3 重构 P7）==');
+{
+  const grabFn = (name) => { const i = SRC.indexOf('function ' + name + '('); let d = 0; for (let k = SRC.indexOf('{', i); k < SRC.length; k++) { if (SRC[k] === '{') d++; else if (SRC[k] === '}') { d--; if (!d) return SRC.slice(i, k + 1); } } return ''; };
+  const mod2 = [grabFn('parseHex'), grabFn('relLum'), grabFn('mixHex'), grabFn('readableOnLight')].join('\n') + '\nexport { readableOnLight, relLum, parseHex };';
+  const tmp2 = path.join(HERE, '_tl_light.mjs');
+  fs.writeFileSync(tmp2, mod2);
+  const L2 = await import('file://' + tmp2.replace(/\\/g, '/'));
+  fs.unlinkSync(tmp2);
+  const ratio = (a, b) => { const x = L2.relLum(L2.parseHex(a)), y = L2.relLum(L2.parseHex(b)); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  // 浅色主题块底近似：白底混 24% 降饱和角色色；角色色取常见的亮色（黄 / 青 / 绿最难）
+  for (const [role, bg] of [['#ffd54a', '#efeee6'], ['#61b8ff', '#e9eef3'], ['#4fd1a5', '#e8efec'], ['#ff5c8a', '#f1e9ec'], ['#8b7cf6', '#ecebf3']]) {
+    const c = L2.readableOnLight(role, bg, '#1a1b20');
+    ok(ratio(c, bg) >= 4.5, `浅色主题 ${role} 的中文行对块底 ≥ 4.5:1（${ratio(c, bg).toFixed(2)}）`);
+  }
+  ok(L2.readableOnLight('#1f4e9a', '#ffffff') === '#1f4e9a', '本来就够深的角色色原样保留（不无谓加深）');
+  ok(/const dark = document\.body\.dataset\.theme !== 'light';/.test(SRC) && /this\.ink = dark \? INK_DARK : \{/.test(SRC), '按明暗主题选择文字层配色');
+  ok(/backdrop: withAlpha\(lowest, 0\.72/.test(SRC), '浅色主题把块区域提亮（不是压暗）');
+}
 
 console.log('\n== 时间轴块背景降饱和（角色色只留在边框/文字）==');
 ok(/function mutedHex\(hex, amount = 0\.62\)/.test(SRC), '存在 mutedHex（角色色向中性灰混合）');

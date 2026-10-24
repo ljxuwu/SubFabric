@@ -193,6 +193,19 @@
 }
 .sf-studio #note-input:focus { border-color: var(--md-sys-color-primary); outline: 0; box-shadow: inset 0 0 0 1px var(--md-sys-color-primary); }
 
+/* 时间轴与进度条的悬浮提示：MD3 plain tooltip（反色表面）。画布本身的配色在 timeline.js 的 _syncColors（P7） */
+.sf-studio :is(.tl-edge-hint, #video-hover-tip) {
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  font: var(--md-type-body-small);
+  box-shadow: none;
+}
+.sf-studio #video-hover-tip { font-family: var(--md-ref-typeface-mono); font-variant-numeric: tabular-nums; }
+.sf-studio #sf-seek #video-hover-tip { border-radius: var(--md-sys-shape-corner-extra-small); background: var(--md-sys-color-inverse-surface); color: var(--md-sys-color-inverse-on-surface); }
+
 /* ═══ 查找与批量替换（F9：浅色主题下的深色块已改为色调表面） ═══ */
 .sf-studio .fr-box { gap: 12px; padding: 24px; border: 0; border-radius: var(--md-sys-shape-corner-extra-large); color: var(--md-sys-color-on-surface); box-shadow: var(--md-sys-elevation-level3); }
 .sf-studio .fr-title { color: var(--md-sys-color-on-surface); font: var(--md-type-headline-small); }

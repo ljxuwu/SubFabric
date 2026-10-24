@@ -1,6 +1,16 @@
 # 项目当前状态（唯一权威入口）
 
-- 当前任务（2026-10-18）：MD3 重构 **P6（编辑器工作台）已完成且已验证；P7–P8 未开始。**
+- 当前任务（2026-10-24）：MD3 重构 **P7（时间轴 canvas）已完成且已验证；P8 未开始。**
+  - 改了什么：
+    - `editor/js/timeline.js`：新增 `_syncColors()`，轨道 / 波形带 / 胶片 / 刻度 / 游标 / 选中环 / 坏行 / 重新识别带 / 轨道标签取 MD3 角色，画布字体取 MD3 字体令牌；`ss-accent` 与 `sf-studio-theme` 合并为同一刷新入口。字幕块文字层分明暗两套：深色沿用原取值，浅色提亮块区域、深色字，中文行用新的 `readableOnLight()` 按 WCAG 加深角色色到 ≥ 4.5:1。新增 devicePixelRatio 变化监听（换显示器时画布不再发虚）。
+    - `app-editor.css`：时间轴边缘提示与进度条悬浮时间改为 MD3 plain tooltip；`studio.css` 的 `#tl-canvas-wrap` 去掉写死的深色底。
+    - 测试：新增 `timeline-theme-test`（18 项）；`timeline-text-test` 改为从 `INK_DARK` 读深色波形色标，并加浅色主题对比度断言（黄 / 青 / 绿 / 粉 / 紫最低 4.53）。
+  - 本次验证：
+    - 完整 JS 回归 `node tests/run-all.mjs --report _test/md3-p7-final.json`：97 通过、9 部分执行、0 失败、2 排除。第一次全量跑时 `postprocess-comprehensive` / `postprocess-presets` 因性能阈值失败（1000 条耗时 43.8ms > 25ms、33.1ms > 30ms，同时有 Chrome 在跑），单独重跑 presets 通过、comprehensive 仍超时一次，第二次全量全部通过；本阶段没有改 `postprocess.js`，判断为机器负载导致的阈值抖动。ESLint 0 error，19 个 warning 不变。
+    - 真实 Chrome：本次会话的临时目录已被清空，重新搭了隔离副本（Windows ffmpeg 包装脚本、40s testsrc2 视频、12 行三角色双语逐词 ASS，经 API 建项目）。浅色 / 深色 × DPR 1 / 1.25 / 1.5 / 2：画布像素与 DPR 一致（1170 → 1463 / 1755 / 2340）；浅色下黄 / 青 / 绿角色的中文行加深后清楚可读；右键菜单在指针处弹出且在视口内；边缘提示距指针 14/16px、为反色表面；运行中换种子色后时间轴主色与表面立即跟着变；控制台无错误。截图在 `_test/md3-p7/`。
+    - CDP 模拟改 DPR 不会触发 matchMedia 的 change，所以 DPR 截图是先设 DPR 再载入页面；监听逻辑由单测覆盖，真实换显示器未实测。
+  - GitHub：按用户指示提交到 `ljxuwu/SubFabric` main，与 P6 的提交核对补记一起入库；提交标识见最终报告。
+- 上一阶段（2026-10-18）：MD3 重构 **P6（编辑器工作台）已完成且已验证。**
   - 改了什么：
     - 新增 `editor/css/app-editor.css`（app 层）：透明顶部应用栏（「导出字幕」唯一填充），视频区 / 时间轴 / 右侧面板为色调卡片，右侧页签为 secondary tabs，列表工具条为筛选纸片 + 搜索栏，旧开关改 MD3 外观，编辑器各区域与弹窗里的 `.btn` 映射为 MD3 按钮；`studio.css` 删除被接管的 18 条 Studio 外壳规则（2705 → 2699 行）。
     - 字幕卡只改配色变量（`--cc-*` → MD3 角色，去掉逐项阴影），尺寸与 `.cue-measure` 同源不变。
@@ -12,6 +22,7 @@
     - 5000 行滚动（与 P1 同一脚本，3 次）：帧时间 16.7ms 不变；总主线程 3243 → 约 2460–2630ms，布局 856 → 约 570–640ms，样式重算 577 → 约 670–700ms（去掉 app-editor.css 时为 621ms）。F8 记为“帧率未劣化、样式重算略增”，未专门优化。
   - 未做：工具栏溢出菜单（改为窄屏只显示图标）；时间轴画布配色（P7）；取色器外观；真实媒体上的逐词 / 特效渲染没有额外核对（本阶段未改渲染代码）。
   - GitHub：按用户指示提交到 `ljxuwu/SubFabric` main，与 P5 的提交核对补记一起入库；提交标识见最终报告。
+  - GitHub 核对（提交后确认，随下一次提交入库）：main 已指向 `e8e132a59a162bdb1988748a352cc8ff660e132c`（父提交 `1189171`，Verified）；compare 为 ahead 1 / behind 0，15 个文件；远端 451 个文件与本地按 blob SHA 逐个一致。CI run 39114997382 中「JS · ESLint + 全量测试」和「Python · ruff + 单测」均 success。
 - 上一阶段（2026-10-18）：MD3 重构 **P5（设置 / 资源 / 帮助 / 日志）已完成且已验证。**
   - 改了什么：
     - 新增 `editor/css/app-settings.css`（app 层），删除 `studio.css` 里被接管的约 400 条旧规则和对应的空注释（3350 → 2711 行）。

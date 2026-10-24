@@ -46,6 +46,26 @@ const WORD_MARK = 'rgba(214,214,228,.85)';    // 逐词标记块
 const WORD_MARK_HOT = 'rgba(255,255,255,.95)';// 拖动中的标记
 const WORD_TEXT = '#e9e9f0';                  // 英文词文本(浅色, 与参考图一致)
 
+/* ── 字幕块内部的「文字层」配色（MD3 重构 P7）──
+ * 字幕块叠在波形上，块内文字的可读性取决于块底下那层（波形 + 背景处理）。深色主题沿用上面
+ * 调过的取值；浅色主题把块区域「提亮」而不是压暗，文字改用深色（_syncColors 按 MD3 角色算出）。
+ * 没有主题信息（测试里的 stub、未接入 Studio）时用深色这套。 */
+const INK_DARK = Object.freeze({
+  light: false,
+  waveEdge: 'rgba(116,116,134,.72)', waveMid: 'rgba(146,146,166,.82)',   // 波形渐变（边缘 / 中间）
+  backdrop: 'rgba(8,8,12,.46)',      // 块区域：模糊后的波形上再压一层
+  zhScrim: 'rgba(8,8,12,.45)',       // 中文字形后面的淡底
+  axis: AXIS_COLOR, mark: WORD_MARK, markHot: WORD_MARK_HOT, wordText: WORD_TEXT,
+  emptySlot: 'rgba(255,255,255,0.16)',
+});
+/* 画布上界面元素（非字幕内容）的默认色：与 MD3 接线前一致，_syncColors 用 MD3 角色覆盖 */
+const UI_DEFAULT = Object.freeze({
+  error: '#ff5c5c', onError: '#1a1a21', tertiary: '#a78bfa',
+  inverseSurface: 'rgba(24,17,40,.93)', inverseOnSurface: '#ddd6fe',
+  onSurfaceVariant: '#ffb08a', accentOnMedia: '#ff7a45', filmCell: '#191922',
+  fontPlain: '"Microsoft YaHei", sans-serif', fontMono: 'Consolas, monospace',
+});
+
 /**
  * 首词已经是整块字幕的起点，不再额外画一根逐词灰色标记。
  *
@@ -239,6 +259,34 @@ function readableTextOn(hex) {
   return (L >= 0.40 || maxC >= 0.75) ? hex : '#f2f2f7';
 }
 
+/** WCAG 相对亮度 */
+function relLum(c) {
+  const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+  return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+}
+/** 两个 #rrggbb 按比例混合（t = b 的占比） */
+function mixHex(a, b, t) {
+  const x = parseHex(a), y = parseHex(b);
+  if (!x || !y) return a;
+  const m = (p, q) => Math.round(p * (1 - t) + q * t);
+  return '#' + [m(x.r, y.r), m(x.g, y.g), m(x.b, y.b)].map((v) => v.toString(16).padStart(2, '0')).join('');
+}
+/**
+ * 浅色主题下中文行的颜色：保留角色色的色相，按 WCAG 对比度往深色（on-surface）混，
+ * 直到对块底 ≥ 4.5:1。深色主题仍用 readableTextOn（字直接写在压暗的块上）。
+ */
+function readableOnLight(hex, bg, ink = '#1a1b20') {
+  const b = parseHex(bg), c = parseHex(hex);
+  if (!b || !c) return ink;
+  const lb = relLum(b);
+  for (let i = 0; i <= 10; i++) {
+    const m = mixHex(hex, ink, i / 10);
+    const lm = relLum(parseHex(m));
+    if ((Math.max(lm, lb) + 0.05) / (Math.min(lm, lb) + 0.05) >= 4.5) return m;
+  }
+  return ink;
+}
+
 /**
  * 块在轨道内的纵向分段:
  *  - 中英配对块 → 占满整轨
@@ -338,32 +386,18 @@ class Filmstrip {
 export class Timeline {
   constructor(canvas, video) {
     this.canvas = canvas;
-    /* 主题色：游标 / 选中环 / 波形都跟着界面主题走。
-       换色时 studio.js 派发 ss-accent / sf-studio-theme 事件（canvas 里读不到 CSS 变量，只能缓存一份）。 */
+    /* 主题色：游标 / 选中环 / 波形都跟着界面主题走（canvas 里读不到 CSS 变量，只能缓存一份）。
+       MD3 重构 P7：颜色统一由 _syncColors() 从 MD3 角色取；换种子色（ss-accent）与换明暗 / 主题包
+       （sf-studio-theme）走同一个刷新入口，不再两套监听各管一半。 */
     this.accent = cssVar('--accent', C.accent);
-    this.colors = { ...C, rulerBg0: '#16161c', rulerBg1: '#101015' };
-    const syncStudioColors = () => {
-      if (!document.body?.classList?.contains('sf-studio')) return;
-      Object.assign(this.colors, {
-        bg: cssVar('--bg-1', C.bg), waveBg: cssVar('--bg-2', C.waveBg),
-        filmBg: cssVar('--bg-2', C.filmBg), filmBorder: cssVar('--border', C.filmBorder),
-        laneBg: cssVar('--bg-1', C.laneBg), laneBorder: cssVar('--border', C.laneBorder),
-        ruler: cssVar('--text-1', C.ruler), rulerTick: cssVar('--border', C.rulerTick),
-        rulerBg0: cssVar('--bg-2', '#16161c'), rulerBg1: cssVar('--bg-1', '#101015')
-      });
-      this._dirty = true;
-    };
-    syncStudioColors();
-    window.addEventListener('sf-studio-theme', syncStudioColors);
-    /* 主题色上该用的前景色（--accent-ink，经 md-compat.css 别名到 MD3 的 on-primary）。canvas 读不到 CSS
-     * 变量，和 accent 一起缓存、一起在 ss-accent 里刷新。 */
     this.accentInk = cssVar('--accent-ink', '#22150e');
+    this.colors = { ...C, rulerBg0: '#16161c', rulerBg1: '#101015' };
+    this.ink = INK_DARK;
+    this.ui = UI_DEFAULT;
+    this._syncColors();
     try {
-      window.addEventListener('ss-accent', () => {
-        this.accent = cssVar('--accent', C.accent);
-        this.accentInk = cssVar('--accent-ink', '#22150e');
-        this._dirty = true;
-      });
+      window.addEventListener('sf-studio-theme', () => this._syncColors());
+      window.addEventListener('ss-accent', () => this._syncColors());
     } catch {}
     this.ctx = canvas.getContext('2d');
     this.video = video || null;
@@ -429,6 +463,15 @@ export class Timeline {
 
     this._bindEvents();
     new ResizeObserver(() => this._resize()).observe(canvas.parentElement);
+    /* 窗口拖到另一块缩放比例不同的显示器（或系统缩放变了）时，CSS 尺寸不变、ResizeObserver 不触发，
+     * 画布还按旧的 devicePixelRatio 分配像素 → 发虚。单独监听当前 dppx，变化后重算并换成新值继续监听。 */
+    const watchDpr = () => {
+      try {
+        const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+        mq.addEventListener('change', () => { this._resize(); watchDpr(); }, { once: true });
+      } catch {}
+    };
+    watchDpr();
     this._resize();
   }
 
@@ -1180,6 +1223,45 @@ export class Timeline {
     }
   }
 
+  /** 从 MD3 角色（--md-sys-color-*，md-color.js 写成 #rrggbb）刷新画布配色缓存。 */
+  _syncColors() {
+    this.accent = cssVar('--md-sys-color-primary', cssVar('--accent', C.accent));
+    this.accentInk = cssVar('--md-sys-color-on-primary', cssVar('--accent-ink', '#22150e'));
+    if (!document.body?.classList?.contains('sf-studio')) { this._dirty = true; return; }
+    const v = (role, fallback) => cssVar('--md-sys-color-' + role, fallback);
+    const dark = document.body.dataset.theme !== 'light';
+    const low = v('surface-container-low', C.bg), mid = v('surface-container', C.filmBg);
+    const outline = v('outline', '#8e9099'), outlineVar = v('outline-variant', C.laneBorder);
+    const onSurface = v('on-surface', '#e3e2e9'), onSurfaceVar = v('on-surface-variant', C.ruler);
+    Object.assign(this.colors, {
+      bg: low, laneBg: low, waveBg: mid, filmBg: mid,
+      filmBorder: outlineVar, laneBorder: outlineVar, rulerTick: outlineVar, ruler: onSurfaceVar,
+      rulerBg0: mid, rulerBg1: low,
+    });
+    this.ui = {
+      ...UI_DEFAULT,
+      error: v('error', UI_DEFAULT.error), onError: v('on-error', UI_DEFAULT.onError), tertiary: v('tertiary', UI_DEFAULT.tertiary),
+      inverseSurface: v('inverse-surface', UI_DEFAULT.inverseSurface), inverseOnSurface: v('inverse-on-surface', UI_DEFAULT.inverseOnSurface),
+      onSurfaceVariant: onSurfaceVar,
+      // 压在视频缩略图（暗）上的文字：取 tone 80 的主色（深色主题是 primary，浅色主题是 inverse-primary）
+      accentOnMedia: dark ? this.accent : v('inverse-primary', this.accent),
+      filmCell: v('surface-container-high', UI_DEFAULT.filmCell),
+      fontPlain: cssVar('--md-ref-typeface-plain', UI_DEFAULT.fontPlain),
+      fontMono: cssVar('--md-ref-typeface-mono', UI_DEFAULT.fontMono),
+    };
+    const lowest = v('surface-container-lowest', '#ffffff');
+    this.ink = dark ? INK_DARK : {
+      light: true,
+      waveEdge: withAlpha(outline, 0.38, 'rgba(116,116,134,.38)'), waveMid: withAlpha(outline, 0.52, 'rgba(116,116,134,.52)'),
+      backdrop: withAlpha(lowest, 0.72, 'rgba(255,255,255,.72)'),   // 浅色：把块下的波形提亮，而不是压暗
+      zhScrim: withAlpha(lowest, 0.72, 'rgba(255,255,255,.72)'),
+      axis: withAlpha(outline, 0.9, outline), mark: withAlpha(onSurfaceVar, 0.7, onSurfaceVar), markHot: onSurface, wordText: onSurface,
+      emptySlot: withAlpha(onSurface, 0.22, 'rgba(0,0,0,.22)'),
+      blockBase: lowest, textInk: onSurface,
+    };
+    this._dirty = true;
+  }
+
   draw(t, playing) {
     this._dirty = false;
     this._lastDrawAt = performance.now();
@@ -1191,7 +1273,7 @@ export class Timeline {
     ctx.fillRect(0, 0, W, H);
     if (!this.duration) {
       ctx.fillStyle = this.colors.ruler;
-      ctx.font = '13px "Microsoft YaHei", sans-serif';
+      ctx.font = `13px ${(this.ui || UI_DEFAULT).fontPlain}`;
       ctx.textAlign = 'center';
       ctx.fillText('打开视频后，这里显示时间轴', W / 2, H / 2);
       return;
@@ -1289,8 +1371,8 @@ export class Timeline {
     ctx.fill();
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = '#ffd9c7';
-    ctx.font = '10px Consolas, monospace';
+    ctx.fillStyle = this.accent || C.accent;
+    ctx.font = `10px ${(this.ui || UI_DEFAULT).fontMono}`;
     ctx.textAlign = 'left';
     ctx.fillText(`新建 ${fmtTime(a)} → ${fmtTime(b)}`, Math.min(x1, x2) + 4, Math.max(10, liY - 3));
     ctx.restore();
@@ -1312,8 +1394,9 @@ export class Timeline {
   _drawReRecog(ctx, W) {
     const r = this.reRecogRegion;
     if (!r || !(r.b > r.a)) return;
-    const col = r.status === 'error' ? '#ff5f6b' : '#a78bfa';          // 紫: 与选区橙区分
-    const fill = r.status === 'error' ? 'rgba(255,95,107,.13)' : 'rgba(139,92,246,.15)';
+    const ui = this.ui || UI_DEFAULT;
+    const col = r.status === 'error' ? ui.error : ui.tertiary;          // tertiary：与选区的 primary 区分
+    const fill = withAlpha(col, r.status === 'error' ? 0.13 : 0.15, 'rgba(139,92,246,.15)');
     const top = this._laneTop(0) - 3;
     const bottom = Math.min(this._cssH() - 1, this._lanesBottom() + 3);
     // 要画的带：有 regions 就逐段，否则整块
@@ -1344,22 +1427,22 @@ export class Timeline {
     const nSeg = bands.length > 1 ? ` ${bands.length} 段` : '';
     const title = (r.status === 'error' ? '重新识别失败' : '重新识别处理中') + nSeg + pct;
     const msg = String(r.message || '').slice(0, 46);
-    ctx.font = 'bold 10px Consolas, monospace';
+    ctx.font = `bold 10px ${ui.fontMono}`;
     const tw = Math.max(ctx.measureText(title).width, ctx.measureText(msg).width) + 12;
     const lx = Math.max(2, Math.min(labelX + 4, W - tw - 2));
     const ly = top + 5;
-    ctx.fillStyle = 'rgba(24,17,40,.93)';
+    ctx.fillStyle = ui.inverseSurface;                                  // 标签 = MD3 plain tooltip（反色表面）
     this._roundRect(ctx, lx, ly, tw, 27, 4);
     ctx.fill();
     ctx.strokeStyle = col;
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.textAlign = 'left';
-    ctx.fillStyle = r.status === 'error' ? '#ffb3b8' : '#ddd6fe';
+    ctx.fillStyle = ui.inverseOnSurface;
     ctx.fillText(title, lx + 6, ly + 11);
     if (msg) {
-      ctx.fillStyle = 'rgba(196,181,253,.85)';
-      ctx.font = '9px Consolas, monospace';
+      ctx.fillStyle = withAlpha(ui.inverseOnSurface, 0.8, ui.inverseOnSurface);
+      ctx.font = `9px ${ui.fontMono}`;
       ctx.fillText(msg, lx + 6, ly + 22);
     }
     // 这一处 restore 覆盖两种出口：正常画完，以及上面「所有段都在视野外」的早返回
@@ -1401,7 +1484,7 @@ export class Timeline {
       if (thumb) {
         ctx.drawImage(thumb, 0, 0, thumb.width, thumb.height, c.x1 + 0.5, 0.5, w - 1, FILM_H - 1);
       } else {
-        ctx.fillStyle = '#191922';
+        ctx.fillStyle = (this.ui || UI_DEFAULT).filmCell;
         ctx.fillRect(c.x1 + 0.5, 0.5, w - 1, FILM_H - 1);
       }
       ctx.strokeStyle = this.colors.filmBorder;
@@ -1410,11 +1493,11 @@ export class Timeline {
       // 时间标签(橙色小字, 参考图样式)
       if (w >= 34) {
         const label = fmtTime(c.start, 1).replace(/\.0$/, '');
-        ctx.font = '9px Consolas, monospace';
+        ctx.font = `9px ${(this.ui || UI_DEFAULT).fontMono}`;
         const tw = ctx.measureText(label).width;
-        ctx.fillStyle = 'rgba(0,0,0,.62)';
+        ctx.fillStyle = 'rgba(0,0,0,.62)';                // 压在缩略图上：两种主题都用暗底
         ctx.fillRect(c.x1 + 3, FILM_H - 13, tw + 6, 11);
-        ctx.fillStyle = this.accent || C.accent;   // 胶片时间标签也跟主题色（原写死 C.accent）
+        ctx.fillStyle = (this.ui || UI_DEFAULT).accentOnMedia || this.accent || C.accent;   // 暗底上的 tone-80 主色
         ctx.textAlign = 'left';
         ctx.fillText(label, c.x1 + 6, FILM_H - 4);
       }
@@ -1453,7 +1536,7 @@ export class Timeline {
       ctx.lineTo(x, top + RULER_H);
     }
     ctx.stroke();
-    ctx.font = '10px Consolas, monospace';
+    ctx.font = `10px ${(this.ui || UI_DEFAULT).fontMono}`;
     ctx.textAlign = 'left';
     for (let tt = t0; tt <= end; tt += step) {
       const x = Math.round(this.t2x(tt)) + 0.5;
@@ -1643,10 +1726,13 @@ export class Timeline {
       const bgPadY = 1;
       const bgTop = Math.round(zhBase - g.mZh.asc - bgPadY);
       const bgH = Math.round(g.mZh.asc + g.mZh.desc + bgPadY * 2);
-      ctx.fillStyle = 'rgba(8,8,12,.45)';                 // 极淡的深色底：压住波形，又不糊掉块
+      const ink = this.ink || INK_DARK;
+      ctx.fillStyle = ink.zhScrim;                         // 深色主题 rgba(8,8,12,.45)：压住波形又不糊掉块；浅色主题为提亮
       this._roundRect(ctx, x1 + TEXT_PAD - 3, bgTop, tw + 6, bgH, 3);
       ctx.fill();
-      ctx.fillStyle = readableTextOn(base);                // 亮角色色保留，暗的换近白
+      ctx.fillStyle = ink.light                            // 深色：亮角色色保留、暗的换近白；浅色：按对比度往深色混
+        ? readableOnLight(base, mixHex(ink.blockBase, mutedHex(base, 0.62), 0.24), ink.textInk)
+        : readableTextOn(base);
       ctx.fillText(zh, x1 + TEXT_PAD, zhBase);
       if (showWords && fitWords) {
         this._drawWordAxis(ctx, words, g, x1, x2, c.end);
@@ -1654,7 +1740,7 @@ export class Timeline {
         /* 有逐词但竖直空间不够 → **只画分隔线**，标记与词都不画（免得糊在中文字上）。
          *  这是"块太矮"的兜底，正常字号下不会走到这里；也别退化去画整句英文 ——
          *  那同样会溢出块外。 */
-        ctx.strokeStyle = AXIS_COLOR;
+        ctx.strokeStyle = (this.ink || INK_DARK).axis;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(x1 + 4, g.axisY + 0.5);
@@ -1662,13 +1748,13 @@ export class Timeline {
         ctx.stroke();
       } else {
         if (c.text) {
-          ctx.strokeStyle = AXIS_COLOR;           // 中英分隔线(中性浅灰)
+          ctx.strokeStyle = (this.ink || INK_DARK).axis;   // 中英分隔线（中性灰）
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(x1 + 4, g.axisY + 0.5);
           ctx.lineTo(x2 - 4, g.axisY + 0.5);
           ctx.stroke();
-          ctx.fillStyle = WORD_TEXT;
+          ctx.fillStyle = (this.ink || INK_DARK).wordText;
           ctx.font = this.enFont();      // 与稿件样式的英文字体同步
           ctx.fillText(c.text.slice(0, 60), x1 + TEXT_PAD, g.baseline);
         }
@@ -1678,7 +1764,8 @@ export class Timeline {
     } else if (showWords) {
       /* 纯英文孤行但空间不够：不画词，留白（用户拉高轨道就会显示出来） */
     } else {
-      ctx.fillStyle = base;
+      const ink = this.ink || INK_DARK;
+      ctx.fillStyle = ink.light ? readableOnLight(base, mixHex(ink.blockBase, mutedHex(base, 0.62), 0.24), ink.textInk) : base;
       ctx.font = this.zhFont();      // 单语孤行的整句文字也跟稿件样式同步
       ctx.fillText((c.text || '').slice(0, 40), x1 + TEXT_PAD, band.y + band.h / 2 + 4);
     }
@@ -1689,7 +1776,8 @@ export class Timeline {
    * (可拖动, 词太长则只留标记；首词用字幕块左边缘下半区调整) */
   _drawWordAxis(ctx, words, g, x1, x2, blockEnd) {
     const ax0 = Math.max(x1 + 4, 0), ax1 = Math.min(x2 - 4, this._cssW());
-    ctx.strokeStyle = AXIS_COLOR;                   // 轴
+    const ink = this.ink || INK_DARK;
+    ctx.strokeStyle = ink.axis;                     // 轴
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(ax0, g.axisY + 0.5);
@@ -1708,7 +1796,7 @@ export class Timeline {
       // 其余词的标记仍是拖动抓手；首词走字幕块左边缘下半区拖动（见 _hitWordHandle）。
       if (hasVisibleWordMark(i)) {
         // 标记块贴块底, 与英文词文本同一行；以词起点 wx 为中心画。
-        ctx.fillStyle = hot ? WORD_MARK_HOT : WORD_MARK;
+        ctx.fillStyle = hot ? ink.markHot : ink.mark;
         const mw = hot ? g.markWHot : g.markW;
         ctx.fillRect(Math.round(wx - mw / 2), g.markTop, mw, g.markH);
       }
@@ -1723,7 +1811,7 @@ export class Timeline {
       const avail = nextX - textX - 3;
       const tw = ctx.measureText(w.w).width;
       if (textX >= lastRight + 2 && tw <= avail) {
-        ctx.fillStyle = WORD_TEXT;
+        ctx.fillStyle = ink.wordText;
         ctx.fillText(w.w, textX, g.baseline);
         lastRight = textX + tw;
       }
@@ -1840,9 +1928,10 @@ export class Timeline {
       /* 波形配色：原来是接近白的浅灰（190,190,205 → 228,228,240），整条带子比字幕块还抢眼，
          中文字幕压在上面就不好认。整体压暗一档，让波形退成"背景信息"、字幕读到前面来。
          仍然保留上下渐变（边缘略暗、中间略亮），维持原来的立体感。 */
-      g.addColorStop(0, 'rgba(116,116,134,.72)');
-      g.addColorStop(0.5, 'rgba(146,146,166,.82)');
-      g.addColorStop(1, 'rgba(116,116,134,.72)');
+      const ink = this.ink || INK_DARK;          // 深色主题的取值见 INK_DARK（压暗一档后的灰）
+      g.addColorStop(0, ink.waveEdge);
+      g.addColorStop(0.5, ink.waveMid);
+      g.addColorStop(1, ink.waveEdge);
       ctx.fillStyle = g;
       ctx.fill();
       ctx.restore();
@@ -1911,7 +2000,7 @@ export class Timeline {
     if (canBlur) ctx.filter = studio ? 'blur(1.25px)' : 'blur(3px)';
     this._drawWaveLayer(ctx, W, top, h);         // 在裁剪区内重画一遍 → 这块被模糊
     if (canBlur) ctx.filter = 'none';
-    ctx.fillStyle = 'rgba(8,8,12,.46)';          // 压暗：让块与波形分出层次
+    ctx.fillStyle = (this.ink || INK_DARK).backdrop;   // 深色压暗 / 浅色提亮：让块与波形分出层次
     ctx.fillRect(0, 0, W, this._cssH());
     ctx.restore();
   }
@@ -2013,10 +2102,10 @@ export class Timeline {
       const label = lane.label || '';
       if (label) {
         ctx.save();
-        ctx.globalAlpha = 0.5;
-        ctx.font = '10px "Microsoft YaHei", sans-serif';
+        ctx.globalAlpha = 0.7;
+        ctx.font = `11px ${(this.ui || UI_DEFAULT).fontPlain}`;     // label-small
         ctx.textAlign = 'left';
-        ctx.fillStyle = C.chipText;
+        ctx.fillStyle = (this.ui || UI_DEFAULT).onSurfaceVariant;
         ctx.fillText(label, 12, yy + lh - 7);
         ctx.restore();
       }
@@ -2048,7 +2137,7 @@ export class Timeline {
     if (wpx < 12) return;
     const bx = x1 + 0.5, by = band.y, bw = Math.max(1.5, wpx - 1), bh = band.h;
     ctx.save();
-    ctx.strokeStyle = bad ? '#ff5c5c' : 'rgba(255,255,255,0.16)';
+    ctx.strokeStyle = bad ? (this.ui || UI_DEFAULT).error : (this.ink || INK_DARK).emptySlot;
     ctx.lineWidth = bad ? 1.5 : 1;
     ctx.setLineDash(bad ? DASH_BAD : DASH_EMPTY);
     this._roundRect(ctx, bx, by, bw, bh, 3);
@@ -2062,15 +2151,16 @@ export class Timeline {
   _drawWarnChip(ctx, bx, by, bw, wpx) {
     if (wpx < 16) return;
     const sx = bx + bw - 13, sy = by + 3;
-    ctx.fillStyle = '#ff5c5c';
+    const ui = this.ui || UI_DEFAULT;
+    ctx.fillStyle = ui.error;
     ctx.beginPath();
     ctx.moveTo(sx + 6, sy);
     ctx.lineTo(sx + 12, sy + 11);
     ctx.lineTo(sx, sy + 11);
     ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = '#1a1a21';
-    ctx.font = '700 9px "Microsoft YaHei", sans-serif';
+    ctx.fillStyle = ui.onError;
+    ctx.font = `700 9px ${ui.fontPlain}`;
     ctx.textAlign = 'center';
     ctx.fillText('!', sx + 6, sy + 9);
   }
@@ -2080,7 +2170,7 @@ export class Timeline {
   _drawBadMark(ctx, x1, band, wpx) {
     const bx = x1 + 0.5, by = band.y, bw = Math.max(1.5, wpx - 1), bh = band.h;
     ctx.save();
-    ctx.strokeStyle = '#ff5c5c';
+    ctx.strokeStyle = (this.ui || UI_DEFAULT).error;
     ctx.lineWidth = 1.5;
     ctx.setLineDash(DASH_BAD);        // 稀疏长虚线（原 [4,3] 太密，见常量处注释）
     this._roundRect(ctx, bx, by, bw, bh, 3);

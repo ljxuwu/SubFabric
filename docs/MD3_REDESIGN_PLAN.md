@@ -1,6 +1,6 @@
 # Material Design 3 前端重构计划
 
-> 状态：P0–P6 已完成且已验证；P7–P8 未开始（2026-10-18）。执行进度只记在 [STATUS.md](STATUS.md)，本文件只在范围、顺序或验收变化时修改。
+> 状态：P0–P7 已完成且已验证；P8 未开始（2026-10-24）。执行进度只记在 [STATUS.md](STATUS.md)，本文件只在范围、顺序或验收变化时修改。
 > 改代码前仍须读 [PROJECT_MAP.md](../PROJECT_MAP.md) §6、§7。
 
 ## 0. 需求与已确认决策
@@ -272,6 +272,12 @@ tools/md-gallery.html 组件陈列页（file:// 直接打开，只引 CSS 与经
 - 字幕块继续用角色色＋`mutedHex()` 降饱和；文字对比度在浅色和深色下都要校验。canvas 字体取 label-small 令牌。
 - 主题切换时刷新颜色缓存（合并现有的 `sf-studio-theme` 与 `ss-accent` 两个监听）。
 - 验收：`timeline-*` 测试通过；浅色和深色、高 DPI（1.25 / 1.5 / 2）截图；右键菜单与边缘提示位置正确。
+- **P7 结果（2026-10-24，已完成且已验证）**：
+  - `timeline.js` 新增 `_syncColors()`：轨道 / 波形带 / 胶片 / 刻度 / 游标 / 选中环 / 坏行 / 重新识别带 / 标签全部取 MD3 角色（md-color.js 写在 :root 的 `#rrggbb`），`ss-accent` 与 `sf-studio-theme` 合并为同一个刷新入口；画布字体取 `--md-ref-typeface-*`。
+  - 字幕块的「文字层」分两套：深色主题沿用原来调过的取值（`INK_DARK`）；浅色主题把块区域提亮、文字用 on-surface，中文行用 `readableOnLight()` 保留角色色相并按 WCAG 加深到 ≥ 4.5:1（单测覆盖黄 / 青 / 绿 / 粉 / 紫等最难的角色色）。
+  - 顺带修正：换到缩放比例不同的显示器时 CSS 尺寸不变、ResizeObserver 不触发，画布会发虚；新增按当前 dppx 的 matchMedia 监听。
+  - 时间轴边缘提示与进度条悬浮时间改为 MD3 plain tooltip（反色表面）；`#tl-canvas-wrap` 去掉写死的深色底。
+  - 选中环保持 primary（计划写的 tertiary / primary 二选一），重新识别带用 tertiary 与之区分。
 
 ### P8 清理与收尾（M）
 
